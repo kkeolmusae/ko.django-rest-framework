@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - docs/**
+      - docs_ko/**
       - docs_theme/**
       - requirements/requirements-documentation.txt
       - mkdocs.yml
