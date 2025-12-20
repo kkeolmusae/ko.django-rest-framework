@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <title>5 - Relationships and hyperlinked APIs - Django REST framework</title>
+  <link href="../../img/favicon.ico" rel="icon" type="image/x-icon">
+  <link rel="canonical" href="https://kkeolmusae.github.io/ko.django-rest-framework/tutorial/5-relationships-and-hyperlinked-apis/" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Django, API, REST, 5 - Relationships and hyperlinked APIs">
+  <meta name="author" content="Tom Christie">
+
+  <!-- Le styles -->
+  <link href="../../css/prettify.css" rel="stylesheet">
+  <link href="../../css/bootstrap.css" rel="stylesheet">
+  <link href="../../css/bootstrap-responsive.css" rel="stylesheet">
+  <link href="../../css/default.css" rel="stylesheet">
+
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-18852272-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script');
+      ga.type = 'text/javascript';
+      ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+  <style>
+  #sidebarInclude img {
+      margin-bottom: 10px;
+  }
+  #sidebarInclude a.promo {
+      color: black;
+  }
+    @media (max-width: 767px) {
+      div.promo {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body onload="prettyPrint()" class="-page">
+
+  <div class="wrapper">
+        <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="repo-link btn btn-primary btn-small" href="https://github.com/encode/django-rest-framework">GitHub</a>
+          <a class="repo-link btn btn-inverse btn-small " rel="next" href="../6-viewsets-and-routers/">
+            Next <i class="icon-arrow-right icon-white"></i>
+          </a>
+          <a class="repo-link btn btn-inverse btn-small " rel="prev" href="../4-authentication-and-permissions/">
+            <i class="icon-arrow-left icon-white"></i> Previous
+          </a>
+          <a id="search_modal_show" class="repo-link btn btn-inverse btn-small" href="#mkdocs_search_modal" data-toggle="modal" data-target="#mkdocs_search_modal"><i class="icon-search icon-white"></i> Search</a>
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="https://www.django-rest-framework.org/">Django REST framework</a>
+          <div class="nav-collapse collapse">
+            
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+               
+              <li >
+                <a href="../..">Home</a>
+              </li>
+                
+              <li class="dropdown active">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tutorial <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../quickstart/">Quickstart</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../1-serialization/">1 - Serialization</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../2-requests-and-responses/">2 - Requests and responses</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../3-class-based-views/">3 - Class based views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../4-authentication-and-permissions/">4 - Authentication and permissions</a>
+                  </li>
+                  
+                  <li class="active" >
+                    <a href="./">5 - Relationships and hyperlinked APIs</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../6-viewsets-and-routers/">6 - Viewsets and routers</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API Guide <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../../api-guide/requests/">Requests</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/responses/">Responses</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/views/">Views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/generic-views/">Generic views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/viewsets/">Viewsets</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/routers/">Routers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/parsers/">Parsers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/renderers/">Renderers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/serializers/">Serializers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/fields/">Serializer fields</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/relations/">Serializer relations</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/validators/">Validators</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/authentication/">Authentication</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/permissions/">Permissions</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/caching/">Caching</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/throttling/">Throttling</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/filtering/">Filtering</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/pagination/">Pagination</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/versioning/">Versioning</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/content-negotiation/">Content negotiation</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/metadata/">Metadata</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/schemas/">Schemas</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/format-suffixes/">Format suffixes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/reverse/">Returning URLs</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/exceptions/">Exceptions</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/status-codes/">Status codes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/testing/">Testing</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/settings/">Settings</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Topics <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../../topics/documenting-your-api/">Documenting your API</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/internationalization/">Internationalization</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/ajax-csrf-cors/">AJAX, CSRF & CORS</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/html-and-forms/">HTML & Forms</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/browser-enhancements/">Browser Enhancements</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/browsable-api/">The Browsable API</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/rest-hypermedia-hateoas/">REST, Hypermedia & HATEOAS</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Community <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../../community/tutorials-and-resources/">Tutorials and Resources</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/third-party-packages/">Third Party Packages</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/contributing/">Contributing to REST framework</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/project-management/">Project management</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/release-notes/">Release Notes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.16-announcement/">3.16 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.15-announcement/">3.15 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.14-announcement/">3.14 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.13-announcement/">3.13 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.12-announcement/">3.12 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.11-announcement/">3.11 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.10-announcement/">3.10 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.9-announcement/">3.9 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.8-announcement/">3.8 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.7-announcement/">3.7 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.6-announcement/">3.6 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.5-announcement/">3.5 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.4-announcement/">3.4 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.3-announcement/">3.3 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.2-announcement/">3.2 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.1-announcement/">3.1 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.0-announcement/">3.0 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/kickstarter-announcement/">Kickstarter Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/mozilla-grant/">Mozilla Grant</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/jobs/">Jobs</a>
+                  </li>
+                  
+                </ul>
+              </li>
+               
+
+            </ul>
+            
+          </div>
+          <!--/.nav-collapse -->
+
+        </div>
+      </div>
+    </div>
+
+    <div class="body-content">
+      <div class="container-fluid">
+        <!-- Search Modal -->
+        <div id="mkdocs_search_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3 id="myModalLabel">Documentation search</h3>
+          </div>
+
+          <div class="modal-body">
+            <form role="form" autocomplete="off">
+              <div class="form-group">
+                <input type="text" name="q" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+              </div>
+            </form>
+            <div id="mkdocs-search-results"></div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+          </div>
+        </div>
+
+        <div class="row-fluid">
+          <div class="span3">
+            <div id="table-of-contents">
+              <ul class="nav nav-list side-nav well sidebar-nav-fixed">
+                
+
+                
+                  <li class="main">
+                    <a href="#tutorial-5-relationships-api">Tutorial 5: 관계(Relationships) 및 하이퍼링크 API</a>
+                  </li>
+
+                  
+                    <li>
+                      <a href="#api">API 루트 엔드포인트 생성</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#_1">하이라이트된 스니펫 엔드포인트 생성</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#hyperlinked-api">하이퍼링크 기반 관계(Hyperlinked API)</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#url">URL 패턴에 이름 지정</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#pagination">페이지네이션(Pagination) 추가</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#api_1">API 브라우징</a>
+                    </li>
+                  
+                
+
+                  <div class="promo">
+                    <hr/>
+                    <div id="sidebarInclude">
+                  </div>
+              </ul>
+
+            </div>
+          </div>
+
+          <div id="main-content" class="span9">
+            
+              
+
+              <h1 id="tutorial-5-relationships-api"><a class="toclink" href="#tutorial-5-relationships-api">Tutorial 5: 관계(Relationships) 및 하이퍼링크 API</a></h1>
+<p>현재 우리 API에서 엔티티 간 관계는 기본 키(primary key)를 사용하여 표현되고 있습니다.<br />
+이번 파트에서는 관계를 하이퍼링크 방식으로 변경하여 API의 응집력과 발견성을 개선합니다.</p>
+<h2 id="api"><a class="toclink" href="#api">API 루트 엔드포인트 생성</a></h2>
+<p>지금은 <code>'snippets'</code>와 <code>'users'</code> 엔드포인트만 있고,<br />
+API의 단일 진입점(entry point)은 없습니다.</p>
+<p><code>snippets/views.py</code>에 함수 기반 뷰를 추가하여 API 루트를 만듭니다.</p>
+<pre><code class="language-python">from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
+
+
+@api_view([&quot;GET&quot;])
+def api_root(request, format=None):
+    return Response(
+        {
+            &quot;users&quot;: reverse(&quot;user-list&quot;, request=request, format=format),
+            &quot;snippets&quot;: reverse(&quot;snippet-list&quot;, request=request, format=format),
+        }
+    )
+</code></pre>
+<p>포인트:</p>
+<ol>
+<li><code>reverse</code> 함수를 사용하여 절대 URL을 반환</li>
+<li>URL 패턴은 이름(name)을 지정하여 참조</li>
+</ol>
+<h2 id="_1"><a class="toclink" href="#_1">하이라이트된 스니펫 엔드포인트 생성</a></h2>
+<p>우리 Pastebin API에서 빠진 또 다른 기능은 <strong>코드 하이라이트</strong>입니다.</p>
+<ul>
+<li>JSON이 아닌 <strong>HTML 표현</strong>을 반환</li>
+<li>REST framework에는 두 가지 HTML 렌더러가 있음</li>
+<li>템플릿으로 렌더링된 HTML 처리</li>
+<li>이미 렌더링된 HTML 처리 → 이번에 사용</li>
+</ul>
+<p>객체 인스턴스를 그대로 반환하는 것이 아니라 <strong>객체 속성</strong>을 반환하기 때문에<br />
+기존의 구체적(Generic) 뷰는 사용하지 않고,<br />
+<code>GenericAPIView</code>를 상속하고 <code>.get()</code> 메서드를 구현합니다.</p>
+<pre><code class="language-python">from rest_framework import renderers
+
+class SnippetHighlight(generics.GenericAPIView):
+    queryset = Snippet.objects.all()
+    renderer_classes = [renderers.StaticHTMLRenderer]
+
+    def get(self, request, *args, **kwargs):
+        snippet = self.get_object()
+        return Response(snippet.highlighted)
+</code></pre>
+<p>URL 패턴에 새 view를 추가합니다.</p>
+<pre><code class="language-python"># API 루트
+path(&quot;&quot;, views.api_root),
+
+# 스니펫 하이라이트
+path(&quot;snippets/&lt;int:pk&gt;/highlight/&quot;, views.SnippetHighlight.as_view()),
+</code></pre>
+<h2 id="hyperlinked-api"><a class="toclink" href="#hyperlinked-api">하이퍼링크 기반 관계(Hyperlinked API)</a></h2>
+<p>엔티티 간 관계 표현 방법:</p>
+<ul>
+<li>기본 키(primary key) 사용</li>
+<li>하이퍼링크 사용</li>
+<li>관련 엔티티의 고유 슬러그 사용</li>
+<li>관련 엔티티의 문자열 표현 사용</li>
+<li>부모 안에 관련 엔티티 중첩(Nesting)</li>
+<li>기타 커스텀 표현</li>
+</ul>
+<p>REST framework는 모든 방식을 지원하며,<br />
+Forward/Reverse 관계 또는 Generic Foreign Key에도 적용 가능.</p>
+<p>이번 튜토리얼에서는 <strong>하이퍼링크</strong> 방식 사용.</p>
+<ul>
+<li>Serializer를 <code>ModelSerializer</code> → <code>HyperlinkedModelSerializer</code>로 변경</li>
+</ul>
+<p><code>HyperlinkedModelSerializer</code> 특징:</p>
+<ul>
+<li>기본적으로 <code>id</code> 필드 포함 안 함</li>
+<li><code>url</code> 필드 포함 (<code>HyperlinkedIdentityField</code>)</li>
+<li>관계는 <code>HyperlinkedRelatedField</code> 사용 (기존 <code>PrimaryKeyRelatedField</code> 대신)</li>
+</ul>
+<p><code>snippets/serializers.py</code> 수정:</p>
+<pre><code class="language-python">class SnippetSerializer(serializers.HyperlinkedModelSerializer):
+    owner = serializers.ReadOnlyField(source=&quot;owner.username&quot;)
+    highlight = serializers.HyperlinkedIdentityField(
+        view_name=&quot;snippet-highlight&quot;, format=&quot;html&quot;
+    )
+
+    class Meta:
+        model = Snippet
+        fields = [
+            &quot;url&quot;,
+            &quot;id&quot;,
+            &quot;highlight&quot;,
+            &quot;owner&quot;,
+            &quot;title&quot;,
+            &quot;code&quot;,
+            &quot;linenos&quot;,
+            &quot;language&quot;,
+            &quot;style&quot;,
+        ]
+
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    snippets = serializers.HyperlinkedRelatedField(
+        many=True, view_name=&quot;snippet-detail&quot;, read_only=True
+    )
+
+    class Meta:
+        model = User
+        fields = [&quot;url&quot;, &quot;id&quot;, &quot;username&quot;, &quot;snippets&quot;]
+</code></pre>
+<p>포인트:</p>
+<ul>
+<li>새로운 <code>'highlight'</code> 필드 추가 (<code>url</code> 필드와 유사하지만 <code>'snippet-highlight'</code> URL 참조)</li>
+<li>format-suffixed URL(<code>.json</code>)을 사용하므로, <code>'highlight'</code> 필드는 <code>.html</code> 형식 지정 필요</li>
+</ul>
+<hr />
+<p><strong>주의:</strong></p>
+<p><code>SnippetDetail</code>이나 <code>SnippetList</code>처럼 view 내부에서 serializer를 직접 생성할 경우,<br />
+절대 URL을 생성하기 위해 반드시 <code>context={'request': request}</code>를 전달해야 합니다.</p>
+<pre><code class="language-python">serializer = SnippetSerializer(snippet, context={&quot;request&quot;: request})
+</code></pre>
+<p><code>GenericAPIView</code> 하위 클래스라면 <code>get_serializer_context()</code>를 편의 메서드로 사용할 수 있습니다.</p>
+<hr />
+<h2 id="url"><a class="toclink" href="#url">URL 패턴에 이름 지정</a></h2>
+<p>하이퍼링크 API를 사용하려면 URL 패턴 이름 지정 필수:</p>
+<ul>
+<li>API 루트 → <code>'user-list'</code>, <code>'snippet-list'</code></li>
+<li>Snippet Serializer → <code>'snippet-highlight'</code></li>
+<li>User Serializer → <code>'snippet-detail'</code></li>
+<li><code>url</code> 필드 → 기본적으로 <code>'{model_name}-detail'</code> (<code>'snippet-detail'</code>, <code>'user-detail'</code>)</li>
+</ul>
+<p>최종 <code>snippets/urls.py</code>:</p>
+<pre><code class="language-python">from django.urls import path
+from rest_framework.urlpatterns import format_suffix_patterns
+from snippets import views
+
+# API endpoints
+urlpatterns = format_suffix_patterns(
+    [
+        path(&quot;&quot;, views.api_root),
+        path(&quot;snippets/&quot;, views.SnippetList.as_view(), name=&quot;snippet-list&quot;),
+        path(
+            &quot;snippets/&lt;int:pk&gt;/&quot;, views.SnippetDetail.as_view(), name=&quot;snippet-detail&quot;
+        ),
+        path(
+            &quot;snippets/&lt;int:pk&gt;/highlight/&quot;,
+            views.SnippetHighlight.as_view(),
+            name=&quot;snippet-highlight&quot;,
+        ),
+        path(&quot;users/&quot;, views.UserList.as_view(), name=&quot;user-list&quot;),
+        path(&quot;users/&lt;int:pk&gt;/&quot;, views.UserDetail.as_view(), name=&quot;user-detail&quot;),
+    ]
+)
+</code></pre>
+<h2 id="pagination"><a class="toclink" href="#pagination">페이지네이션(Pagination) 추가</a></h2>
+<p>스니펫 및 사용자 리스트는 많은 항목을 반환할 수 있으므로,<br />
+페이지네이션을 적용하고 클라이언트가 페이지 단위로 조회하도록 설정.</p>
+<p><code>tutorial/settings.py</code>에 추가:</p>
+<pre><code class="language-python">REST_FRAMEWORK = {
+    &quot;DEFAULT_PAGINATION_CLASS&quot;: &quot;rest_framework.pagination.PageNumberPagination&quot;,
+    &quot;PAGE_SIZE&quot;: 10,
+}
+</code></pre>
+<p>REST framework 설정은 <code>REST_FRAMEWORK</code> 딕셔너리 안에 모아 관리.</p>
+<hr />
+<h2 id="api_1"><a class="toclink" href="#api_1">API 브라우징</a></h2>
+<p>브라우저에서 API에 접속하면,<br />
+하이퍼링크를 따라 쉽게 API를 탐색 가능.</p>
+<p>스니펫 인스턴스에 <code>'highlight'</code> 링크도 표시되어<br />
+하이라이트된 HTML 코드를 바로 확인할 수 있습니다.</p>
+<p><a href="../6-viewsets-and-routers/">tutorial part 6</a>에서는 ViewSet과 Router를 사용해<br />
+API 코드를 더욱 간결하게 작성하는 방법을 다룹니다.</p>
+            
+
+          </div> <!--/span-->
+        </div> <!--/row-->
+      </div> <!--/.fluid-container-->
+    </div> <!--/.body content-->
+    <div id="push"></div>
+  </div> <!--/.wrapper -->
+
+  <footer class="span12">
+    <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.
+    </p>
+  </footer>
+
+  <!-- Le javascript
+  ================================================== -->
+  <!-- Placed at the end of the document so the pages load faster -->
+  <script async src="https://fund.django-rest-framework.org/sidebar_include.js"></script>
+  <script src="../../js/jquery-1.8.1-min.js"></script>
+  <script src="../../js/prettify-1.0.js"></script>
+  <script src="../../js/bootstrap-2.1.1-min.js"></script>
+  <script src="../../js/theme.js"></script>
+
+  <script>var base_url = '../..';</script>
+  
+  <script src="../../search/main.js" defer></script>
+  
+
+  <script>
+    var shiftWindow = function() {
+      scrollBy(0, -50)
+    };
+
+    if (location.hash) shiftWindow();
+    window.addEventListener("hashchange", shiftWindow);
+
+    $('.dropdown-menu').on('click touchstart', function(event) {
+      event.stopPropagation();
+    });
+
+    // Dynamically force sidenav/dropdown to no higher than browser window
+    $('.side-nav, .dropdown-menu').css('max-height', window.innerHeight - 130);
+
+    $(function() {
+      $(window).resize(function() {
+        $('.side-nav, .dropdown-menu').css('max-height', window.innerHeight - 130);
+      });
+    });
+  </script>
+</body>
+
+</html>

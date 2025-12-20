@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <title>Quickstart - Django REST framework</title>
+  <link href="../../img/favicon.ico" rel="icon" type="image/x-icon">
+  <link rel="canonical" href="https://kkeolmusae.github.io/ko.django-rest-framework/tutorial/quickstart/" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Django, API, REST, Quickstart">
+  <meta name="author" content="Tom Christie">
+
+  <!-- Le styles -->
+  <link href="../../css/prettify.css" rel="stylesheet">
+  <link href="../../css/bootstrap.css" rel="stylesheet">
+  <link href="../../css/bootstrap-responsive.css" rel="stylesheet">
+  <link href="../../css/default.css" rel="stylesheet">
+
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-18852272-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script');
+      ga.type = 'text/javascript';
+      ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+  <style>
+  #sidebarInclude img {
+      margin-bottom: 10px;
+  }
+  #sidebarInclude a.promo {
+      color: black;
+  }
+    @media (max-width: 767px) {
+      div.promo {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body onload="prettyPrint()" class="-page">
+
+  <div class="wrapper">
+        <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="repo-link btn btn-primary btn-small" href="https://github.com/encode/django-rest-framework">GitHub</a>
+          <a class="repo-link btn btn-inverse btn-small " rel="next" href="../1-serialization/">
+            Next <i class="icon-arrow-right icon-white"></i>
+          </a>
+          <a class="repo-link btn btn-inverse btn-small " rel="prev" href="../..">
+            <i class="icon-arrow-left icon-white"></i> Previous
+          </a>
+          <a id="search_modal_show" class="repo-link btn btn-inverse btn-small" href="#mkdocs_search_modal" data-toggle="modal" data-target="#mkdocs_search_modal"><i class="icon-search icon-white"></i> Search</a>
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="https://www.django-rest-framework.org/">Django REST framework</a>
+          <div class="nav-collapse collapse">
+            
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+               
+              <li >
+                <a href="../..">Home</a>
+              </li>
+                
+              <li class="dropdown active">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tutorial <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li class="active" >
+                    <a href="./">Quickstart</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../1-serialization/">1 - Serialization</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../2-requests-and-responses/">2 - Requests and responses</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../3-class-based-views/">3 - Class based views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../4-authentication-and-permissions/">4 - Authentication and permissions</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../5-relationships-and-hyperlinked-apis/">5 - Relationships and hyperlinked APIs</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../6-viewsets-and-routers/">6 - Viewsets and routers</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API Guide <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../../api-guide/requests/">Requests</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/responses/">Responses</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/views/">Views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/generic-views/">Generic views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/viewsets/">Viewsets</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/routers/">Routers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/parsers/">Parsers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/renderers/">Renderers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/serializers/">Serializers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/fields/">Serializer fields</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/relations/">Serializer relations</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/validators/">Validators</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/authentication/">Authentication</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/permissions/">Permissions</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/caching/">Caching</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/throttling/">Throttling</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/filtering/">Filtering</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/pagination/">Pagination</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/versioning/">Versioning</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/content-negotiation/">Content negotiation</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/metadata/">Metadata</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/schemas/">Schemas</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/format-suffixes/">Format suffixes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/reverse/">Returning URLs</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/exceptions/">Exceptions</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/status-codes/">Status codes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/testing/">Testing</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/settings/">Settings</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Topics <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../../topics/documenting-your-api/">Documenting your API</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/internationalization/">Internationalization</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/ajax-csrf-cors/">AJAX, CSRF & CORS</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/html-and-forms/">HTML & Forms</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/browser-enhancements/">Browser Enhancements</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/browsable-api/">The Browsable API</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/rest-hypermedia-hateoas/">REST, Hypermedia & HATEOAS</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Community <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../../community/tutorials-and-resources/">Tutorials and Resources</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/third-party-packages/">Third Party Packages</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/contributing/">Contributing to REST framework</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/project-management/">Project management</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/release-notes/">Release Notes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.16-announcement/">3.16 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.15-announcement/">3.15 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.14-announcement/">3.14 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.13-announcement/">3.13 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.12-announcement/">3.12 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.11-announcement/">3.11 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.10-announcement/">3.10 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.9-announcement/">3.9 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.8-announcement/">3.8 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.7-announcement/">3.7 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.6-announcement/">3.6 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.5-announcement/">3.5 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.4-announcement/">3.4 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.3-announcement/">3.3 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.2-announcement/">3.2 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.1-announcement/">3.1 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.0-announcement/">3.0 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/kickstarter-announcement/">Kickstarter Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/mozilla-grant/">Mozilla Grant</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/jobs/">Jobs</a>
+                  </li>
+                  
+                </ul>
+              </li>
+               
+
+            </ul>
+            
+          </div>
+          <!--/.nav-collapse -->
+
+        </div>
+      </div>
+    </div>
+
+    <div class="body-content">
+      <div class="container-fluid">
+        <!-- Search Modal -->
+        <div id="mkdocs_search_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3 id="myModalLabel">Documentation search</h3>
+          </div>
+
+          <div class="modal-body">
+            <form role="form" autocomplete="off">
+              <div class="form-group">
+                <input type="text" name="q" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+              </div>
+            </form>
+            <div id="mkdocs-search-results"></div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+          </div>
+        </div>
+
+        <div class="row-fluid">
+          <div class="span3">
+            <div id="table-of-contents">
+              <ul class="nav nav-list side-nav well sidebar-nav-fixed">
+                
+
+                
+                  <li class="main">
+                    <a href="#quickstart">Quickstart</a>
+                  </li>
+
+                  
+                    <li>
+                      <a href="#project-setup">Project setup</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#serializers">Serializers</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#views">Views</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#urls">URLs</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#pagination">Pagination</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#settings">Settings</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#testing-our-api">Testing our API</a>
+                    </li>
+                  
+                
+
+                  <div class="promo">
+                    <hr/>
+                    <div id="sidebarInclude">
+                  </div>
+              </ul>
+
+            </div>
+          </div>
+
+          <div id="main-content" class="span9">
+            
+              
+
+              <h1 id="quickstart"><a class="toclink" href="#quickstart">Quickstart</a></h1>
+<p>관리자 사용자가 시스템 내의 사용자와 그룹을 조회하고 수정할 수 있도록 하는 간단한 API를 만들어 보겠습니다.</p>
+<h2 id="project-setup"><a class="toclink" href="#project-setup">Project setup</a></h2>
+<p><code>tutorial</code>이라는 이름의 새로운 Django 프로젝트를 생성한 뒤, <code>quickstart</code>라는 앱을 하나 추가합니다.</p>
+<pre><code class="language-bash"># Create the project directory
+mkdir tutorial
+cd tutorial
+
+# Create a virtual environment to isolate our package dependencies locally
+python3 -m venv env
+source env/bin/activate  # On Windows use `env\Scripts\activate`
+
+# Install Django and Django REST framework into the virtual environment
+pip install djangorestframework
+
+# Set up a new project with a single application
+django-admin startproject tutorial .  # Note the trailing '.' character
+cd tutorial
+django-admin startapp quickstart
+cd ..
+</code></pre>
+<p>프로젝트 구조는 다음과 같아야 합니다.</p>
+<pre><code class="language-bash">$ pwd
+&lt;some path&gt;/tutorial
+$ find .
+.
+./tutorial
+./tutorial/asgi.py
+./tutorial/__init__.py
+./tutorial/quickstart
+./tutorial/quickstart/migrations
+./tutorial/quickstart/migrations/__init__.py
+./tutorial/quickstart/models.py
+./tutorial/quickstart/__init__.py
+./tutorial/quickstart/apps.py
+./tutorial/quickstart/admin.py
+./tutorial/quickstart/tests.py
+./tutorial/quickstart/views.py
+./tutorial/settings.py
+./tutorial/urls.py
+./tutorial/wsgi.py
+./env
+./env/...
+./manage.py
+</code></pre>
+<p>애플리케이션이 프로젝트 디렉터리 내부에 생성된 점이 다소 낯설게 보일 수 있습니다.<br />
+하지만 프로젝트의 네임스페이스를 사용하면 외부 모듈과의 이름 충돌을 방지할 수 있습니다(이 내용은 quickstart 범위를 벗어나므로 여기서는 자세히 다루지 않습니다).</p>
+<p>이제 데이터베이스를 처음으로 동기화합니다.</p>
+<pre><code class="language-bash">python manage.py migrate
+</code></pre>
+<p>다음으로 <code>admin</code>이라는 초기 사용자를 하나 생성하고 비밀번호를 설정합니다.<br />
+이후 예제에서 이 사용자로 인증을 수행하게 됩니다.</p>
+<pre><code class="language-bash">python manage.py createsuperuser --username admin --email admin@example.com
+</code></pre>
+<p>데이터베이스 설정과 초기 사용자 생성이 완료되면, 이제 앱 디렉터리를 열고 본격적으로 코딩을 시작합니다.</p>
+<h2 id="serializers"><a class="toclink" href="#serializers">Serializers</a></h2>
+<p>먼저 serializer를 정의합니다.<br />
+데이터 표현을 담당할 <code>tutorial/quickstart/serializers.py</code> 모듈을 새로 생성합니다.</p>
+<pre><code class="language-python">from django.contrib.auth.models import Group, User
+from rest_framework import serializers
+
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = User
+        fields = [&quot;url&quot;, &quot;username&quot;, &quot;email&quot;, &quot;groups&quot;]
+
+
+class GroupSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Group
+        fields = [&quot;url&quot;, &quot;name&quot;]
+</code></pre>
+<p>여기서는 <code>HyperlinkedModelSerializer</code>를 사용해 하이퍼링크 기반의 관계를 표현하고 있습니다.<br />
+기본 키 기반 관계 등 다른 방식도 사용할 수 있지만, 하이퍼링크는 RESTful 설계 관점에서 좋은 선택입니다.</p>
+<h2 id="views"><a class="toclink" href="#views">Views</a></h2>
+<p>이제 view를 작성할 차례입니다.<br />
+<code>tutorial/quickstart/views.py</code> 파일을 열고 아래 코드를 작성합니다.</p>
+<pre><code class="language-python">from django.contrib.auth.models import Group, User
+from rest_framework import permissions, viewsets
+
+from tutorial.quickstart.serializers import GroupSerializer, UserSerializer
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    &quot;&quot;&quot;
+    API endpoint that allows users to be viewed or edited.
+    &quot;&quot;&quot;
+
+    queryset = User.objects.all().order_by(&quot;-date_joined&quot;)
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class GroupViewSet(viewsets.ModelViewSet):
+    &quot;&quot;&quot;
+    API endpoint that allows groups to be viewed or edited.
+    &quot;&quot;&quot;
+
+    queryset = Group.objects.all().order_by(&quot;name&quot;)
+    serializer_class = GroupSerializer
+    permission_classes = [permissions.IsAuthenticated]
+</code></pre>
+<p>여러 개의 view를 각각 작성하는 대신, 공통 동작을 <code>ViewSet</code>이라는 클래스로 묶었습니다.</p>
+<p>필요하다면 언제든 개별 view로 분리할 수 있지만, viewset을 사용하면 코드가 간결해지고 구조도 깔끔해집니다.</p>
+<h2 id="urls"><a class="toclink" href="#urls">URLs</a></h2>
+<p>이제 API URL을 연결합니다.<br />
+<code>tutorial/urls.py</code> 파일을 수정합니다.</p>
+<pre><code class="language-python">from django.urls import include, path
+from rest_framework import routers
+
+from tutorial.quickstart import views
+
+router = routers.DefaultRouter()
+router.register(r&quot;users&quot;, views.UserViewSet)
+router.register(r&quot;groups&quot;, views.GroupViewSet)
+
+# Wire up our API using automatic URL routing.
+# Additionally, we include login URLs for the browsable API.
+urlpatterns = [
+    path(&quot;&quot;, include(router.urls)),
+    path(&quot;api-auth/&quot;, include(&quot;rest_framework.urls&quot;, namespace=&quot;rest_framework&quot;)),
+]
+</code></pre>
+<p>view 대신 viewset을 사용하고 있기 때문에, router에 viewset을 등록하는 것만으로 API의 URL 설정을 자동으로 생성할 수 있습니다.</p>
+<p>더 세밀한 URL 제어가 필요하다면, 일반 클래스 기반 view를 사용해 URL 설정을 직접 작성할 수도 있습니다.</p>
+<p>마지막으로, browsable API에서 사용할 로그인/로그아웃 URL을 포함했습니다.<br />
+이는 선택 사항이지만, 인증이 필요한 API를 브라우저에서 테스트할 때 매우 유용합니다.</p>
+<h2 id="pagination"><a class="toclink" href="#pagination">Pagination</a></h2>
+<p>페이지네이션을 사용하면 한 페이지에 반환되는 객체 수를 제어할 수 있습니다.<br />
+이를 활성화하려면 <code>tutorial/settings.py</code>에 다음 설정을 추가합니다.</p>
+<pre><code class="language-python">REST_FRAMEWORK = {
+    &quot;DEFAULT_PAGINATION_CLASS&quot;: &quot;rest_framework.pagination.PageNumberPagination&quot;,
+    &quot;PAGE_SIZE&quot;: 10,
+}
+</code></pre>
+<h2 id="settings"><a class="toclink" href="#settings">Settings</a></h2>
+<p><code>INSTALLED_APPS</code>에 <code>'rest_framework'</code>를 추가합니다.<br />
+설정 파일은 <code>tutorial/settings.py</code>에 있습니다.</p>
+<pre><code class="language-text">INSTALLED_APPS = [
+    ...
+    'rest_framework',
+]
+</code></pre>
+<p>이제 설정은 모두 완료되었습니다.</p>
+<hr />
+<h2 id="testing-our-api"><a class="toclink" href="#testing-our-api">Testing our API</a></h2>
+<p>이제 우리가 만든 API를 테스트할 준비가 되었습니다.<br />
+명령줄에서 서버를 실행합니다.</p>
+<pre><code class="language-bash">python manage.py runserver
+</code></pre>
+<p>이제 <code>curl</code> 같은 커맨드라인 도구를 사용해 API에 접근할 수 있습니다.</p>
+<pre><code class="language-bash">bash: curl -u admin -H 'Accept: application/json; indent=4' http://127.0.0.1:8000/users/
+Enter host password for user 'admin':
+{
+    &quot;count&quot;: 1,
+    &quot;next&quot;: null,
+    &quot;previous&quot;: null,
+    &quot;results&quot;: [
+        {
+            &quot;url&quot;: &quot;http://127.0.0.1:8000/users/1/&quot;,
+            &quot;username&quot;: &quot;admin&quot;,
+            &quot;email&quot;: &quot;admin@example.com&quot;,
+            &quot;groups&quot;: []
+        }
+    ]
+}
+</code></pre>
+<p>또는 커맨드라인 도구인 <a href="https://httpie.io/docs#installation">httpie</a>를 사용할 수도 있습니다.</p>
+<pre><code class="language-bash">bash: http -a admin http://127.0.0.1:8000/users/
+http: password for admin@127.0.0.1:8000::
+$HTTP/1.1 200 OK
+...
+{
+    &quot;count&quot;: 1,
+    &quot;next&quot;: null,
+    &quot;previous&quot;: null,
+    &quot;results&quot;: [
+        {
+            &quot;email&quot;: &quot;admin@example.com&quot;,
+            &quot;groups&quot;: [],
+            &quot;url&quot;: &quot;http://127.0.0.1:8000/users/1/&quot;,
+            &quot;username&quot;: &quot;admin&quot;
+        }
+    ]
+}
+</code></pre>
+<p>또는 브라우저에서 직접 <code>http://127.0.0.1:8000/users/</code> 주소로 접근할 수도 있습니다.</p>
+<p><img alt="Quick start image" src="../../img/quickstart.png" /></p>
+<p>브라우저로 접근하는 경우, 우측 상단의 컨트롤을 사용해 로그인해야 합니다.</p>
+<p>아주 간단하죠!</p>
+<p>REST framework의 구조를 더 깊이 이해하고 싶다면 <a href="../1-serialization/">the tutorial</a>을 계속 진행하거나, <a href="../../api-guide/requests/">API guide</a>를 살펴보시기 바랍니다.</p>
+            
+
+          </div> <!--/span-->
+        </div> <!--/row-->
+      </div> <!--/.fluid-container-->
+    </div> <!--/.body content-->
+    <div id="push"></div>
+  </div> <!--/.wrapper -->
+
+  <footer class="span12">
+    <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.
+    </p>
+  </footer>
+
+  <!-- Le javascript
+  ================================================== -->
+  <!-- Placed at the end of the document so the pages load faster -->
+  <script async src="https://fund.django-rest-framework.org/sidebar_include.js"></script>
+  <script src="../../js/jquery-1.8.1-min.js"></script>
+  <script src="../../js/prettify-1.0.js"></script>
+  <script src="../../js/bootstrap-2.1.1-min.js"></script>
+  <script src="../../js/theme.js"></script>
+
+  <script>var base_url = '../..';</script>
+  
+  <script src="../../search/main.js" defer></script>
+  
+
+  <script>
+    var shiftWindow = function() {
+      scrollBy(0, -50)
+    };
+
+    if (location.hash) shiftWindow();
+    window.addEventListener("hashchange", shiftWindow);
+
+    $('.dropdown-menu').on('click touchstart', function(event) {
+      event.stopPropagation();
+    });
+
+    // Dynamically force sidenav/dropdown to no higher than browser window
+    $('.side-nav, .dropdown-menu').css('max-height', window.innerHeight - 130);
+
+    $(function() {
+      $(window).resize(function() {
+        $('.side-nav, .dropdown-menu').css('max-height', window.innerHeight - 130);
+      });
+    });
+  </script>
+</body>
+
+</html>

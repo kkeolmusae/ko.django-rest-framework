@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <title>2 - Requests and responses - Django REST framework</title>
+  <link href="../../img/favicon.ico" rel="icon" type="image/x-icon">
+  <link rel="canonical" href="https://kkeolmusae.github.io/ko.django-rest-framework/tutorial/2-requests-and-responses/" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Django, API, REST, 2 - Requests and responses">
+  <meta name="author" content="Tom Christie">
+
+  <!-- Le styles -->
+  <link href="../../css/prettify.css" rel="stylesheet">
+  <link href="../../css/bootstrap.css" rel="stylesheet">
+  <link href="../../css/bootstrap-responsive.css" rel="stylesheet">
+  <link href="../../css/default.css" rel="stylesheet">
+
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-18852272-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script');
+      ga.type = 'text/javascript';
+      ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+  <style>
+  #sidebarInclude img {
+      margin-bottom: 10px;
+  }
+  #sidebarInclude a.promo {
+      color: black;
+  }
+    @media (max-width: 767px) {
+      div.promo {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body onload="prettyPrint()" class="-page">
+
+  <div class="wrapper">
+        <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="repo-link btn btn-primary btn-small" href="https://github.com/encode/django-rest-framework">GitHub</a>
+          <a class="repo-link btn btn-inverse btn-small " rel="next" href="../3-class-based-views/">
+            Next <i class="icon-arrow-right icon-white"></i>
+          </a>
+          <a class="repo-link btn btn-inverse btn-small " rel="prev" href="../1-serialization/">
+            <i class="icon-arrow-left icon-white"></i> Previous
+          </a>
+          <a id="search_modal_show" class="repo-link btn btn-inverse btn-small" href="#mkdocs_search_modal" data-toggle="modal" data-target="#mkdocs_search_modal"><i class="icon-search icon-white"></i> Search</a>
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="https://www.django-rest-framework.org/">Django REST framework</a>
+          <div class="nav-collapse collapse">
+            
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+               
+              <li >
+                <a href="../..">Home</a>
+              </li>
+                
+              <li class="dropdown active">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tutorial <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../quickstart/">Quickstart</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../1-serialization/">1 - Serialization</a>
+                  </li>
+                  
+                  <li class="active" >
+                    <a href="./">2 - Requests and responses</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../3-class-based-views/">3 - Class based views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../4-authentication-and-permissions/">4 - Authentication and permissions</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../5-relationships-and-hyperlinked-apis/">5 - Relationships and hyperlinked APIs</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../6-viewsets-and-routers/">6 - Viewsets and routers</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API Guide <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../../api-guide/requests/">Requests</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/responses/">Responses</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/views/">Views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/generic-views/">Generic views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/viewsets/">Viewsets</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/routers/">Routers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/parsers/">Parsers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/renderers/">Renderers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/serializers/">Serializers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/fields/">Serializer fields</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/relations/">Serializer relations</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/validators/">Validators</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/authentication/">Authentication</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/permissions/">Permissions</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/caching/">Caching</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/throttling/">Throttling</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/filtering/">Filtering</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/pagination/">Pagination</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/versioning/">Versioning</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/content-negotiation/">Content negotiation</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/metadata/">Metadata</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/schemas/">Schemas</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/format-suffixes/">Format suffixes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/reverse/">Returning URLs</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/exceptions/">Exceptions</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/status-codes/">Status codes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/testing/">Testing</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/settings/">Settings</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Topics <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../../topics/documenting-your-api/">Documenting your API</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/internationalization/">Internationalization</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/ajax-csrf-cors/">AJAX, CSRF & CORS</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/html-and-forms/">HTML & Forms</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/browser-enhancements/">Browser Enhancements</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/browsable-api/">The Browsable API</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/rest-hypermedia-hateoas/">REST, Hypermedia & HATEOAS</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Community <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../../community/tutorials-and-resources/">Tutorials and Resources</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/third-party-packages/">Third Party Packages</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/contributing/">Contributing to REST framework</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/project-management/">Project management</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/release-notes/">Release Notes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.16-announcement/">3.16 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.15-announcement/">3.15 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.14-announcement/">3.14 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.13-announcement/">3.13 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.12-announcement/">3.12 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.11-announcement/">3.11 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.10-announcement/">3.10 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.9-announcement/">3.9 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.8-announcement/">3.8 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.7-announcement/">3.7 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.6-announcement/">3.6 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.5-announcement/">3.5 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.4-announcement/">3.4 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.3-announcement/">3.3 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.2-announcement/">3.2 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.1-announcement/">3.1 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.0-announcement/">3.0 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/kickstarter-announcement/">Kickstarter Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/mozilla-grant/">Mozilla Grant</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/jobs/">Jobs</a>
+                  </li>
+                  
+                </ul>
+              </li>
+               
+
+            </ul>
+            
+          </div>
+          <!--/.nav-collapse -->
+
+        </div>
+      </div>
+    </div>
+
+    <div class="body-content">
+      <div class="container-fluid">
+        <!-- Search Modal -->
+        <div id="mkdocs_search_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3 id="myModalLabel">Documentation search</h3>
+          </div>
+
+          <div class="modal-body">
+            <form role="form" autocomplete="off">
+              <div class="form-group">
+                <input type="text" name="q" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+              </div>
+            </form>
+            <div id="mkdocs-search-results"></div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+          </div>
+        </div>
+
+        <div class="row-fluid">
+          <div class="span3">
+            <div id="table-of-contents">
+              <ul class="nav nav-list side-nav well sidebar-nav-fixed">
+                
+
+                
+                  <li class="main">
+                    <a href="#tutorial-2-requests-and-responses">Tutorial 2: Requests and Responses</a>
+                  </li>
+
+                  
+                    <li>
+                      <a href="#request-objects">Request objects</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#response-objects">Response objects</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#status-codes">Status codes</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#wrapping-api-views">Wrapping API views</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#pulling-it-all-together">Pulling it all together</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#adding-optional-format-suffixes-to-our-urls">Adding optional format suffixes to our URLs</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#hows-it-looking">How's it looking?</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#whats-next">What's next?</a>
+                    </li>
+                  
+                
+
+                  <div class="promo">
+                    <hr/>
+                    <div id="sidebarInclude">
+                  </div>
+              </ul>
+
+            </div>
+          </div>
+
+          <div id="main-content" class="span9">
+            
+              
+
+              <h1 id="tutorial-2-requests-and-responses"><a class="toclink" href="#tutorial-2-requests-and-responses">Tutorial 2: Requests and Responses</a></h1>
+<p>이제부터는 REST framework의 핵심 내용을 본격적으로 다루기 시작합니다.<br />
+여기서는 몇 가지 필수적인 구성 요소를 소개하겠습니다.</p>
+<h2 id="request-objects"><a class="toclink" href="#request-objects">Request objects</a></h2>
+<p>REST framework는 기존의 <code>HttpRequest</code>를 확장한 <code>Request</code> 객체를 제공합니다.<br />
+이 객체는 더 유연한 요청 파싱 기능을 제공하며, 핵심 기능은 <code>request.data</code> 속성입니다.</p>
+<p><code>request.data</code>는 <code>request.POST</code>와 유사하지만, Web API 작업에 훨씬 유용합니다.</p>
+<pre><code class="language-python">request.POST  # 폼 데이터만 처리합니다. 'POST' 메서드에서만 동작합니다.
+request.data  # 임의의 데이터를 처리합니다. 'POST', 'PUT', 'PATCH' 메서드에서 동작합니다.
+</code></pre>
+<h2 id="response-objects"><a class="toclink" href="#response-objects">Response objects</a></h2>
+<p>REST framework는 또한 <code>Response</code> 객체를 제공합니다.<br />
+이 객체는 렌더링되지 않은 콘텐츠를 받아, 콘텐츠 네고시에이션을 통해 클라이언트에 반환할 적절한 콘텐츠 타입을 결정하는 <code>TemplateResponse</code>의 한 형태입니다.</p>
+<pre><code class="language-python">return Response(data)  # 클라이언트가 요청한 콘텐츠 타입으로 렌더링됩니다.
+</code></pre>
+<h2 id="status-codes"><a class="toclink" href="#status-codes">Status codes</a></h2>
+<p>뷰에서 숫자 기반의 HTTP 상태 코드를 직접 사용하는 것은 가독성이 떨어질 수 있고,<br />
+잘못된 상태 코드를 사용해도 눈치채기 어려운 문제가 있습니다.</p>
+<p>REST framework는 <code>status</code> 모듈에 <code>HTTP_400_BAD_REQUEST</code>와 같은 명확한 식별자를 제공합니다.<br />
+숫자 대신 이러한 상수를 사용하는 것이 좋습니다.</p>
+<h2 id="wrapping-api-views"><a class="toclink" href="#wrapping-api-views">Wrapping API views</a></h2>
+<p>REST framework는 API view를 작성할 때 사용할 수 있는 두 가지 래퍼(wrapper)를 제공합니다.</p>
+<ol>
+<li>함수 기반 view에서 사용하는 <code>@api_view</code> 데코레이터</li>
+<li>클래스 기반 view에서 사용하는 <code>APIView</code> 클래스</li>
+</ol>
+<p>이 래퍼들은 다음과 같은 기능을 제공합니다.</p>
+<ul>
+<li>view에서 <code>Request</code> 인스턴스를 전달받도록 보장</li>
+<li>콘텐츠 네고시에이션을 수행할 수 있도록 <code>Response</code> 객체에 컨텍스트 추가</li>
+<li>허용되지 않은 메서드에 대해 <code>405 Method Not Allowed</code> 응답 반환</li>
+<li>잘못된 입력으로 <code>request.data</code> 접근 시 발생하는 <code>ParseError</code> 예외 처리</li>
+</ul>
+<h2 id="pulling-it-all-together"><a class="toclink" href="#pulling-it-all-together">Pulling it all together</a></h2>
+<p>이제 새로운 컴포넌트들을 사용해 기존 view를 약간 리팩터링해 보겠습니다.</p>
+<pre><code class="language-python">from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from snippets.models import Snippet
+from snippets.serializers import SnippetSerializer
+
+
+@api_view([&quot;GET&quot;, &quot;POST&quot;])
+def snippet_list(request):
+    &quot;&quot;&quot;
+    List all code snippets, or create a new snippet.
+    &quot;&quot;&quot;
+    if request.method == &quot;GET&quot;:
+        snippets = Snippet.objects.all()
+        serializer = SnippetSerializer(snippets, many=True)
+        return Response(serializer.data)
+
+    elif request.method == &quot;POST&quot;:
+        serializer = SnippetSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+</code></pre>
+<p>이 view는 이전 예제보다 더 개선되었습니다.<br />
+코드는 더 간결해졌고, Django Forms API를 사용할 때와 매우 유사한 느낌을 줍니다.<br />
+또한 이름이 지정된 상태 코드를 사용함으로써 응답의 의미도 더 명확해졌습니다.</p>
+<p>다음은 개별 스니펫을 처리하는 view입니다 (<code>views.py</code>).</p>
+<pre><code class="language-python">@api_view([&quot;GET&quot;, &quot;PUT&quot;, &quot;DELETE&quot;])
+def snippet_detail(request, pk):
+    &quot;&quot;&quot;
+    Retrieve, update or delete a code snippet.
+    &quot;&quot;&quot;
+    try:
+        snippet = Snippet.objects.get(pk=pk)
+    except Snippet.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == &quot;GET&quot;:
+        serializer = SnippetSerializer(snippet)
+        return Response(serializer.data)
+
+    elif request.method == &quot;PUT&quot;:
+        serializer = SnippetSerializer(snippet, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == &quot;DELETE&quot;:
+        snippet.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+</code></pre>
+<p>이 구조 역시 일반적인 Django view를 작성하는 방식과 크게 다르지 않습니다.</p>
+<p>이제 요청이나 응답을 특정 콘텐츠 타입에 직접 묶지 않는다는 점에 주목하세요.<br />
+<code>request.data</code>는 <code>json</code> 요청뿐만 아니라 다양한 형식을 처리할 수 있습니다.<br />
+마찬가지로 우리는 데이터만 담은 <code>Response</code> 객체를 반환하고, 실제 렌더링은 REST framework가 적절한 콘텐츠 타입으로 처리합니다.</p>
+<h2 id="adding-optional-format-suffixes-to-our-urls"><a class="toclink" href="#adding-optional-format-suffixes-to-our-urls">Adding optional format suffixes to our URLs</a></h2>
+<p>이제 응답이 단일 콘텐츠 타입에 고정되지 않으므로,<br />
+API 엔드포인트에 포맷 접미사(format suffix)를 지원하도록 해보겠습니다.</p>
+<p>포맷 접미사를 사용하면 <a href="http://example.com/api/items/4.json"><a href="http://example.com/api/items/4.json">http://example.com/api/items/4.json</a></a>과 같이<br />
+특정 포맷을 명시적으로 나타내는 URL을 사용할 수 있습니다.</p>
+<p>먼저 두 view 모두에 <code>format</code> 키워드 인자를 추가합니다.</p>
+<p><code>def snippet_list(request, format=None):</code><br />
+<code>def snippet_detail(request, pk, format=None):</code></p>
+<p>그 다음 <code>snippets/urls.py</code> 파일을 수정하여 기존 URL 패턴에 <code>format_suffix_patterns</code>를 추가합니다.</p>
+<pre><code class="language-python">from django.urls import path
+from rest_framework.urlpatterns import format_suffix_patterns
+from snippets import views
+
+urlpatterns = [
+    path(&quot;snippets/&quot;, views.snippet_list),
+    path(&quot;snippets/&lt;int:pk&gt;/&quot;, views.snippet_detail),
+]
+
+urlpatterns = format_suffix_patterns(urlpatterns)
+</code></pre>
+<p>이 설정은 필수는 아니지만, 특정 포맷을 명확하게 지정할 수 있는 간단하고 깔끔한 방법을 제공합니다.</p>
+<h2 id="hows-it-looking"><a class="toclink" href="#hows-it-looking">How's it looking?</a></h2>
+<p><a href="../1-serialization/">tutorial part 1</a>에서 했던 것처럼 커맨드라인에서 API를 테스트해 보세요.<br />
+동작 방식은 거의 동일하지만, 잘못된 요청을 보냈을 때 에러 처리가 더 깔끔해졌습니다.</p>
+<p>이전과 마찬가지로 모든 스니펫 목록을 조회할 수 있습니다.</p>
+<pre><code class="language-bash">http http://127.0.0.1:8000/snippets/
+
+HTTP/1.1 200 OK
+...
+[
+    {
+    &quot;id&quot;: 1,
+    &quot;title&quot;: &quot;&quot;,
+    &quot;code&quot;: &quot;foo = \&quot;bar\&quot;\n&quot;,
+    &quot;linenos&quot;: false,
+    &quot;language&quot;: &quot;python&quot;,
+    &quot;style&quot;: &quot;friendly&quot;
+    },
+    {
+    &quot;id&quot;: 2,
+    &quot;title&quot;: &quot;&quot;,
+    &quot;code&quot;: &quot;print(\&quot;hello, world\&quot;)\n&quot;,
+    &quot;linenos&quot;: false,
+    &quot;language&quot;: &quot;python&quot;,
+    &quot;style&quot;: &quot;friendly&quot;
+    }
+]
+</code></pre>
+<p><code>Accept</code> 헤더를 사용해 응답 포맷을 제어할 수도 있습니다.</p>
+<pre><code class="language-bash">http http://127.0.0.1:8000/snippets/ Accept:application/json  # JSON 요청
+http http://127.0.0.1:8000/snippets/ Accept:text/html         # HTML 요청
+</code></pre>
+<p>또는 포맷 접미사를 사용할 수도 있습니다.</p>
+<pre><code class="language-bash">http http://127.0.0.1:8000/snippets.json  # JSON 접미사
+http http://127.0.0.1:8000/snippets.api   # Browsable API 접미사
+</code></pre>
+<p>요청에 사용하는 포맷 역시 <code>Content-Type</code> 헤더로 제어할 수 있습니다.</p>
+<pre><code class="language-bash"># 폼 데이터로 POST
+http --form POST http://127.0.0.1:8000/snippets/ code=&quot;print(123)&quot;
+
+{
+    &quot;id&quot;: 3,
+    &quot;title&quot;: &quot;&quot;,
+    &quot;code&quot;: &quot;print(123)&quot;,
+    &quot;linenos&quot;: false,
+    &quot;language&quot;: &quot;python&quot;,
+    &quot;style&quot;: &quot;friendly&quot;
+}
+
+# JSON으로 POST
+http --json POST http://127.0.0.1:8000/snippets/ code=&quot;print(456)&quot;
+
+{
+    &quot;id&quot;: 4,
+    &quot;title&quot;: &quot;&quot;,
+    &quot;code&quot;: &quot;print(456)&quot;,
+    &quot;linenos&quot;: false,
+    &quot;language&quot;: &quot;python&quot;,
+    &quot;style&quot;: &quot;friendly&quot;
+}
+</code></pre>
+<p>위의 <code>http</code> 요청에 <code>--debug</code> 옵션을 추가하면, 요청 헤더에서 실제 요청 타입을 확인할 수 있습니다.</p>
+<p>이제 브라우저를 열고 <a href="http://127.0.0.1:8000/snippets/"><a href="http://127.0.0.1:8000/snippets/">http://127.0.0.1:8000/snippets/</a></a>로 접속해 보세요.</p>
+<h3 id="browsability"><a class="toclink" href="#browsability">Browsability</a></h3>
+<p>API는 클라이언트 요청에 따라 응답의 콘텐츠 타입을 결정하므로,<br />
+웹 브라우저에서 접근하면 기본적으로 HTML 형식의 리소스 표현을 반환합니다.</p>
+<p>이로 인해 API는 완전히 웹에서 탐색 가능한 HTML 인터페이스를 제공하게 됩니다.</p>
+<p>웹에서 탐색 가능한 API는 사용성과 개발 경험을 크게 향상시키며,<br />
+다른 개발자들이 API를 이해하고 활용하는 진입 장벽도 크게 낮춰 줍니다.</p>
+<p>자세한 내용과 커스터마이징 방법은 <a href="../../topics/browsable-api/">browsable api</a> 문서를 참고하세요.</p>
+<h2 id="whats-next"><a class="toclink" href="#whats-next">What's next?</a></h2>
+<p>다음 단계인 <a href="../3-class-based-views/">tutorial part 3</a>에서는 클래스 기반 view를 사용하고,<br />
+제네릭 view를 통해 작성해야 할 코드 양을 어떻게 줄일 수 있는지 살펴봅니다.</p>
+            
+
+          </div> <!--/span-->
+        </div> <!--/row-->
+      </div> <!--/.fluid-container-->
+    </div> <!--/.body content-->
+    <div id="push"></div>
+  </div> <!--/.wrapper -->
+
+  <footer class="span12">
+    <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.
+    </p>
+  </footer>
+
+  <!-- Le javascript
+  ================================================== -->
+  <!-- Placed at the end of the document so the pages load faster -->
+  <script async src="https://fund.django-rest-framework.org/sidebar_include.js"></script>
+  <script src="../../js/jquery-1.8.1-min.js"></script>
+  <script src="../../js/prettify-1.0.js"></script>
+  <script src="../../js/bootstrap-2.1.1-min.js"></script>
+  <script src="../../js/theme.js"></script>
+
+  <script>var base_url = '../..';</script>
+  
+  <script src="../../search/main.js" defer></script>
+  
+
+  <script>
+    var shiftWindow = function() {
+      scrollBy(0, -50)
+    };
+
+    if (location.hash) shiftWindow();
+    window.addEventListener("hashchange", shiftWindow);
+
+    $('.dropdown-menu').on('click touchstart', function(event) {
+      event.stopPropagation();
+    });
+
+    // Dynamically force sidenav/dropdown to no higher than browser window
+    $('.side-nav, .dropdown-menu').css('max-height', window.innerHeight - 130);
+
+    $(function() {
+      $(window).resize(function() {
+        $('.side-nav, .dropdown-menu').css('max-height', window.innerHeight - 130);
+      });
+    });
+  </script>
+</body>
+
+</html>

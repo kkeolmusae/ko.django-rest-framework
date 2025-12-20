@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <title>1 - Serialization - Django REST framework</title>
+  <link href="../../img/favicon.ico" rel="icon" type="image/x-icon">
+  <link rel="canonical" href="https://kkeolmusae.github.io/ko.django-rest-framework/tutorial/1-serialization/" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Django, API, REST, 1 - Serialization">
+  <meta name="author" content="Tom Christie">
+
+  <!-- Le styles -->
+  <link href="../../css/prettify.css" rel="stylesheet">
+  <link href="../../css/bootstrap.css" rel="stylesheet">
+  <link href="../../css/bootstrap-responsive.css" rel="stylesheet">
+  <link href="../../css/default.css" rel="stylesheet">
+
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-18852272-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script');
+      ga.type = 'text/javascript';
+      ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+  <style>
+  #sidebarInclude img {
+      margin-bottom: 10px;
+  }
+  #sidebarInclude a.promo {
+      color: black;
+  }
+    @media (max-width: 767px) {
+      div.promo {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body onload="prettyPrint()" class="-page">
+
+  <div class="wrapper">
+        <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="repo-link btn btn-primary btn-small" href="https://github.com/encode/django-rest-framework">GitHub</a>
+          <a class="repo-link btn btn-inverse btn-small " rel="next" href="../2-requests-and-responses/">
+            Next <i class="icon-arrow-right icon-white"></i>
+          </a>
+          <a class="repo-link btn btn-inverse btn-small " rel="prev" href="../quickstart/">
+            <i class="icon-arrow-left icon-white"></i> Previous
+          </a>
+          <a id="search_modal_show" class="repo-link btn btn-inverse btn-small" href="#mkdocs_search_modal" data-toggle="modal" data-target="#mkdocs_search_modal"><i class="icon-search icon-white"></i> Search</a>
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="https://www.django-rest-framework.org/">Django REST framework</a>
+          <div class="nav-collapse collapse">
+            
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+               
+              <li >
+                <a href="../..">Home</a>
+              </li>
+                
+              <li class="dropdown active">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tutorial <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../quickstart/">Quickstart</a>
+                  </li>
+                  
+                  <li class="active" >
+                    <a href="./">1 - Serialization</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../2-requests-and-responses/">2 - Requests and responses</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../3-class-based-views/">3 - Class based views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../4-authentication-and-permissions/">4 - Authentication and permissions</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../5-relationships-and-hyperlinked-apis/">5 - Relationships and hyperlinked APIs</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../6-viewsets-and-routers/">6 - Viewsets and routers</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API Guide <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../../api-guide/requests/">Requests</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/responses/">Responses</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/views/">Views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/generic-views/">Generic views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/viewsets/">Viewsets</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/routers/">Routers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/parsers/">Parsers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/renderers/">Renderers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/serializers/">Serializers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/fields/">Serializer fields</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/relations/">Serializer relations</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/validators/">Validators</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/authentication/">Authentication</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/permissions/">Permissions</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/caching/">Caching</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/throttling/">Throttling</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/filtering/">Filtering</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/pagination/">Pagination</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/versioning/">Versioning</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/content-negotiation/">Content negotiation</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/metadata/">Metadata</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/schemas/">Schemas</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/format-suffixes/">Format suffixes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/reverse/">Returning URLs</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/exceptions/">Exceptions</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/status-codes/">Status codes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/testing/">Testing</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../api-guide/settings/">Settings</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Topics <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../../topics/documenting-your-api/">Documenting your API</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/internationalization/">Internationalization</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/ajax-csrf-cors/">AJAX, CSRF & CORS</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/html-and-forms/">HTML & Forms</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/browser-enhancements/">Browser Enhancements</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/browsable-api/">The Browsable API</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../topics/rest-hypermedia-hateoas/">REST, Hypermedia & HATEOAS</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Community <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="../../community/tutorials-and-resources/">Tutorials and Resources</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/third-party-packages/">Third Party Packages</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/contributing/">Contributing to REST framework</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/project-management/">Project management</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/release-notes/">Release Notes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.16-announcement/">3.16 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.15-announcement/">3.15 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.14-announcement/">3.14 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.13-announcement/">3.13 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.12-announcement/">3.12 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.11-announcement/">3.11 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.10-announcement/">3.10 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.9-announcement/">3.9 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.8-announcement/">3.8 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.7-announcement/">3.7 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.6-announcement/">3.6 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.5-announcement/">3.5 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.4-announcement/">3.4 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.3-announcement/">3.3 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.2-announcement/">3.2 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.1-announcement/">3.1 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/3.0-announcement/">3.0 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/kickstarter-announcement/">Kickstarter Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/mozilla-grant/">Mozilla Grant</a>
+                  </li>
+                  
+                  <li >
+                    <a href="../../community/jobs/">Jobs</a>
+                  </li>
+                  
+                </ul>
+              </li>
+               
+
+            </ul>
+            
+          </div>
+          <!--/.nav-collapse -->
+
+        </div>
+      </div>
+    </div>
+
+    <div class="body-content">
+      <div class="container-fluid">
+        <!-- Search Modal -->
+        <div id="mkdocs_search_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3 id="myModalLabel">Documentation search</h3>
+          </div>
+
+          <div class="modal-body">
+            <form role="form" autocomplete="off">
+              <div class="form-group">
+                <input type="text" name="q" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+              </div>
+            </form>
+            <div id="mkdocs-search-results"></div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+          </div>
+        </div>
+
+        <div class="row-fluid">
+          <div class="span3">
+            <div id="table-of-contents">
+              <ul class="nav nav-list side-nav well sidebar-nav-fixed">
+                
+
+                
+                  <li class="main">
+                    <a href="#tutorial-1-serialization">Tutorial 1: Serialization</a>
+                  </li>
+
+                  
+                    <li>
+                      <a href="#introduction">Introduction</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#setting-up-a-new-environment">Setting up a new environment</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#getting-started">Getting started</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#creating-a-model-to-work-with">Creating a model to work with</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#creating-a-serializer-class">Creating a Serializer class</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#working-with-serializers">Working with Serializers</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#using-modelserializers">Using ModelSerializers</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#writing-regular-django-views-using-our-serializer">Writing regular Django views using our Serializer</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#testing-our-first-attempt-at-a-web-api">Testing our first attempt at a Web API</a>
+                    </li>
+                  
+                    <li>
+                      <a href="#where-are-we-now">Where are we now</a>
+                    </li>
+                  
+                
+
+                  <div class="promo">
+                    <hr/>
+                    <div id="sidebarInclude">
+                  </div>
+              </ul>
+
+            </div>
+          </div>
+
+          <div id="main-content" class="span9">
+            
+              
+
+              <h1 id="tutorial-1-serialization"><a class="toclink" href="#tutorial-1-serialization">Tutorial 1: Serialization</a></h1>
+<h2 id="introduction"><a class="toclink" href="#introduction">Introduction</a></h2>
+<p>이 튜토리얼에서는 간단한 pastebin 형태의 코드 하이라이팅 Web API를 만들어봅니다.<br />
+이 과정을 통해 REST framework를 구성하는 다양한 컴포넌트를 소개하고, 전체 구조가 어떻게 맞물려 동작하는지에 대해 종합적으로 이해할 수 있도록 합니다.</p>
+<p>이 튜토리얼은 비교적 상세하게 구성되어 있으므로, 시작하기 전에 쿠키 하나와 좋아하는 음료 한 잔을 준비하는 것을 권장합니다.<br />
+빠른 개요만 필요하다면 <a href="../quickstart/">quickstart</a> 문서를 먼저 확인하는 것이 좋습니다.</p>
+<hr />
+<p><strong>Note</strong>: 이 튜토리얼의 코드는 GitHub의 <a href="https://github.com/encode/rest-framework-tutorial">encode/rest-framework-tutorial</a> 레포지토리에 공개되어 있습니다. 자유롭게 클론하여 실제 동작하는 코드를 확인해 보시기 바랍니다.</p>
+<hr />
+<h2 id="setting-up-a-new-environment"><a class="toclink" href="#setting-up-a-new-environment">Setting up a new environment</a></h2>
+<p>다른 작업 중인 프로젝트들과 패키지 설정이 섞이지 않도록, <a href="https://docs.python.org/3/library/venv.html">venv</a>를 사용해 새로운 가상 환경을 먼저 생성하겠습니다.</p>
+<pre><code class="language-bash">python3 -m venv env
+source env/bin/activate
+</code></pre>
+<p>가상 환경에 진입했으면 필요한 패키지를 설치합니다.</p>
+<pre><code class="language-bash">pip install django
+pip install djangorestframework
+pip install pygments  # 코드 하이라이팅을 위해 사용합니다
+</code></pre>
+<p><strong>Note:</strong> 가상 환경을 종료하려면 언제든지 <code>deactivate</code> 명령을 사용하면 됩니다.<br />
+자세한 내용은 <a href="https://docs.python.org/3/library/venv.html">venv documentation</a>을 참고하세요.</p>
+<h2 id="getting-started"><a class="toclink" href="#getting-started">Getting started</a></h2>
+<p>이제 본격적으로 코딩을 시작할 준비가 되었습니다.<br />
+먼저 새 프로젝트를 생성합니다.</p>
+<pre><code class="language-bash">cd ~
+django-admin startproject tutorial
+cd tutorial
+</code></pre>
+<p>다음으로 간단한 Web API를 만들기 위한 앱을 하나 생성합니다.</p>
+<pre><code class="language-bash">python manage.py startapp snippets
+</code></pre>
+<p>이제 새로 만든 <code>snippets</code> 앱과 <code>rest_framework</code> 앱을 <code>INSTALLED_APPS</code>에 추가해야 합니다.<br />
+<code>tutorial/settings.py</code> 파일을 열어 다음과 같이 수정합니다.</p>
+<pre><code class="language-text">INSTALLED_APPS = [
+    ...
+    'rest_framework',
+    'snippets',
+]
+</code></pre>
+<p>이제 모든 준비가 끝났습니다.</p>
+<h2 id="creating-a-model-to-work-with"><a class="toclink" href="#creating-a-model-to-work-with">Creating a model to work with</a></h2>
+<p>이 튜토리얼에서는 코드 스니펫을 저장하기 위한 간단한 <code>Snippet</code> 모델을 작성합니다.<br />
+<code>snippets/models.py</code> 파일을 열어 아래 내용을 작성하세요.</p>
+<p>참고로, 좋은 프로그래밍 관례에는 주석이 포함되지만, 이 문서에서는 코드에 집중하기 위해 주석을 생략했습니다.</p>
+<pre><code class="language-python">from django.db import models
+from pygments.lexers import get_all_lexers
+from pygments.styles import get_all_styles
+
+LEXERS = [item for item in get_all_lexers() if item[1]]
+LANGUAGE_CHOICES = sorted([(item[1][0], item[0]) for item in LEXERS])
+STYLE_CHOICES = sorted([(item, item) for item in get_all_styles()])
+
+
+class Snippet(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    title = models.CharField(max_length=100, blank=True, default=&quot;&quot;)
+    code = models.TextField()
+    linenos = models.BooleanField(default=False)
+    language = models.CharField(
+        choices=LANGUAGE_CHOICES, default=&quot;python&quot;, max_length=100
+    )
+    style = models.CharField(choices=STYLE_CHOICES, default=&quot;friendly&quot;, max_length=100)
+
+    class Meta:
+        ordering = [&quot;created&quot;]
+</code></pre>
+<p>이제 초기 마이그레이션을 생성하고 데이터베이스를 동기화합니다.</p>
+<pre><code class="language-bash">python manage.py makemigrations snippets
+python manage.py migrate snippets
+</code></pre>
+<h2 id="creating-a-serializer-class"><a class="toclink" href="#creating-a-serializer-class">Creating a Serializer class</a></h2>
+<p>Web API를 만들기 위한 첫 단계는 <code>Snippet</code> 인스턴스를 <code>json</code>과 같은 표현 형식으로 직렬화/역직렬화할 수 있는 방법을 제공하는 것입니다.<br />
+이를 위해 Django Form과 매우 유사한 방식으로 동작하는 serializer를 정의합니다.</p>
+<p><code>snippets</code> 디렉터리에 <code>serializers.py</code> 파일을 생성하고 아래 내용을 추가하세요.</p>
+<pre><code class="language-python">from rest_framework import serializers
+from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
+
+
+class SnippetSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    title = serializers.CharField(required=False, allow_blank=True, max_length=100)
+    code = serializers.CharField(style={&quot;base_template&quot;: &quot;textarea.html&quot;})
+    linenos = serializers.BooleanField(required=False)
+    language = serializers.ChoiceField(choices=LANGUAGE_CHOICES, default=&quot;python&quot;)
+    style = serializers.ChoiceField(choices=STYLE_CHOICES, default=&quot;friendly&quot;)
+
+    def create(self, validated_data):
+        &quot;&quot;&quot;
+        주어진 validated_data를 사용해 새로운 `Snippet` 인스턴스를 생성합니다.
+        &quot;&quot;&quot;
+        return Snippet.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        &quot;&quot;&quot;
+        주어진 validated_data를 사용해 기존 `Snippet` 인스턴스를 수정합니다.
+        &quot;&quot;&quot;
+        instance.title = validated_data.get(&quot;title&quot;, instance.title)
+        instance.code = validated_data.get(&quot;code&quot;, instance.code)
+        instance.linenos = validated_data.get(&quot;linenos&quot;, instance.linenos)
+        instance.language = validated_data.get(&quot;language&quot;, instance.language)
+        instance.style = validated_data.get(&quot;style&quot;, instance.style)
+        instance.save()
+        return instance
+</code></pre>
+<p>serializer 클래스의 첫 부분에서는 직렬화/역직렬화될 필드를 정의합니다.<br />
+<code>create()</code>와 <code>update()</code> 메서드는 <code>serializer.save()</code> 호출 시 실제 모델 인스턴스를 생성하거나 수정하는 방법을 정의합니다.</p>
+<p>serializer는 Django의 <code>Form</code> 클래스와 매우 유사하며, <code>required</code>, <code>max_length</code>, <code>default</code>와 같은 검증 옵션도 동일하게 제공합니다.</p>
+<p>또한 필드 옵션을 통해 HTML 렌더링 방식도 제어할 수 있습니다.<br />
+위 예제의 <code>{'base_template': 'textarea.html'}</code> 옵션은 Django Form에서 <code>widget=widgets.Textarea</code>를 사용하는 것과 동일합니다.<br />
+이는 이후 브라우저에서 제공되는 API UI를 제어할 때 특히 유용합니다.</p>
+<p>나중에는 <code>ModelSerializer</code>를 사용해 더 간결한 구현을 할 수 있지만, 지금은 명시적인 정의를 유지하겠습니다.</p>
+<h2 id="working-with-serializers"><a class="toclink" href="#working-with-serializers">Working with Serializers</a></h2>
+<p>이제 새로 만든 Serializer 클래스를 실제로 사용해 보겠습니다.<br />
+Django shell에 진입합니다.</p>
+<pre><code class="language-bash">python manage.py shell
+</code></pre>
+<p>필요한 모듈을 임포트한 뒤, 테스트용 스니펫 몇 개를 생성합니다.</p>
+<pre><code class="language-pycon">&gt;&gt;&gt; from snippets.models import Snippet
+&gt;&gt;&gt; from snippets.serializers import SnippetSerializer
+&gt;&gt;&gt; from rest_framework.renderers import JSONRenderer
+&gt;&gt;&gt; from rest_framework.parsers import JSONParser
+
+&gt;&gt;&gt; snippet = Snippet(code='foo = &quot;bar&quot;\n')
+&gt;&gt;&gt; snippet.save()
+
+&gt;&gt;&gt; snippet = Snippet(code='print(&quot;hello, world&quot;)\n')
+&gt;&gt;&gt; snippet.save()
+</code></pre>
+<p>이제 인스턴스를 직렬화해 보겠습니다.</p>
+<pre><code class="language-pycon">&gt;&gt;&gt; serializer = SnippetSerializer(snippet)
+&gt;&gt;&gt; serializer.data
+{'id': 2, 'title': '', 'code': 'print(&quot;hello, world&quot;)\n', 'linenos': False, 'language': 'python', 'style': 'friendly'}
+</code></pre>
+<p>이 시점에서 모델 인스턴스는 Python 기본 자료형으로 변환되었습니다.<br />
+이를 <code>json</code>으로 렌더링합니다.</p>
+<pre><code class="language-pycon">&gt;&gt;&gt; content = JSONRenderer().render(serializer.data)
+&gt;&gt;&gt; content
+b'{&quot;id&quot;:2,&quot;title&quot;:&quot;&quot;,&quot;code&quot;:&quot;print(\\&quot;hello, world\\&quot;)\\n&quot;,&quot;linenos&quot;:false,&quot;language&quot;:&quot;python&quot;,&quot;style&quot;:&quot;friendly&quot;}'
+</code></pre>
+<p>역직렬화 과정도 비슷합니다.<br />
+먼저 스트림을 Python 기본 자료형으로 파싱합니다.</p>
+<pre><code class="language-pycon">&gt;&gt;&gt; import io
+
+&gt;&gt;&gt; stream = io.BytesIO(content)
+&gt;&gt;&gt; data = JSONParser().parse(stream)
+</code></pre>
+<p>그 다음, 이를 다시 완전한 객체 인스턴스로 복원합니다.</p>
+<pre><code class="language-pycon">&gt;&gt;&gt; serializer = SnippetSerializer(data=data)
+&gt;&gt;&gt; serializer.is_valid()
+True
+&gt;&gt;&gt; serializer.validated_data
+{'title': '', 'code': 'print(&quot;hello, world&quot;)', 'linenos': False, 'language': 'python', 'style': 'friendly'}
+&gt;&gt;&gt; serializer.save()
+&lt;Snippet: Snippet object&gt;
+</code></pre>
+<p>Django Form을 다뤄본 경험이 있다면 매우 익숙하게 느껴질 것입니다.<br />
+이 유사성은 이후 serializer를 사용하는 view를 작성할 때 더 분명해집니다.</p>
+<p>QuerySet도 직렬화할 수 있으며, 이 경우 <code>many=True</code> 옵션을 사용합니다.</p>
+<pre><code class="language-pycon">&gt;&gt;&gt; serializer = SnippetSerializer(Snippet.objects.all(), many=True)
+&gt;&gt;&gt; serializer.data
+[{'id': 1, 'title': '', 'code': 'foo = &quot;bar&quot;\n', 'linenos': False, 'language': 'python', 'style': 'friendly'}, {'id': 2, 'title': '', 'code': 'print(&quot;hello, world&quot;)\n', 'linenos': False, 'language': 'python', 'style': 'friendly'}, {'id': 3, 'title': '', 'code': 'print(&quot;hello, world&quot;)', 'linenos': False, 'language': 'python', 'style': 'friendly'}]
+</code></pre>
+<h2 id="using-modelserializers"><a class="toclink" href="#using-modelserializers">Using ModelSerializers</a></h2>
+<p>현재 <code>SnippetSerializer</code>는 <code>Snippet</code> 모델에 이미 정의된 정보들을 상당 부분 중복하고 있습니다.<br />
+코드를 좀 더 간결하게 만들 수 있다면 좋을 것입니다.</p>
+<p>Django의 <code>Form</code> / <code>ModelForm</code> 관계와 마찬가지로, REST framework 역시 <code>Serializer</code>와 <code>ModelSerializer</code>를 제공합니다.</p>
+<p>이제 <code>ModelSerializer</code>를 사용해 serializer를 리팩터링해 보겠습니다.<br />
+<code>snippets/serializers.py</code> 파일을 열고 <code>SnippetSerializer</code>를 아래와 같이 교체하세요.</p>
+<pre><code class="language-python">class SnippetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Snippet
+        fields = [&quot;id&quot;, &quot;title&quot;, &quot;code&quot;, &quot;linenos&quot;, &quot;language&quot;, &quot;style&quot;]
+</code></pre>
+<p>serializer의 또 다른 장점은 인스턴스를 출력해 전체 필드 구성을 확인할 수 있다는 점입니다.</p>
+<pre><code class="language-pycon">&gt;&gt;&gt; from snippets.serializers import SnippetSerializer
+
+&gt;&gt;&gt; serializer = SnippetSerializer()
+&gt;&gt;&gt; print(repr(serializer))
+SnippetSerializer():
+    id = IntegerField(label='ID', read_only=True)
+    title = CharField(allow_blank=True, max_length=100, required=False)
+    code = CharField(style={'base_template': 'textarea.html'})
+    linenos = BooleanField(required=False)
+    language = ChoiceField(choices=[('Clipper', 'FoxPro'), ('Cucumber', 'Gherkin'), ('RobotFramework', 'RobotFramework'), ('abap', 'ABAP'), ('ada', 'Ada')...
+    style = ChoiceField(choices=[('autumn', 'autumn'), ('borland', 'borland'), ('bw', 'bw'), ('colorful', 'colorful')...
+</code></pre>
+<p><code>ModelSerializer</code>는 마법 같은 기능을 제공하는 것이 아니라, 다음 작업을 자동으로 처리해 주는 편의 클래스일 뿐입니다.</p>
+<ul>
+<li>필드 집합 자동 결정</li>
+<li><code>create()</code> 및 <code>update()</code> 메서드의 기본 구현 제공</li>
+</ul>
+<h2 id="writing-regular-django-views-using-our-serializer"><a class="toclink" href="#writing-regular-django-views-using-our-serializer">Writing regular Django views using our Serializer</a></h2>
+<p>이제 serializer를 사용해 API view를 작성해 보겠습니다.<br />
+일단은 REST framework의 고급 기능을 사용하지 않고, 일반 Django view로 구현합니다.</p>
+<p><code>snippets/views.py</code> 파일을 열고 다음을 추가합니다.</p>
+<pre><code class="language-python">from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.parsers import JSONParser
+from snippets.models import Snippet
+from snippets.serializers import SnippetSerializer
+</code></pre>
+<p>API의 루트 view는 모든 스니펫을 조회하거나, 새 스니펫을 생성하는 기능을 제공합니다.</p>
+<pre><code class="language-python">@csrf_exempt
+def snippet_list(request):
+    &quot;&quot;&quot;
+    모든 코드 스니펫을 나열하거나 새 스니펫을 생성합니다.
+    &quot;&quot;&quot;
+    if request.method == &quot;GET&quot;:
+        snippets = Snippet.objects.all()
+        serializer = SnippetSerializer(snippets, many=True)
+        return JsonResponse(serializer.data, safe=False)
+
+    elif request.method == &quot;POST&quot;:
+        data = JSONParser().parse(request)
+        serializer = SnippetSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+</code></pre>
+<p>CSRF 토큰이 없는 클라이언트에서도 POST 요청을 허용해야 하므로 <code>csrf_exempt</code>를 사용했습니다.<br />
+실제 서비스에서는 권장되지 않지만, 지금 단계에서는 충분합니다.</p>
+<p>개별 스니펫을 조회, 수정, 삭제하는 view도 작성합니다.</p>
+<pre><code class="language-python">@csrf_exempt
+def snippet_detail(request, pk):
+    &quot;&quot;&quot;
+    코드 스니펫을 조회, 수정 또는 삭제합니다.
+    &quot;&quot;&quot;
+    try:
+        snippet = Snippet.objects.get(pk=pk)
+    except Snippet.DoesNotExist:
+        return HttpResponse(status=404)
+
+    if request.method == &quot;GET&quot;:
+        serializer = SnippetSerializer(snippet)
+        return JsonResponse(serializer.data)
+
+    elif request.method == &quot;PUT&quot;:
+        data = JSONParser().parse(request)
+        serializer = SnippetSerializer(snippet, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors, status=400)
+
+    elif request.method == &quot;DELETE&quot;:
+        snippet.delete()
+        return HttpResponse(status=204)
+</code></pre>
+<p>이제 URL을 연결합니다.<br />
+<code>snippets/urls.py</code> 파일을 생성합니다.</p>
+<pre><code class="language-python">from django.urls import path
+from snippets import views
+
+urlpatterns = [
+    path(&quot;snippets/&quot;, views.snippet_list),
+    path(&quot;snippets/&lt;int:pk&gt;/&quot;, views.snippet_detail),
+]
+</code></pre>
+<p>루트 URL 설정도 수정합니다 (<code>tutorial/urls.py</code>).</p>
+<pre><code class="language-python">from django.urls import path, include
+
+urlpatterns = [
+    path(&quot;&quot;, include(&quot;snippets.urls&quot;)),
+]
+</code></pre>
+<p>현재는 잘못된 JSON이나 지원하지 않는 HTTP 메서드에 대해 적절한 에러 처리를 하지 못합니다.<br />
+이 부분은 이후 개선할 예정입니다.</p>
+<h2 id="testing-our-first-attempt-at-a-web-api"><a class="toclink" href="#testing-our-first-attempt-at-a-web-api">Testing our first attempt at a Web API</a></h2>
+<p>이제 샘플 서버를 실행합니다.</p>
+<pre><code class="language-pycon">&gt;&gt;&gt; quit()
+</code></pre>
+<p>...그리고 Django 개발 서버를 실행합니다.</p>
+<pre><code class="language-bash">python manage.py runserver
+
+Validating models...
+
+0 errors found
+Django version 5.0, using settings 'tutorial.settings'
+Starting Development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+</code></pre>
+<p>다른 터미널에서 API를 테스트합니다.</p>
+<p><a href="https://curl.haxx.se/">curl</a> 또는 <a href="https://github.com/httpie/httpie#installation">httpie</a>를 사용할 수 있습니다.<br />
+여기서는 httpie를 사용하겠습니다.</p>
+<pre><code class="language-bash">pip install httpie
+</code></pre>
+<p>전체 스니펫 목록을 조회합니다.</p>
+<pre><code class="language-bash">http GET http://127.0.0.1:8000/snippets/ --unsorted
+
+HTTP/1.1 200 OK
+...
+[
+    {
+        &quot;id&quot;: 1,
+        &quot;title&quot;: &quot;&quot;,
+        &quot;code&quot;: &quot;foo = \&quot;bar\&quot;\n&quot;,
+        &quot;linenos&quot;: false,
+        &quot;language&quot;: &quot;python&quot;,
+        &quot;style&quot;: &quot;friendly&quot;
+    },
+    {
+        &quot;id&quot;: 2,
+        &quot;title&quot;: &quot;&quot;,
+        &quot;code&quot;: &quot;print(\&quot;hello, world\&quot;)\n&quot;,
+        &quot;linenos&quot;: false,
+        &quot;language&quot;: &quot;python&quot;,
+        &quot;style&quot;: &quot;friendly&quot;
+    },
+    {
+        &quot;id&quot;: 3,
+        &quot;title&quot;: &quot;&quot;,
+        &quot;code&quot;: &quot;print(\&quot;hello, world\&quot;)&quot;,
+        &quot;linenos&quot;: false,
+        &quot;language&quot;: &quot;python&quot;,
+        &quot;style&quot;: &quot;friendly&quot;
+    }
+]
+</code></pre>
+<p>특정 스니펫도 조회할 수 있습니다.</p>
+<pre><code class="language-bash">http GET http://127.0.0.1:8000/snippets/2/ --unsorted
+
+HTTP/1.1 200 OK
+...
+{
+    &quot;id&quot;: 2,
+    &quot;title&quot;: &quot;&quot;,
+    &quot;code&quot;: &quot;print(\&quot;hello, world\&quot;)\n&quot;,
+    &quot;linenos&quot;: false,
+    &quot;language&quot;: &quot;python&quot;,
+    &quot;style&quot;: &quot;friendly&quot;
+}
+</code></pre>
+<p>브라우저에서 직접 URL에 접속해도 동일한 JSON을 확인할 수 있습니다.</p>
+<h2 id="where-are-we-now"><a class="toclink" href="#where-are-we-now">Where are we now</a></h2>
+<p>지금까지 우리는 Django Form과 유사한 직렬화 API와 기본적인 Django view를 사용한 Web API를 구축했습니다.</p>
+<p>아직 에러 처리나 고급 기능은 부족하지만, 동작하는 API를 만드는 데에는 충분합니다.</p>
+<p>다음 단계는 <a href="../2-requests-and-responses/">part 2 of the tutorial</a>에서 이어서 살펴보겠습니다.</p>
+            
+
+          </div> <!--/span-->
+        </div> <!--/row-->
+      </div> <!--/.fluid-container-->
+    </div> <!--/.body content-->
+    <div id="push"></div>
+  </div> <!--/.wrapper -->
+
+  <footer class="span12">
+    <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.
+    </p>
+  </footer>
+
+  <!-- Le javascript
+  ================================================== -->
+  <!-- Placed at the end of the document so the pages load faster -->
+  <script async src="https://fund.django-rest-framework.org/sidebar_include.js"></script>
+  <script src="../../js/jquery-1.8.1-min.js"></script>
+  <script src="../../js/prettify-1.0.js"></script>
+  <script src="../../js/bootstrap-2.1.1-min.js"></script>
+  <script src="../../js/theme.js"></script>
+
+  <script>var base_url = '../..';</script>
+  
+  <script src="../../search/main.js" defer></script>
+  
+
+  <script>
+    var shiftWindow = function() {
+      scrollBy(0, -50)
+    };
+
+    if (location.hash) shiftWindow();
+    window.addEventListener("hashchange", shiftWindow);
+
+    $('.dropdown-menu').on('click touchstart', function(event) {
+      event.stopPropagation();
+    });
+
+    // Dynamically force sidenav/dropdown to no higher than browser window
+    $('.side-nav, .dropdown-menu').css('max-height', window.innerHeight - 130);
+
+    $(function() {
+      $(window).resize(function() {
+        $('.side-nav, .dropdown-menu').css('max-height', window.innerHeight - 130);
+      });
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <title>Home - Django REST framework</title>
+  <link href="img/favicon.ico" rel="icon" type="image/x-icon">
+  <link rel="canonical" href="https://kkeolmusae.github.io/ko.django-rest-framework/" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Django, API, REST, Home">
+  <meta name="author" content="Tom Christie">
+
+  <!-- Le styles -->
+  <link href="css/prettify.css" rel="stylesheet">
+  <link href="css/bootstrap.css" rel="stylesheet">
+  <link href="css/bootstrap-responsive.css" rel="stylesheet">
+  <link href="css/default.css" rel="stylesheet">
+
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-18852272-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script');
+      ga.type = 'text/javascript';
+      ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+  <style>
+  #sidebarInclude img {
+      margin-bottom: 10px;
+  }
+  #sidebarInclude a.promo {
+      color: black;
+  }
+    @media (max-width: 767px) {
+      div.promo {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body onload="prettyPrint()" class="index-page">
+
+  <div class="wrapper">
+        <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="repo-link btn btn-primary btn-small" href="https://github.com/encode/django-rest-framework">GitHub</a>
+          <a class="repo-link btn btn-inverse btn-small " rel="next" href="tutorial/quickstart/">
+            Next <i class="icon-arrow-right icon-white"></i>
+          </a>
+          <a class="repo-link btn btn-inverse btn-small disabled" rel="prev" >
+            <i class="icon-arrow-left icon-white"></i> Previous
+          </a>
+          <a id="search_modal_show" class="repo-link btn btn-inverse btn-small" href="#mkdocs_search_modal" data-toggle="modal" data-target="#mkdocs_search_modal"><i class="icon-search icon-white"></i> Search</a>
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="https://www.django-rest-framework.org/">Django REST framework</a>
+          <div class="nav-collapse collapse">
+            
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+               
+              <li class="active" >
+                <a href=".">Home</a>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tutorial <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="tutorial/quickstart/">Quickstart</a>
+                  </li>
+                  
+                  <li >
+                    <a href="tutorial/1-serialization/">1 - Serialization</a>
+                  </li>
+                  
+                  <li >
+                    <a href="tutorial/2-requests-and-responses/">2 - Requests and responses</a>
+                  </li>
+                  
+                  <li >
+                    <a href="tutorial/3-class-based-views/">3 - Class based views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="tutorial/4-authentication-and-permissions/">4 - Authentication and permissions</a>
+                  </li>
+                  
+                  <li >
+                    <a href="tutorial/5-relationships-and-hyperlinked-apis/">5 - Relationships and hyperlinked APIs</a>
+                  </li>
+                  
+                  <li >
+                    <a href="tutorial/6-viewsets-and-routers/">6 - Viewsets and routers</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API Guide <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="api-guide/requests/">Requests</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/responses/">Responses</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/views/">Views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/generic-views/">Generic views</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/viewsets/">Viewsets</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/routers/">Routers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/parsers/">Parsers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/renderers/">Renderers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/serializers/">Serializers</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/fields/">Serializer fields</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/relations/">Serializer relations</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/validators/">Validators</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/authentication/">Authentication</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/permissions/">Permissions</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/caching/">Caching</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/throttling/">Throttling</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/filtering/">Filtering</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/pagination/">Pagination</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/versioning/">Versioning</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/content-negotiation/">Content negotiation</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/metadata/">Metadata</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/schemas/">Schemas</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/format-suffixes/">Format suffixes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/reverse/">Returning URLs</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/exceptions/">Exceptions</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/status-codes/">Status codes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/testing/">Testing</a>
+                  </li>
+                  
+                  <li >
+                    <a href="api-guide/settings/">Settings</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Topics <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="topics/documenting-your-api/">Documenting your API</a>
+                  </li>
+                  
+                  <li >
+                    <a href="topics/internationalization/">Internationalization</a>
+                  </li>
+                  
+                  <li >
+                    <a href="topics/ajax-csrf-cors/">AJAX, CSRF & CORS</a>
+                  </li>
+                  
+                  <li >
+                    <a href="topics/html-and-forms/">HTML & Forms</a>
+                  </li>
+                  
+                  <li >
+                    <a href="topics/browser-enhancements/">Browser Enhancements</a>
+                  </li>
+                  
+                  <li >
+                    <a href="topics/browsable-api/">The Browsable API</a>
+                  </li>
+                  
+                  <li >
+                    <a href="topics/rest-hypermedia-hateoas/">REST, Hypermedia & HATEOAS</a>
+                  </li>
+                  
+                </ul>
+              </li>
+                
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Community <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  
+                  <li >
+                    <a href="community/tutorials-and-resources/">Tutorials and Resources</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/third-party-packages/">Third Party Packages</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/contributing/">Contributing to REST framework</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/project-management/">Project management</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/release-notes/">Release Notes</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.16-announcement/">3.16 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.15-announcement/">3.15 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.14-announcement/">3.14 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.13-announcement/">3.13 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.12-announcement/">3.12 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.11-announcement/">3.11 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.10-announcement/">3.10 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.9-announcement/">3.9 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.8-announcement/">3.8 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.7-announcement/">3.7 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.6-announcement/">3.6 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.5-announcement/">3.5 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.4-announcement/">3.4 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.3-announcement/">3.3 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.2-announcement/">3.2 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.1-announcement/">3.1 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/3.0-announcement/">3.0 Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/kickstarter-announcement/">Kickstarter Announcement</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/mozilla-grant/">Mozilla Grant</a>
+                  </li>
+                  
+                  <li >
+                    <a href="community/jobs/">Jobs</a>
+                  </li>
+                  
+                </ul>
+              </li>
+               
+
+            </ul>
+            
+          </div>
+          <!--/.nav-collapse -->
+
+        </div>
+      </div>
+    </div>
+
+    <div class="body-content">
+      <div class="container-fluid">
+        <!-- Search Modal -->
+        <div id="mkdocs_search_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3 id="myModalLabel">Documentation search</h3>
+          </div>
+
+          <div class="modal-body">
+            <form role="form" autocomplete="off">
+              <div class="form-group">
+                <input type="text" name="q" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+              </div>
+            </form>
+            <div id="mkdocs-search-results"></div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+          </div>
+        </div>
+
+        <div class="row-fluid">
+          <div class="span3">
+            <div id="table-of-contents">
+              <ul class="nav nav-list side-nav well sidebar-nav-fixed">
+                
+                  <li class="main">
+                    <a href="#">Django REST framework</a>
+                  </li>
+                
+
+                
+                  <li class="">
+                    <a href="#requirements">Requirements</a>
+                  </li>
+
+                  
+                
+                  <li class="">
+                    <a href="#installation">Installation</a>
+                  </li>
+
+                  
+                
+                  <li class="">
+                    <a href="#example">Example</a>
+                  </li>
+
+                  
+                
+                  <li class="">
+                    <a href="#quickstart">Quickstart</a>
+                  </li>
+
+                  
+                
+                  <li class="">
+                    <a href="#development">Development</a>
+                  </li>
+
+                  
+                
+                  <li class="">
+                    <a href="#support">Support</a>
+                  </li>
+
+                  
+                
+                  <li class="">
+                    <a href="#security">Security</a>
+                  </li>
+
+                  
+                
+                  <li class="">
+                    <a href="#license">License</a>
+                  </li>
+
+                  
+                
+
+                  <div class="promo">
+                    <hr/>
+                    <div id="sidebarInclude">
+                  </div>
+              </ul>
+
+            </div>
+          </div>
+
+          <div id="main-content" class="span9">
+            
+              
+
+              <style>
+.promo li a {
+    float: left;
+    width: 130px;
+    height: 20px;
+    text-align: center;
+    margin: 10px 30px;
+    padding: 150px 0 0 0;
+    background-position: 0 50%;
+    background-size: 130px auto;
+    background-repeat: no-repeat;
+    font-size: 120%;
+    color: black;
+}
+.promo li {
+    list-style: none;
+}
+</style>
+
+<p class="badges" height=20px>
+    <iframe src="https://ghbtns.com/github-btn.html?user=encode&amp;repo=django-rest-framework&amp;type=watch&amp;count=true" class="github-star-button" allowtransparency="true" frameborder="0" scrolling="0" width="110px" height="20px"></iframe>
+
+    <a href="https://github.com/encode/django-rest-framework/actions/workflows/main.yml">
+        <img src="https://github.com/encode/django-rest-framework/actions/workflows/main.yml/badge.svg" class="status-badge">
+    </a>
+
+    <a href="https://pypi.org/project/djangorestframework/">
+        <img src="https://img.shields.io/pypi/v/djangorestframework.svg" class="status-badge">
+    </a>
+</p>
+
+<hr />
+<p>
+<h1 style="position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    border: 0;">Django REST Framework</h1>
+
+<img alt="Django REST Framework" title="Logo by Jake 'Sid' Smith" src="img/logo.png" width="600px" style="display: block; margin: 0 auto 0 auto">
+</p>
+
+<p>Django REST framework는 Web API를 구축하기 위한 강력하고 유연한 툴킷입니다.</p>
+<p>REST framework를 사용하고 싶어지는 이유는 다음과 같습니다:</p>
+<ul>
+<li>웹에서 직접 탐색 가능한(browsable) API는 개발자에게 큰 사용성 향상 요소입니다.</li>
+<li><a href="api-guide/authentication/">Authentication policies</a> — <a href="api-guide/authentication/#django-rest-framework-oauth">OAuth1a</a>, <a href="api-guide/authentication/#django-oauth-toolkit">OAuth2</a> 패키지 포함.</li>
+<li><a href="api-guide/serializers/">Serialization</a> — <a href="api-guide/serializers#modelserializer">ORM</a> 데이터 소스와 <a href="api-guide/serializers#serializers">non-ORM</a> 데이터 소스 모두 지원.</li>
+<li>완전히 커스터마이즈 가능 — 더 <a href="api-guide/generic-views/">more</a>, <a href="api-guide/viewsets/">powerful</a>, <a href="api-guide/routers/">features</a>이 필요 없다면, <a href="api-guide/views#function-based-views">regular function-based views</a>만 사용해도 됩니다.</li>
+<li>풍부한 문서와 훌륭한 커뮤니티 지원.</li>
+<li><a href="https://www.mozilla.org/en-US/about/">Mozilla</a>, <a href="https://www.redhat.com/">Red Hat</a>, <a href="https://www.heroku.com/">Heroku</a>, <a href="https://www.eventbrite.co.uk/about/">Eventbrite</a> 등 국제적으로 잘 알려진 기업들이 사용하고 신뢰합니다.</li>
+</ul>
+<hr />
+<h2 id="requirements"><a class="toclink" href="#requirements">Requirements</a></h2>
+<p>REST framework는 다음이 필요합니다:</p>
+<ul>
+<li>Django (4.2, 5.0, 5.1, 5.2)</li>
+<li>Python (3.10, 3.11, 3.12, 3.13, 3.14)</li>
+</ul>
+<p>우리는 각 Python 및 Django 시리즈의 최신 패치 릴리스 사용을 <strong>강력히 권장하며</strong>, 공식 지원도 최신 패치 버전에 대해서만 제공합니다.</p>
+<p>다음 패키지들은 선택 사항입니다:</p>
+<ul>
+<li><a href="https://pypi.org/project/PyYAML/">PyYAML</a>, <a href="https://pypi.org/project/uritemplate/">uritemplate</a> (5.1+, 3.0.0+) — 스키마 생성 지원.</li>
+<li><a href="https://pypi.org/project/Markdown/">Markdown</a> (3.3.0+) — 브라우저에서 탐색 가능한 API에서 Markdown 지원.</li>
+<li><a href="https://pypi.org/project/Pygments/">Pygments</a> (2.7.0+) — Markdown 처리 시 구문 하이라이팅 추가.</li>
+<li><a href="https://pypi.org/project/django-filter/">django-filter</a> (1.0.1+) — 필터링 기능 지원.</li>
+<li><a href="https://github.com/django-guardian/django-guardian">django-guardian</a> (1.1.1+) — 객체 단위 권한(Object-level permissions) 지원.</li>
+</ul>
+<h2 id="installation"><a class="toclink" href="#installation">Installation</a></h2>
+<p><code>pip</code>을 사용해 설치합니다. 필요한 선택 패키지가 있다면 함께 설치하세요.</p>
+<pre><code>pip install djangorestframework
+pip install markdown       # 브라우저용 API에서 Markdown 지원
+pip install django-filter  # 필터링 기능 지원
+</code></pre>
+<p>...또는 GitHub에서 프로젝트를 직접 클론할 수도 있습니다:</p>
+<pre><code>git clone https://github.com/encode/django-rest-framework
+</code></pre>
+<p><code>INSTALLED_APPS</code> 설정에 <code>'rest_framework'</code>를 추가하세요:</p>
+<pre><code>INSTALLED_APPS = [
+    ...
+    'rest_framework',
+]
+</code></pre>
+<p>브라우저에서 탐색 가능한 API를 사용할 예정이라면, REST framework의 로그인/로그아웃 뷰도 추가하는 것이 좋습니다.
+프로젝트의 최상위 <code>urls.py</code>에 다음을 추가하세요:</p>
+<pre><code>urlpatterns = [
+    ...
+    path('api-auth/', include('rest_framework.urls'))
+]
+</code></pre>
+<p>URL 경로는 원하는 대로 변경해도 괜찮습니다.</p>
+<h2 id="example"><a class="toclink" href="#example">Example</a></h2>
+<p>이제 REST framework를 사용해 간단한 모델 기반 API를 만드는 예시를 살펴보겠습니다.</p>
+<p>우리 프로젝트의 사용자 정보를 읽고/쓰기 가능한 API를 만들어보겠습니다.</p>
+<p>REST framework API에 대한 전역 설정은 REST_FRAMEWORK라는 설정 딕셔너리에 저장됩니다.
+settings.py에 다음을 추가하세요:</p>
+<pre><code>REST_FRAMEWORK = {
+    # Django의 기본 `django.contrib.auth` 권한 사용,
+    # 또는 인증되지 않은 사용자에게 읽기 전용 허용.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
+</code></pre>
+<p>그리고 <code>INSTALLED_APPS</code>에 <code>rest_framework</code>를 추가하는 것 역시 잊지 마세요.</p>
+<p>이제 API를 만들 준비가 되었습니다.
+다음은 프로젝트의 루트 <code>urls.py</code> 예시입니다:</p>
+<pre><code>from django.urls import path, include
+from django.contrib.auth.models import User
+from rest_framework import routers, serializers, viewsets
+
+# Serializer는 API 표현을 정의합니다.
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = User
+        fields = ['url', 'username', 'email', 'is_staff']
+
+# ViewSet은 뷰의 동작을 정의합니다.
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+# Router는 URL 설정을 자동으로 결정하는 쉬운 방법을 제공합니다.
+router = routers.DefaultRouter()
+router.register(r'users', UserViewSet)
+
+# 자동 URL 라우팅을 사용하여 우리의 API를 연결합니다.
+# 추가로, 브라우저에서 사용하는 API 로그인 URL도 포함합니다.
+urlpatterns = [
+    path('', include(router.urls)),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+]
+</code></pre>
+<p>브라우저에서 <a href="http://127.0.0.1:8000/">http://127.0.0.1:8000/</a>￼을 열면 새로 생성된 ‘users’ API를 확인할 수 있습니다.
+오른쪽 상단의 로그인 기능을 사용하면 사용자 추가, 생성, 삭제까지 가능해집니다.</p>
+<h2 id="quickstart"><a class="toclink" href="#quickstart">Quickstart</a></h2>
+<p>지금 바로 시작하고 싶나요? <a href="tutorial/quickstart/">quickstart guide</a>는 REST framework로 API를 만들고 실행하는 가장 빠른 방법입니다.</p>
+<h2 id="development"><a class="toclink" href="#development">Development</a></h2>
+<p>저장소를 클론하고 테스트를 실행하며 REST Framework 코드베이스 유지에 기여하는 방법은
+<a href="community/contributing/">Contribution guidelines</a> 문서를 참조하세요.</p>
+<h2 id="support"><a class="toclink" href="#support">Support</a></h2>
+<p>지원이 필요하다면 <a href="https://groups.google.com/forum/?fromgroups#!forum/django-rest-framework">REST framework discussion group</a>을 참고하거나, irc.libera.chat의 #restframework 채널을 이용해 보세요. 또는 <a href="https://stackoverflow.com/">Stack Overflow</a>에 질문을 올릴 수 있으며, 이때 <a href="https://stackoverflow.com/questions/tagged/django-rest-framework">‘django-rest-framework’</a> 태그를 꼭 포함해 주세요.</p>
+<h2 id="security"><a class="toclink" href="#security">Security</a></h2>
+<p><strong>보안 이슈는 <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#115;&#101;&#99;&#117;&#114;&#105;&#116;&#121;&#64;&#101;&#110;&#99;&#111;&#100;&#101;&#46;&#105;&#111;">&#115;&#101;&#99;&#117;&#114;&#105;&#116;&#121;&#64;&#101;&#110;&#99;&#111;&#100;&#101;&#46;&#105;&#111;</a> 로 이메일을 보내 보고해 주세요.</strong></p>
+<p>프로젝트 관리자들이 공개되기 전에 필요한 조치를 함께 진행합니다.</p>
+<h2 id="license"><a class="toclink" href="#license">License</a></h2>
+<p>Copyright © 2011-present, <a href="https://www.encode.io/">Encode OSS Ltd</a>.
+All rights reserved.</p>
+<p>소스 및 바이너리 형태로 재배포·사용은 아래 조건을 충족하는 경우 허용됩니다:</p>
+<ul>
+<li>소스 코드 재배포 시 위 저작권 공지, 조건 목록, 면책 조항을 포함해야 합니다.</li>
+<li>바이너리 재배포 시 문서 및 기타 자료에 위 저작권 공지·조건 목록·면책 조항을 포함해야 합니다.</li>
+<li>저작권자 또는 기여자의 이름을 그들의 사전 서면 허가 없이 파생 소프트웨어의 홍보에 사용할 수 없습니다.</li>
+</ul>
+<p>이 소프트웨어는 “있는 그대로(AS IS)” 제공되며,
+명시적 또는 묵시적인 상업성·특정 목적 적합성 보증을 포함해
+일체의 보증을 제공하지 않습니다.</p>
+<p>저작권자 또는 기여자는 소프트웨어 사용으로 발생하는
+직접적·간접적·특별·우발·결과적 손해에 대해 책임을 지지 않습니다.</p>
+            
+
+          </div> <!--/span-->
+        </div> <!--/row-->
+      </div> <!--/.fluid-container-->
+    </div> <!--/.body content-->
+    <div id="push"></div>
+  </div> <!--/.wrapper -->
+
+  <footer class="span12">
+    <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.
+    </p>
+  </footer>
+
+  <!-- Le javascript
+  ================================================== -->
+  <!-- Placed at the end of the document so the pages load faster -->
+  <script async src="https://fund.django-rest-framework.org/sidebar_include.js"></script>
+  <script src="js/jquery-1.8.1-min.js"></script>
+  <script src="js/prettify-1.0.js"></script>
+  <script src="js/bootstrap-2.1.1-min.js"></script>
+  <script src="js/theme.js"></script>
+
+  <script>var base_url = '.';</script>
+  
+  <script src="search/main.js" defer></script>
+  
+
+  <script>
+    var shiftWindow = function() {
+      scrollBy(0, -50)
+    };
+
+    if (location.hash) shiftWindow();
+    window.addEventListener("hashchange", shiftWindow);
+
+    $('.dropdown-menu').on('click touchstart', function(event) {
+      event.stopPropagation();
+    });
+
+    // Dynamically force sidenav/dropdown to no higher than browser window
+    $('.side-nav, .dropdown-menu').css('max-height', window.innerHeight - 130);
+
+    $(function() {
+      $(window).resize(function() {
+        $('.side-nav, .dropdown-menu').css('max-height', window.innerHeight - 130);
+      });
+    });
+  </script>
+</body>
+
+</html>
