@@ -3,7 +3,7 @@ name: mkdocs
 on:
   push:
     branches:
-      - gh-pages
+      - translation
     paths:
       - docs_ko/**
       - docs_theme/**
@@ -21,8 +21,7 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - uses: actions/checkout@v6
-        with:
-          ref: gh-pages
+      - run: git fetch --no-tags --prune --depth=1 origin gh-pages
       - uses: actions/setup-python@v6
         with:
           python-version: 3.x
