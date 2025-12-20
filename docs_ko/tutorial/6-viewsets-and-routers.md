@@ -1,16 +1,21 @@
-# Tutorial 6: ViewSets & Routers
+# Tutorial 6: ViewSets 및 Routers
 
-REST framework includes an abstraction for dealing with `ViewSets`, that allows the developer to concentrate on modeling the state and interactions of the API, and leave the URL construction to be handled automatically, based on common conventions.
+REST framework에는 **ViewSet**이라는 추상화가 있습니다.  
+이를 사용하면 개발자는 API의 상태(state)와 상호작용(interaction) 설계에 집중하고,  
+URL 구성(URL conf)은 일반적인 규칙(convention)에 따라 자동으로 처리할 수 있습니다.
 
-`ViewSet` classes are almost the same thing as `View` classes, except that they provide operations such as `retrieve`, or `update`, and not method handlers such as `get` or `put`.
+`ViewSet` 클래스는 일반 `View` 클래스와 거의 비슷하지만,  
+`get`이나 `put` 같은 HTTP 메서드 핸들러를 직접 정의하지 않고,  
+`retrieve`, `update` 등 CRUD와 관련된 동작을 제공합니다.
 
-A `ViewSet` class is only bound to a set of method handlers at the last moment, when it is instantiated into a set of views, typically by using a `Router` class which handles the complexities of defining the URL conf for you.
+`ViewSet` 클래스는 최종적으로 인스턴스화 되어 실제 뷰(view)로 바인딩될 때,  
+Router를 사용하여 URL 구성을 자동으로 처리합니다.
 
-## Refactoring to use ViewSets
+---
 
-Let's take our current set of views, and refactor them into view sets.
+## ViewSet으로 리팩토링
 
-First of all let's refactor our `UserList` and `UserDetail` classes into a single `UserViewSet` class. In the `snippets/views.py` file, we can remove the two view classes and replace them with a single ViewSet class:
+기존의 `UserList`와 `UserDetail`을 하나의 ViewSet으로 합칩니다.
 
 ```python
 from rest_framework import viewsets
@@ -18,30 +23,31 @@ from rest_framework import viewsets
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    This viewset automatically provides `list` and `retrieve` actions.
+    이 ViewSet은 자동으로 `list`와 `retrieve` 동작을 제공합니다.
     """
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
 ```
 
-Here we've used the `ReadOnlyModelViewSet` class to automatically provide the default 'read-only' operations.  We're still setting the `queryset` and `serializer_class` attributes exactly as we did when we were using regular views, but we no longer need to provide the same information to two separate classes.
+- `ReadOnlyModelViewSet`을 사용하면 읽기 전용 동작만 제공 (`list`/`retrieve`)
+- `queryset`과 `serializer_class`는 기존 뷰에서 지정하던 그대로 사용
 
-Next we're going to replace the `SnippetList`, `SnippetDetail` and `SnippetHighlight` view classes.  We can remove the three views, and again replace them with a single class.
+---
+
+다음으로 `SnippetList`, `SnippetDetail`, `SnippetHighlight`를 하나의 `SnippetViewSet`으로 통합합니다.
 
 ```python
-from rest_framework import permissions
-from rest_framework import renderers
+from rest_framework import permissions, renderers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 
 class SnippetViewSet(viewsets.ModelViewSet):
     """
-    This ViewSet automatically provides `list`, `create`, `retrieve`,
-    `update` and `destroy` actions.
+    이 ViewSet은 `list`, `create`, `retrieve`, `update`, `destroy` 동작을 자동 제공.
 
-    Additionally we also provide an extra `highlight` action.
+    추가로 `highlight` 커스텀 액션도 포함.
     """
 
     queryset = Snippet.objects.all()
@@ -57,30 +63,29 @@ class SnippetViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 ```
 
-This time we've used the `ModelViewSet` class in order to get the complete set of default read and write operations.
+- `ModelViewSet`을 사용하면 기본 CRUD 동작을 모두 제공
+- `@action` 데코레이터로 `highlight` 커스텀 엔드포인트 생성
+  - 기본적으로 `GET` 요청 대응
+  - 필요하면 `methods=['POST']` 등으로 변경 가능
+  - `url_path`로 URL 패턴 이름 변경 가능
 
-Notice that we've also used the `@action` decorator to create a custom action, named `highlight`.  This decorator can be used to add any custom endpoints that don't fit into the standard `create`/`update`/`delete` style.
+---
 
-Custom actions which use the `@action` decorator will respond to `GET` requests by default.  We can use the `methods` argument if we wanted an action that responded to `POST` requests.
+## ViewSet을 URL에 명시적으로 바인딩
 
-The URLs for custom actions by default depend on the method name itself. If you want to change the way url should be constructed, you can include `url_path` as a decorator keyword argument.
-
-## Binding ViewSets to URLs explicitly
-
-The handler methods only get bound to the actions when we define the URLConf.
-To see what's going on under the hood let's first explicitly create a set of views from our ViewSets.
-
-In the `snippets/urls.py` file we bind our `ViewSet` classes into a set of concrete views.
+ViewSet은 URLConf에 바인딩될 때 비로소 HTTP 메서드와 액션이 연결됩니다.
 
 ```python
 from rest_framework import renderers
-
-from snippets.views import api_root, SnippetViewSet, UserViewSet
+from snippets.views import SnippetViewSet, UserViewSet, api_root
 
 snippet_list = SnippetViewSet.as_view({"get": "list", "post": "create"})
-snippet_detail = SnippetViewSet.as_view(
-    {"get": "retrieve", "put": "update", "patch": "partial_update", "delete": "destroy"}
-)
+snippet_detail = SnippetViewSet.as_view({
+    "get": "retrieve",
+    "put": "update",
+    "patch": "partial_update",
+    "delete": "destroy"
+})
 snippet_highlight = SnippetViewSet.as_view(
     {"get": "highlight"}, renderer_classes=[renderers.StaticHTMLRenderer]
 )
@@ -88,30 +93,25 @@ user_list = UserViewSet.as_view({"get": "list"})
 user_detail = UserViewSet.as_view({"get": "retrieve"})
 ```
 
-Notice how we're creating multiple views from each `ViewSet` class, by binding the HTTP methods to the required action for each view.
-
-Now that we've bound our resources into concrete views, we can register the views with the URL conf as usual.
+- 각 ViewSet에서 여러 뷰를 생성하며, HTTP 메서드를 적절한 액션과 연결
 
 ```python
-urlpatterns = format_suffix_patterns(
-    [
-        path("", api_root),
-        path("snippets/", snippet_list, name="snippet-list"),
-        path("snippets/<int:pk>/", snippet_detail, name="snippet-detail"),
-        path(
-            "snippets/<int:pk>/highlight/", snippet_highlight, name="snippet-highlight"
-        ),
-        path("users/", user_list, name="user-list"),
-        path("users/<int:pk>/", user_detail, name="user-detail"),
-    ]
-)
+urlpatterns = format_suffix_patterns([
+    path("", api_root),
+    path("snippets/", snippet_list, name="snippet-list"),
+    path("snippets/<int:pk>/", snippet_detail, name="snippet-detail"),
+    path("snippets/<int:pk>/highlight/", snippet_highlight, name="snippet-highlight"),
+    path("users/", user_list, name="user-list"),
+    path("users/<int:pk>/", user_detail, name="user-detail"),
+])
 ```
 
-## Using Routers
+---
 
-Because we're using `ViewSet` classes rather than `View` classes, we actually don't need to design the URL conf ourselves.  The conventions for wiring up resources into views and urls can be handled automatically, using a `Router` class.  All we need to do is register the appropriate view sets with a router, and let it do the rest.
+## Routers 사용
 
-Here's our re-wired `snippets/urls.py` file.
+ViewSet을 사용하면 URLConf를 직접 설계할 필요가 없습니다.  
+Router가 ViewSet을 등록하고, URL 패턴과 엔드포인트를 자동으로 구성합니다.
 
 ```python
 from django.urls import path, include
@@ -119,23 +119,30 @@ from rest_framework.routers import DefaultRouter
 
 from snippets import views
 
-# Create a router and register our ViewSets with it.
+# Router 생성 및 ViewSet 등록
 router = DefaultRouter()
 router.register(r"snippets", views.SnippetViewSet, basename="snippet")
 router.register(r"users", views.UserViewSet, basename="user")
 
-# The API URLs are now determined automatically by the router.
+# Router가 URL을 자동 생성
 urlpatterns = [
     path("", include(router.urls)),
 ]
 ```
 
-Registering the ViewSets with the router is similar to providing a urlpattern.  We include two arguments - the URL prefix for the views, and the view set itself.
+- `DefaultRouter` 사용 시 API 루트도 자동 생성
+- 따라서 기존의 `api_root` 함수는 삭제 가능
 
-The `DefaultRouter` class we're using also automatically creates the API root view for us, so we can now delete the `api_root` function from our `views` module.
+---
 
-## Trade-offs between views vs ViewSets
+## View vs ViewSet 선택 시 고려 사항
 
-Using ViewSets can be a really useful abstraction.  It helps ensure that URL conventions will be consistent across your API, minimizes the amount of code you need to write, and allows you to concentrate on the interactions and representations your API provides rather than the specifics of the URL conf.
+- ViewSet 사용 장점:
 
-That doesn't mean it's always the right approach to take. There's a similar set of trade-offs to consider as when using class-based views instead of function-based views. Using ViewSets is less explicit than building your API views individually.
+  - URL 규칙이 일관되게 적용됨
+  - 작성해야 하는 코드 양 최소화
+  - API 상호작용 및 표현(representation)에 집중 가능
+
+- 단점 / 주의사항:
+  - 개별 뷰를 명시적으로 작성하는 것보다 덜 직관적
+  - 일부 커스텀 동작이나 예외 처리에는 추가 설정 필요

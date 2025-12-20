@@ -1,18 +1,22 @@
-# Tutorial 4: Authentication & Permissions
+# Tutorial 4: 인증(Authentication) 및 권한(Permissions)
 
-Currently our API doesn't have any restrictions on who can edit or delete code snippets.  We'd like to have some more advanced behavior in order to make sure that:
+현재 우리 API는 코드 스니펫을 누가 수정하거나 삭제할 수 있는지에 대한 제한이 없습니다.  
+좀 더 정교한 동작을 추가하여 다음을 보장하고자 합니다.
 
-* Code snippets are always associated with a creator.
-* Only authenticated users may create snippets.
-* Only the creator of a snippet may update or delete it.
-* Unauthenticated requests should have full read-only access.
+- 코드 스니펫은 항상 작성자(owner)와 연관되어야 합니다.
+- 인증된 사용자만 스니펫을 생성할 수 있습니다.
+- 스니펫을 생성한 사용자만 해당 스니펫을 수정하거나 삭제할 수 있습니다.
+- 인증되지 않은 요청은 전체 읽기 전용 접근을 가집니다.
 
-## Adding information to our model
+## 모델에 정보 추가하기
 
-We're going to make a couple of changes to our `Snippet` model class.
-First, let's add a couple of fields.  One of those fields will be used to represent the user who created the code snippet.  The other field will be used to store the highlighted HTML representation of the code.
+`Snippet` 모델 클래스에 몇 가지 변경을 합니다.
 
-Add the following two fields to the `Snippet` model in `models.py`.
+먼저 두 개의 필드를 추가합니다.  
+하나는 스니펫을 생성한 사용자를 나타내고,  
+다른 하나는 하이라이트된 HTML 코드 표현을 저장하는 필드입니다.
+
+`models.py`의 `Snippet` 모델에 다음 두 필드를 추가합니다.
 
 ```python
 owner = models.ForeignKey(
@@ -21,9 +25,9 @@ owner = models.ForeignKey(
 highlighted = models.TextField()
 ```
 
-We'd also need to make sure that when the model is saved, that we populate the highlighted field, using the `pygments` code highlighting library.
+또한 모델이 저장될 때 `highlighted` 필드를 자동으로 채우도록, `pygments` 라이브러리를 사용해 하이라이트된 HTML을 생성하도록 해야 합니다.
 
-We'll need some extra imports:
+필요한 추가 import:
 
 ```python
 from pygments.lexers import get_lexer_by_name
@@ -31,13 +35,12 @@ from pygments.formatters.html import HtmlFormatter
 from pygments import highlight
 ```
 
-And now we can add a `.save()` method to our model class:
+그리고 모델 클래스에 `.save()` 메서드를 추가합니다.
 
 ```python
 def save(self, *args, **kwargs):
     """
-    Use the `pygments` library to create a highlighted HTML
-    representation of the code snippet.
+    `pygments` 라이브러리를 사용하여 코드 스니펫의 하이라이트 HTML 표현을 생성합니다.
     """
     lexer = get_lexer_by_name(self.language)
     linenos = "table" if self.linenos else False
@@ -47,8 +50,8 @@ def save(self, *args, **kwargs):
     super().save(*args, **kwargs)
 ```
 
-When that's all done we'll need to update our database tables.
-Normally we'd create a database migration in order to do that, but for the purposes of this tutorial, let's just delete the database and start again.
+모든 작업이 끝나면 데이터베이스 테이블을 업데이트해야 합니다.  
+튜토리얼 목적상, 간단히 데이터베이스를 삭제하고 다시 시작하겠습니다.
 
 ```bash
 rm -f db.sqlite3
@@ -57,15 +60,17 @@ python manage.py makemigrations snippets
 python manage.py migrate
 ```
 
-You might also want to create a few different users, to use for testing the API.  The quickest way to do this will be with the `createsuperuser` command.
+테스트용으로 여러 사용자를 만들어두는 것도 좋습니다.  
+`createsuperuser` 명령을 사용하면 가장 빠르게 생성할 수 있습니다.
 
 ```bash
 python manage.py createsuperuser
 ```
 
-## Adding endpoints for our User models
+## User 모델 엔드포인트 추가
 
-Now that we've got some users to work with, we'd better add representations of those users to our API.  Creating a new serializer is easy. In `serializers.py` add:
+이제 API에서 사용자 정보를 제공하려면 serializer를 생성해야 합니다.  
+`serializers.py`에 다음 내용을 추가합니다.
 
 ```python
 from django.contrib.auth.models import User
@@ -81,9 +86,12 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "snippets"]
 ```
 
-Because `'snippets'` is a *reverse* relationship on the User model, it will not be included by default when using the `ModelSerializer` class, so we needed to add an explicit field for it.
+`'snippets'`는 User 모델의 **역방향 관계(reverse relation)** 이므로  
+기본적으로 `ModelSerializer`에 포함되지 않습니다.  
+따라서 명시적으로 필드를 추가해야 합니다.
 
-We'll also add a couple of views to `views.py`.  We'd like to just use read-only views for the user representations, so we'll use the `ListAPIView` and `RetrieveAPIView` generic class-based views.
+이제 `views.py`에 사용자 관련 view를 추가합니다.  
+사용자 조회는 읽기 전용이므로 `ListAPIView`와 `RetrieveAPIView`를 사용합니다.
 
 ```python
 from django.contrib.auth.models import User
@@ -99,79 +107,86 @@ class UserDetail(generics.RetrieveAPIView):
     serializer_class = UserSerializer
 ```
 
-Make sure to also import the `UserSerializer` class
+`UserSerializer`도 import 해줍니다.
 
 ```python
 from snippets.serializers import UserSerializer
 ```
 
-Finally we need to add those views into the API, by referencing them from the URL conf. Add the following to the patterns in `snippets/urls.py`.
+마지막으로 URL conf에 view를 추가합니다. `snippets/urls.py`에 다음을 추가합니다.
 
 ```python
 path("users/", views.UserList.as_view()),
 path("users/<int:pk>/", views.UserDetail.as_view()),
 ```
 
-## Associating Snippets with Users
+## 스니펫과 사용자 연결
 
-Right now, if we created a code snippet, there'd be no way of associating the user that created the snippet, with the snippet instance.  The user isn't sent as part of the serialized representation, but is instead a property of the incoming request.
+지금까지는 스니펫 생성 시 해당 스니펫을 생성한 사용자와 연결되지 않았습니다.  
+사용자 정보는 직렬화 데이터에 포함되지 않고, 요청(request) 속성으로 들어오기 때문입니다.
 
-The way we deal with that is by overriding a `.perform_create()` method on our snippet views, that allows us to modify how the instance save is managed, and handle any information that is implicit in the incoming request or requested URL.
-
-On the `SnippetList` view class, add the following method:
+이 문제는 view의 `.perform_create()` 메서드를 오버라이드하여 해결할 수 있습니다.  
+`SnippetList` view 클래스에 다음을 추가합니다.
 
 ```python
 def perform_create(self, serializer):
     serializer.save(owner=self.request.user)
 ```
 
-The `create()` method of our serializer will now be passed an additional `'owner'` field, along with the validated data from the request.
+이제 serializer의 `create()` 메서드에는 요청으로부터 검증된 데이터와 함께 `'owner'` 필드가 전달됩니다.
 
-## Updating our serializer
+## Serializer 업데이트
 
-Now that snippets are associated with the user that created them, let's update our `SnippetSerializer` to reflect that.  Add the following field to the serializer definition in `serializers.py`:
+스니펫과 사용자가 연결되었으므로, `SnippetSerializer`에도 해당 필드를 추가합니다.
 
 ```python
 owner = serializers.ReadOnlyField(source="owner.username")
 ```
 
-**Note**: Make sure you also add `'owner',` to the list of fields in the inner `Meta` class.
+※ `Meta` 클래스의 `fields` 목록에도 `'owner',`를 추가해야 합니다.
 
-This field is doing something quite interesting.  The `source` argument controls which attribute is used to populate a field, and can point at any attribute on the serialized instance.  It can also take the dotted notation shown above, in which case it will traverse the given attributes, in a similar way as it is used with Django's template language.
+- `source` 인자는 어떤 속성에서 데이터를 가져올지 지정합니다.
+- 점(dot) 표기법을 사용할 수 있으며, Django 템플릿 언어처럼 속성을 탐색합니다.
+- `ReadOnlyField`는 읽기 전용 필드로, 직렬화된 데이터에는 포함되지만  
+  역직렬화 시 모델 업데이트에는 사용되지 않습니다.
+- 필요하면 `CharField(read_only=True)`로 대체할 수도 있습니다.
 
-The field we've added is the untyped `ReadOnlyField` class, in contrast to the other typed fields, such as `CharField`, `BooleanField` etc...  The untyped `ReadOnlyField` is always read-only, and will be used for serialized representations, but will not be used for updating model instances when they are deserialized. We could have also used `CharField(read_only=True)` here.
+## View 권한 설정
 
-## Adding required permissions to views
+이제 스니펫이 사용자와 연결되었으므로, 인증된 사용자만 CRUD 작업을 할 수 있도록 권한을 설정합니다.
 
-Now that code snippets are associated with users, we want to make sure that only authenticated users are able to create, update and delete code snippets.
+REST framework는 여러 권한 클래스(permission class)를 제공합니다.  
+이번 경우에는 `IsAuthenticatedOrReadOnly`를 사용하면 됩니다.
 
-REST framework includes a number of permission classes that we can use to restrict who can access a given view.  In this case the one we're looking for is `IsAuthenticatedOrReadOnly`, which will ensure that authenticated requests get read-write access, and unauthenticated requests get read-only access.
+- 인증된 요청: 읽기/쓰기 가능
+- 인증되지 않은 요청: 읽기 전용
 
-First add the following import in the views module
+`views.py`에 import:
 
 ```python
 from rest_framework import permissions
 ```
 
-Then, add the following property to **both** the `SnippetList` and `SnippetDetail` view classes.
+그리고 `SnippetList`와 `SnippetDetail` view 클래스에 다음을 추가합니다.
 
 ```python
 permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 ```
 
-## Adding login to the Browsable API
+## 브라우저 API 로그인 추가
 
-If you open a browser and navigate to the browsable API at the moment, you'll find that you're no longer able to create new code snippets.  In order to do so we'd need to be able to login as a user.
+현재 브라우저에서 접근하면 새 스니펫을 생성할 수 없습니다.  
+로그인을 추가해야 합니다.
 
-We can add a login view for use with the browsable API, by editing the URLconf in our project-level `urls.py` file.
+프로젝트 레벨 `urls.py`에서 URL conf를 수정합니다.
 
-Add the following import at the top of the file:
+파일 상단에 import 추가:
 
 ```python
 from django.urls import path, include
 ```
 
-And, at the end of the file, add a pattern to include the login and logout views for the browsable API.
+파일 하단에 login/logout view 패턴 추가:
 
 ```python
 urlpatterns += [
@@ -179,19 +194,18 @@ urlpatterns += [
 ]
 ```
 
-The `'api-auth/'` part of pattern can actually be whatever URL you want to use.
+`'api-auth/'`는 원하는 URL로 변경 가능하며, 브라우저에서 새로고침하면  
+우측 상단에 'Login' 링크가 나타납니다. 로그인 후 스니펫 생성 가능.
 
-Now if you open up the browser again and refresh the page you'll see a 'Login' link in the top right of the page.  If you log in as one of the users you created earlier, you'll be able to create code snippets again.
+스니펫을 몇 개 생성한 뒤, `/users/` endpoint를 확인하면  
+각 사용자별 `snippets` 필드에 생성한 스니펫 ID가 표시됩니다.
 
-Once you've created a few code snippets, navigate to the '/users/' endpoint, and notice that the representation includes a list of the snippet ids that are associated with each user, in each user's 'snippets' field.
+## 객체 수준 권한(Object-level permissions)
 
-## Object level permissions
+모든 사용자가 스니펫을 볼 수 있으면서도,  
+생성자만 수정/삭제할 수 있도록 제한하려면 커스텀 권한을 만들어야 합니다.
 
-Really we'd like all code snippets to be visible to anyone, but also make sure that only the user that created a code snippet is able to update or delete it.
-
-To do that we're going to need to create a custom permission.
-
-In the snippets app, create a new file, `permissions.py`
+`snippets` 앱에 `permissions.py` 파일 생성:
 
 ```python
 from rest_framework import permissions
@@ -199,42 +213,42 @@ from rest_framework import permissions
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """
-    Custom permission to only allow owners of an object to edit it.
+    오직 소유자만 객체를 수정 가능하도록 하는 커스텀 권한.
     """
 
     def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed to any request,
-        # so we'll always allow GET, HEAD or OPTIONS requests.
+        # 읽기 권한은 모든 요청에 허용
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        # Write permissions are only allowed to the owner of the snippet.
+        # 쓰기 권한은 오직 스니펫 소유자만 허용
         return obj.owner == request.user
 ```
 
-Now we can add that custom permission to our snippet instance endpoint, by editing the `permission_classes` property on the `SnippetDetail` view class:
+`SnippetDetail` view 클래스의 `permission_classes`에 추가합니다.
 
 ```python
 permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 ```
 
-Make sure to also import the `IsOwnerOrReadOnly` class.
+`IsOwnerOrReadOnly` import도 잊지 마세요.
 
 ```python
 from snippets.permissions import IsOwnerOrReadOnly
 ```
 
-Now, if you open a browser again, you find that the 'DELETE' and 'PUT' actions only appear on a snippet instance endpoint if you're logged in as the same user that created the code snippet.
+이제 브라우저에서 확인하면, 스니펫의 `DELETE`와 `PUT` 버튼은  
+해당 스니펫의 소유자일 때만 표시됩니다.
 
-## Authenticating with the API
+## API 인증(Authentication)
 
-Because we now have a set of permissions on the API, we need to authenticate our requests to it if we want to edit any snippets.  We haven't set up any [authentication classes][authentication], so the defaults are currently applied, which are `SessionAuthentication` and `BasicAuthentication`.
+이제 API에 권한이 적용되므로, 스니펫을 수정하려면 인증이 필요합니다.  
+아직 별도의 [authentication class][authentication]를 설정하지 않았으므로, 기본값(`SessionAuthentication`과 `BasicAuthentication`)이 적용됩니다.
 
-When we interact with the API through the web browser, we can login, and the browser session will then provide the required authentication for the requests.
+- 브라우저 접근 시 로그인 후 세션 인증 제공
+- 프로그램으로 접근 시 매 요청마다 인증 정보 제공 필요
 
-If we're interacting with the API programmatically we need to explicitly provide the authentication credentials on each request.
-
-If we try to create a snippet without authenticating, we'll get an error:
+인증 없이 스니펫 생성 시 오류 발생:
 
 ```bash
 http POST http://127.0.0.1:8000/snippets/ code="print(123)"
@@ -244,7 +258,7 @@ http POST http://127.0.0.1:8000/snippets/ code="print(123)"
 }
 ```
 
-We can make a successful request by including the username and password of one of the users we created earlier.
+사용자 이름과 비밀번호를 포함하면 정상 요청 가능:
 
 ```bash
 http -a admin:password123 POST http://127.0.0.1:8000/snippets/ code="print(789)"
@@ -260,11 +274,17 @@ http -a admin:password123 POST http://127.0.0.1:8000/snippets/ code="print(789)"
 }
 ```
 
-## Summary
+## 요약
 
-We've now got a fairly fine-grained set of permissions on our Web API, and end points for users of the system and for the code snippets that they have created.
+이제 API는 다음을 제공합니다.
 
-In [part 5][tut-5] of the tutorial we'll look at how we can tie everything together by creating an HTML endpoint for our highlighted snippets, and improve the cohesion of our API by using hyperlinking for the relationships within the system.
+- 사용자(User) 엔드포인트
+- 스니펫(Snippet) 엔드포인트
+- 인증 기반 CRUD 권한
+- 객체 수준 권한(소유자만 수정/삭제 가능)
+
+[tutorial part 5][tut-5]에서는 하이라이트된 스니펫을 HTML로 표시하는 endpoint를 만들고,  
+API 관계를 하이퍼링크로 연결하여 API 응집도를 높이는 방법을 살펴봅니다.
 
 [authentication]: ../api-guide/authentication.md
 [tut-5]: 5-relationships-and-hyperlinked-apis.md

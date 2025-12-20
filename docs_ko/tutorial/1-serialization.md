@@ -2,39 +2,42 @@
 
 ## Introduction
 
-This tutorial will cover creating a simple pastebin code highlighting Web API.  Along the way it will introduce the various components that make up REST framework, and give you a comprehensive understanding of how everything fits together.
+이 튜토리얼에서는 간단한 pastebin 형태의 코드 하이라이팅 Web API를 만들어봅니다.  
+이 과정을 통해 REST framework를 구성하는 다양한 컴포넌트를 소개하고, 전체 구조가 어떻게 맞물려 동작하는지에 대해 종합적으로 이해할 수 있도록 합니다.
 
-The tutorial is fairly in-depth, so you should probably get a cookie and a cup of your favorite brew before getting started.  If you just want a quick overview, you should head over to the [quickstart] documentation instead.
+이 튜토리얼은 비교적 상세하게 구성되어 있으므로, 시작하기 전에 쿠키 하나와 좋아하는 음료 한 잔을 준비하는 것을 권장합니다.  
+빠른 개요만 필요하다면 [quickstart] 문서를 먼저 확인하는 것이 좋습니다.
 
 ---
 
-**Note**: The code for this tutorial is available in the [encode/rest-framework-tutorial][repo] repository on GitHub. Feel free to clone the repository and see the code in action.
+**Note**: 이 튜토리얼의 코드는 GitHub의 [encode/rest-framework-tutorial][repo] 레포지토리에 공개되어 있습니다. 자유롭게 클론하여 실제 동작하는 코드를 확인해 보시기 바랍니다.
 
 ---
 
 ## Setting up a new environment
 
-Before we do anything else we'll create a new virtual environment, using [venv]. This will make sure our package configuration is kept nicely isolated from any other projects we're working on.
+다른 작업 중인 프로젝트들과 패키지 설정이 섞이지 않도록, [venv]를 사용해 새로운 가상 환경을 먼저 생성하겠습니다.
 
 ```bash
 python3 -m venv env
 source env/bin/activate
 ```
 
-Now that we're inside a virtual environment, we can install our package requirements.
+가상 환경에 진입했으면 필요한 패키지를 설치합니다.
 
 ```bash
 pip install django
 pip install djangorestframework
-pip install pygments  # We'll be using this for the code highlighting
+pip install pygments  # 코드 하이라이팅을 위해 사용합니다
 ```
 
-**Note:** To exit the virtual environment at any time, just type `deactivate`.  For more information see the [venv documentation][venv].
+**Note:** 가상 환경을 종료하려면 언제든지 `deactivate` 명령을 사용하면 됩니다.  
+자세한 내용은 [venv documentation][venv]을 참고하세요.
 
 ## Getting started
 
-Okay, we're ready to get coding.
-To get started, let's create a new project to work with.
+이제 본격적으로 코딩을 시작할 준비가 되었습니다.  
+먼저 새 프로젝트를 생성합니다.
 
 ```bash
 cd ~
@@ -42,13 +45,14 @@ django-admin startproject tutorial
 cd tutorial
 ```
 
-Once that's done we can create an app that we'll use to create a simple Web API.
+다음으로 간단한 Web API를 만들기 위한 앱을 하나 생성합니다.
 
 ```bash
 python manage.py startapp snippets
 ```
 
-We'll need to add our new `snippets` app and the `rest_framework` app to `INSTALLED_APPS`. Let's edit the `tutorial/settings.py` file:
+이제 새로 만든 `snippets` 앱과 `rest_framework` 앱을 `INSTALLED_APPS`에 추가해야 합니다.  
+`tutorial/settings.py` 파일을 열어 다음과 같이 수정합니다.
 
 ```text
 INSTALLED_APPS = [
@@ -58,11 +62,14 @@ INSTALLED_APPS = [
 ]
 ```
 
-Okay, we're ready to roll.
+이제 모든 준비가 끝났습니다.
 
 ## Creating a model to work with
 
-For the purposes of this tutorial we're going to start by creating a simple `Snippet` model that is used to store code snippets.  Go ahead and edit the `snippets/models.py` file.  Note: Good programming practices include comments.  Although you will find them in our repository version of this tutorial code, we have omitted them here to focus on the code itself.
+이 튜토리얼에서는 코드 스니펫을 저장하기 위한 간단한 `Snippet` 모델을 작성합니다.  
+`snippets/models.py` 파일을 열어 아래 내용을 작성하세요.
+
+참고로, 좋은 프로그래밍 관례에는 주석이 포함되지만, 이 문서에서는 코드에 집중하기 위해 주석을 생략했습니다.
 
 ```python
 from django.db import models
@@ -88,7 +95,7 @@ class Snippet(models.Model):
         ordering = ["created"]
 ```
 
-We'll also need to create an initial migration for our snippet model, and sync the database for the first time.
+이제 초기 마이그레이션을 생성하고 데이터베이스를 동기화합니다.
 
 ```bash
 python manage.py makemigrations snippets
@@ -97,7 +104,10 @@ python manage.py migrate snippets
 
 ## Creating a Serializer class
 
-The first thing we need to get started on our Web API is to provide a way of serializing and deserializing the snippet instances into representations such as `json`.  We can do this by declaring serializers that work very similar to Django's forms.  Create a file in the `snippets` directory named `serializers.py` and add the following.
+Web API를 만들기 위한 첫 단계는 `Snippet` 인스턴스를 `json`과 같은 표현 형식으로 직렬화/역직렬화할 수 있는 방법을 제공하는 것입니다.  
+이를 위해 Django Form과 매우 유사한 방식으로 동작하는 serializer를 정의합니다.
+
+`snippets` 디렉터리에 `serializers.py` 파일을 생성하고 아래 내용을 추가하세요.
 
 ```python
 from rest_framework import serializers
@@ -114,13 +124,13 @@ class SnippetSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         """
-        Create and return a new `Snippet` instance, given the validated data.
+        주어진 validated_data를 사용해 새로운 `Snippet` 인스턴스를 생성합니다.
         """
         return Snippet.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         """
-        Update and return an existing `Snippet` instance, given the validated data.
+        주어진 validated_data를 사용해 기존 `Snippet` 인스턴스를 수정합니다.
         """
         instance.title = validated_data.get("title", instance.title)
         instance.code = validated_data.get("code", instance.code)
@@ -131,23 +141,27 @@ class SnippetSerializer(serializers.Serializer):
         return instance
 ```
 
-The first part of the serializer class defines the fields that get serialized/deserialized.  The `create()` and `update()` methods define how fully fledged instances are created or modified when calling `serializer.save()`
+serializer 클래스의 첫 부분에서는 직렬화/역직렬화될 필드를 정의합니다.  
+`create()`와 `update()` 메서드는 `serializer.save()` 호출 시 실제 모델 인스턴스를 생성하거나 수정하는 방법을 정의합니다.
 
-A serializer class is very similar to a Django `Form` class, and includes similar validation flags on the various fields, such as `required`, `max_length` and `default`.
+serializer는 Django의 `Form` 클래스와 매우 유사하며, `required`, `max_length`, `default`와 같은 검증 옵션도 동일하게 제공합니다.
 
-The field flags can also control how the serializer should be displayed in certain circumstances, such as when rendering to HTML. The `{'base_template': 'textarea.html'}` flag above is equivalent to using `widget=widgets.Textarea` on a Django `Form` class. This is particularly useful for controlling how the browsable API should be displayed, as we'll see later in the tutorial.
+또한 필드 옵션을 통해 HTML 렌더링 방식도 제어할 수 있습니다.  
+위 예제의 `{'base_template': 'textarea.html'}` 옵션은 Django Form에서 `widget=widgets.Textarea`를 사용하는 것과 동일합니다.  
+이는 이후 브라우저에서 제공되는 API UI를 제어할 때 특히 유용합니다.
 
-We can actually also save ourselves some time by using the `ModelSerializer` class, as we'll see later, but for now we'll keep our serializer definition explicit.
+나중에는 `ModelSerializer`를 사용해 더 간결한 구현을 할 수 있지만, 지금은 명시적인 정의를 유지하겠습니다.
 
 ## Working with Serializers
 
-Before we go any further we'll familiarize ourselves with using our new Serializer class.  Let's drop into the Django shell.
+이제 새로 만든 Serializer 클래스를 실제로 사용해 보겠습니다.  
+Django shell에 진입합니다.
 
 ```bash
 python manage.py shell
 ```
 
-Okay, once we've got a few imports out of the way, let's create a couple of code snippets to work with.
+필요한 모듈을 임포트한 뒤, 테스트용 스니펫 몇 개를 생성합니다.
 
 ```pycon
 >>> from snippets.models import Snippet
@@ -162,7 +176,7 @@ Okay, once we've got a few imports out of the way, let's create a couple of code
 >>> snippet.save()
 ```
 
-We've now got a few snippet instances to play with.  Let's take a look at serializing one of those instances.
+이제 인스턴스를 직렬화해 보겠습니다.
 
 ```pycon
 >>> serializer = SnippetSerializer(snippet)
@@ -170,7 +184,8 @@ We've now got a few snippet instances to play with.  Let's take a look at serial
 {'id': 2, 'title': '', 'code': 'print("hello, world")\n', 'linenos': False, 'language': 'python', 'style': 'friendly'}
 ```
 
-At this point we've translated the model instance into Python native datatypes.  To finalize the serialization process we render the data into `json`.
+이 시점에서 모델 인스턴스는 Python 기본 자료형으로 변환되었습니다.  
+이를 `json`으로 렌더링합니다.
 
 ```pycon
 >>> content = JSONRenderer().render(serializer.data)
@@ -178,7 +193,8 @@ At this point we've translated the model instance into Python native datatypes. 
 b'{"id":2,"title":"","code":"print(\\"hello, world\\")\\n","linenos":false,"language":"python","style":"friendly"}'
 ```
 
-Deserialization is similar.  First we parse a stream into Python native datatypes...
+역직렬화 과정도 비슷합니다.  
+먼저 스트림을 Python 기본 자료형으로 파싱합니다.
 
 ```pycon
 >>> import io
@@ -187,7 +203,7 @@ Deserialization is similar.  First we parse a stream into Python native datatype
 >>> data = JSONParser().parse(stream)
 ```
 
-...then we restore those native datatypes into a fully populated object instance.
+그 다음, 이를 다시 완전한 객체 인스턴스로 복원합니다.
 
 ```pycon
 >>> serializer = SnippetSerializer(data=data)
@@ -199,9 +215,10 @@ True
 <Snippet: Snippet object>
 ```
 
-Notice how similar the API is to working with forms.  The similarity should become even more apparent when we start writing views that use our serializer.
+Django Form을 다뤄본 경험이 있다면 매우 익숙하게 느껴질 것입니다.  
+이 유사성은 이후 serializer를 사용하는 view를 작성할 때 더 분명해집니다.
 
-We can also serialize querysets instead of model instances.  To do so we simply add a `many=True` flag to the serializer arguments.
+QuerySet도 직렬화할 수 있으며, 이 경우 `many=True` 옵션을 사용합니다.
 
 ```pycon
 >>> serializer = SnippetSerializer(Snippet.objects.all(), many=True)
@@ -211,12 +228,13 @@ We can also serialize querysets instead of model instances.  To do so we simply 
 
 ## Using ModelSerializers
 
-Our `SnippetSerializer` class is replicating a lot of information that's also contained in the `Snippet` model.  It would be nice if we could keep our code a bit more concise.
+현재 `SnippetSerializer`는 `Snippet` 모델에 이미 정의된 정보들을 상당 부분 중복하고 있습니다.  
+코드를 좀 더 간결하게 만들 수 있다면 좋을 것입니다.
 
-In the same way that Django provides both `Form` classes and `ModelForm` classes, REST framework includes both `Serializer` classes, and `ModelSerializer` classes.
+Django의 `Form` / `ModelForm` 관계와 마찬가지로, REST framework 역시 `Serializer`와 `ModelSerializer`를 제공합니다.
 
-Let's look at refactoring our serializer using the `ModelSerializer` class.
-Open the file `snippets/serializers.py` again, and replace the `SnippetSerializer` class with the following.
+이제 `ModelSerializer`를 사용해 serializer를 리팩터링해 보겠습니다.  
+`snippets/serializers.py` 파일을 열고 `SnippetSerializer`를 아래와 같이 교체하세요.
 
 ```python
 class SnippetSerializer(serializers.ModelSerializer):
@@ -225,7 +243,7 @@ class SnippetSerializer(serializers.ModelSerializer):
         fields = ["id", "title", "code", "linenos", "language", "style"]
 ```
 
-One nice property that serializers have is that you can inspect all the fields in a serializer instance, by printing its representation. Open the Django shell with `python manage.py shell`, then try the following:
+serializer의 또 다른 장점은 인스턴스를 출력해 전체 필드 구성을 확인할 수 있다는 점입니다.
 
 ```pycon
 >>> from snippets.serializers import SnippetSerializer
@@ -241,17 +259,17 @@ SnippetSerializer():
     style = ChoiceField(choices=[('autumn', 'autumn'), ('borland', 'borland'), ('bw', 'bw'), ('colorful', 'colorful')...
 ```
 
-It's important to remember that `ModelSerializer` classes don't do anything particularly magical, they are simply a shortcut for creating serializer classes:
+`ModelSerializer`는 마법 같은 기능을 제공하는 것이 아니라, 다음 작업을 자동으로 처리해 주는 편의 클래스일 뿐입니다.
 
-* An automatically determined set of fields.
-* Simple default implementations for the `create()` and `update()` methods.
+- 필드 집합 자동 결정
+- `create()` 및 `update()` 메서드의 기본 구현 제공
 
 ## Writing regular Django views using our Serializer
 
-Let's see how we can write some API views using our new Serializer class.
-For the moment we won't use any of REST framework's other features, we'll just write the views as regular Django views.
+이제 serializer를 사용해 API view를 작성해 보겠습니다.  
+일단은 REST framework의 고급 기능을 사용하지 않고, 일반 Django view로 구현합니다.
 
-Edit the `snippets/views.py` file, and add the following.
+`snippets/views.py` 파일을 열고 다음을 추가합니다.
 
 ```python
 from django.http import HttpResponse, JsonResponse
@@ -261,13 +279,13 @@ from snippets.models import Snippet
 from snippets.serializers import SnippetSerializer
 ```
 
-The root of our API is going to be a view that supports listing all the existing snippets, or creating a new snippet.
+API의 루트 view는 모든 스니펫을 조회하거나, 새 스니펫을 생성하는 기능을 제공합니다.
 
 ```python
 @csrf_exempt
 def snippet_list(request):
     """
-    List all code snippets, or create a new snippet.
+    모든 코드 스니펫을 나열하거나 새 스니펫을 생성합니다.
     """
     if request.method == "GET":
         snippets = Snippet.objects.all()
@@ -283,15 +301,16 @@ def snippet_list(request):
         return JsonResponse(serializer.errors, status=400)
 ```
 
-Note that because we want to be able to POST to this view from clients that won't have a CSRF token we need to mark the view as `csrf_exempt`.  This isn't something that you'd normally want to do, and REST framework views actually use more sensible behavior than this, but it'll do for our purposes right now.
+CSRF 토큰이 없는 클라이언트에서도 POST 요청을 허용해야 하므로 `csrf_exempt`를 사용했습니다.  
+실제 서비스에서는 권장되지 않지만, 지금 단계에서는 충분합니다.
 
-We'll also need a view which corresponds to an individual snippet, and can be used to retrieve, update or delete the snippet.
+개별 스니펫을 조회, 수정, 삭제하는 view도 작성합니다.
 
 ```python
 @csrf_exempt
 def snippet_detail(request, pk):
     """
-    Retrieve, update or delete a code snippet.
+    코드 스니펫을 조회, 수정 또는 삭제합니다.
     """
     try:
         snippet = Snippet.objects.get(pk=pk)
@@ -315,7 +334,8 @@ def snippet_detail(request, pk):
         return HttpResponse(status=204)
 ```
 
-Finally we need to wire these views up.  Create the `snippets/urls.py` file:
+이제 URL을 연결합니다.  
+`snippets/urls.py` 파일을 생성합니다.
 
 ```python
 from django.urls import path
@@ -327,7 +347,7 @@ urlpatterns = [
 ]
 ```
 
-We also need to wire up the root urlconf, in the `tutorial/urls.py` file, to include our snippet app's URLs.
+루트 URL 설정도 수정합니다 (`tutorial/urls.py`).
 
 ```python
 from django.urls import path, include
@@ -337,19 +357,18 @@ urlpatterns = [
 ]
 ```
 
-It's worth noting that there are a couple of edge cases we're not dealing with properly at the moment.  If we send malformed `json`, or if a request is made with a method that the view doesn't handle, then we'll end up with a 500 "server error" response.  Still, this'll do for now.
+현재는 잘못된 JSON이나 지원하지 않는 HTTP 메서드에 대해 적절한 에러 처리를 하지 못합니다.  
+이 부분은 이후 개선할 예정입니다.
 
 ## Testing our first attempt at a Web API
 
-Now we can start up a sample server that serves our snippets.
-
-Quit out of the shell...
+이제 샘플 서버를 실행합니다.
 
 ```pycon
 >>> quit()
 ```
 
-...and start up Django's development server.
+...그리고 Django 개발 서버를 실행합니다.
 
 ```bash
 python manage.py runserver
@@ -362,17 +381,16 @@ Starting Development server at http://127.0.0.1:8000/
 Quit the server with CONTROL-C.
 ```
 
-In another terminal window, we can test the server.
+다른 터미널에서 API를 테스트합니다.
 
-We can test our API using [curl][curl] or [httpie][httpie]. Httpie is a user friendly http client that's written in Python. Let's install that.
-
-You can install httpie using pip:
+[curl] 또는 [httpie]를 사용할 수 있습니다.  
+여기서는 httpie를 사용하겠습니다.
 
 ```bash
 pip install httpie
 ```
 
-Finally, we can get a list of all of the snippets:
+전체 스니펫 목록을 조회합니다.
 
 ```bash
 http GET http://127.0.0.1:8000/snippets/ --unsorted
@@ -407,7 +425,7 @@ HTTP/1.1 200 OK
 ]
 ```
 
-Or we can get a particular snippet by referencing its id:
+특정 스니펫도 조회할 수 있습니다.
 
 ```bash
 http GET http://127.0.0.1:8000/snippets/2/ --unsorted
@@ -424,15 +442,15 @@ HTTP/1.1 200 OK
 }
 ```
 
-Similarly, you can have the same json displayed by visiting these URLs in a web browser.
+브라우저에서 직접 URL에 접속해도 동일한 JSON을 확인할 수 있습니다.
 
 ## Where are we now
 
-We're doing okay so far, we've got a serialization API that feels pretty similar to Django's Forms API, and some regular Django views.
+지금까지 우리는 Django Form과 유사한 직렬화 API와 기본적인 Django view를 사용한 Web API를 구축했습니다.
 
-Our API views don't do anything particularly special at the moment, beyond serving `json` responses, and there are some error handling edge cases we'd still like to clean up, but it's a functioning Web API.
+아직 에러 처리나 고급 기능은 부족하지만, 동작하는 API를 만드는 데에는 충분합니다.
 
-We'll see how we can start to improve things in [part 2 of the tutorial][tut-2].
+다음 단계는 [part 2 of the tutorial][tut-2]에서 이어서 살펴보겠습니다.
 
 [quickstart]: quickstart.md
 [repo]: https://github.com/encode/rest-framework-tutorial

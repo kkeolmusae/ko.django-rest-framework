@@ -1,43 +1,54 @@
 # Tutorial 2: Requests and Responses
 
-From this point we're going to really start covering the core of REST framework.
-Let's introduce a couple of essential building blocks.
+이제부터는 REST framework의 핵심 내용을 본격적으로 다루기 시작합니다.  
+여기서는 몇 가지 필수적인 구성 요소를 소개하겠습니다.
 
 ## Request objects
 
-REST framework introduces a `Request` object that extends the regular `HttpRequest`, and provides more flexible request parsing.  The core functionality of the `Request` object is the `request.data` attribute, which is similar to `request.POST`, but more useful for working with Web APIs.
+REST framework는 기존의 `HttpRequest`를 확장한 `Request` 객체를 제공합니다.  
+이 객체는 더 유연한 요청 파싱 기능을 제공하며, 핵심 기능은 `request.data` 속성입니다.
+
+`request.data`는 `request.POST`와 유사하지만, Web API 작업에 훨씬 유용합니다.
 
 ```python
-request.POST  # Only handles form data.  Only works for 'POST' method.
-request.data  # Handles arbitrary data.  Works for 'POST', 'PUT' and 'PATCH' methods.
+request.POST  # 폼 데이터만 처리합니다. 'POST' 메서드에서만 동작합니다.
+request.data  # 임의의 데이터를 처리합니다. 'POST', 'PUT', 'PATCH' 메서드에서 동작합니다.
 ```
 
 ## Response objects
 
-REST framework also introduces a `Response` object, which is a type of `TemplateResponse` that takes unrendered content and uses content negotiation to determine the correct content type to return to the client.
+REST framework는 또한 `Response` 객체를 제공합니다.  
+이 객체는 렌더링되지 않은 콘텐츠를 받아, 콘텐츠 네고시에이션을 통해 클라이언트에 반환할 적절한 콘텐츠 타입을 결정하는 `TemplateResponse`의 한 형태입니다.
 
 ```python
-return Response(data)  # Renders to content type as requested by the client.
+return Response(data)  # 클라이언트가 요청한 콘텐츠 타입으로 렌더링됩니다.
 ```
 
 ## Status codes
 
-Using numeric HTTP status codes in your views doesn't always make for obvious reading, and it's easy to not notice if you get an error code wrong.  REST framework provides more explicit identifiers for each status code, such as `HTTP_400_BAD_REQUEST` in the `status` module.  It's a good idea to use these throughout rather than using numeric identifiers.
+뷰에서 숫자 기반의 HTTP 상태 코드를 직접 사용하는 것은 가독성이 떨어질 수 있고,  
+잘못된 상태 코드를 사용해도 눈치채기 어려운 문제가 있습니다.
+
+REST framework는 `status` 모듈에 `HTTP_400_BAD_REQUEST`와 같은 명확한 식별자를 제공합니다.  
+숫자 대신 이러한 상수를 사용하는 것이 좋습니다.
 
 ## Wrapping API views
 
-REST framework provides two wrappers you can use to write API views.
+REST framework는 API view를 작성할 때 사용할 수 있는 두 가지 래퍼(wrapper)를 제공합니다.
 
-1. The `@api_view` decorator for working with function based views.
-2. The `APIView` class for working with class-based views.
+1. 함수 기반 view에서 사용하는 `@api_view` 데코레이터
+2. 클래스 기반 view에서 사용하는 `APIView` 클래스
 
-These wrappers provide a few bits of functionality such as making sure you receive `Request` instances in your view, and adding context to `Response` objects so that content negotiation can be performed.
+이 래퍼들은 다음과 같은 기능을 제공합니다.
 
-The wrappers also provide behavior such as returning `405 Method Not Allowed` responses when appropriate, and handling any `ParseError` exceptions that occur when accessing `request.data` with malformed input.
+- view에서 `Request` 인스턴스를 전달받도록 보장
+- 콘텐츠 네고시에이션을 수행할 수 있도록 `Response` 객체에 컨텍스트 추가
+- 허용되지 않은 메서드에 대해 `405 Method Not Allowed` 응답 반환
+- 잘못된 입력으로 `request.data` 접근 시 발생하는 `ParseError` 예외 처리
 
 ## Pulling it all together
 
-Okay, let's go ahead and start using these new components to refactor our views slightly.
+이제 새로운 컴포넌트들을 사용해 기존 view를 약간 리팩터링해 보겠습니다.
 
 ```python
 from rest_framework import status
@@ -65,9 +76,11 @@ def snippet_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 ```
 
-Our instance view is an improvement over the previous example.  It's a little more concise, and the code now feels very similar to if we were working with the Forms API.  We're also using named status codes, which makes the response meanings more obvious.
+이 view는 이전 예제보다 더 개선되었습니다.  
+코드는 더 간결해졌고, Django Forms API를 사용할 때와 매우 유사한 느낌을 줍니다.  
+또한 이름이 지정된 상태 코드를 사용함으로써 응답의 의미도 더 명확해졌습니다.
 
-Here is the view for an individual snippet, in the `views.py` module.
+다음은 개별 스니펫을 처리하는 view입니다 (`views.py`).
 
 ```python
 @api_view(["GET", "PUT", "DELETE"])
@@ -96,20 +109,26 @@ def snippet_detail(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 ```
 
-This should all feel very familiar - it is not a lot different from working with regular Django views.
+이 구조 역시 일반적인 Django view를 작성하는 방식과 크게 다르지 않습니다.
 
-Notice that we're no longer explicitly tying our requests or responses to a given content type.  `request.data` can handle incoming `json` requests, but it can also handle other formats.  Similarly we're returning response objects with data, but allowing REST framework to render the response into the correct content type for us.
+이제 요청이나 응답을 특정 콘텐츠 타입에 직접 묶지 않는다는 점에 주목하세요.  
+`request.data`는 `json` 요청뿐만 아니라 다양한 형식을 처리할 수 있습니다.  
+마찬가지로 우리는 데이터만 담은 `Response` 객체를 반환하고, 실제 렌더링은 REST framework가 적절한 콘텐츠 타입으로 처리합니다.
 
 ## Adding optional format suffixes to our URLs
 
-To take advantage of the fact that our responses are no longer hardwired to a single content type let's add support for format suffixes to our API endpoints.  Using format suffixes gives us URLs that explicitly refer to a given format, and means our API will be able to handle URLs such as [<http://example.com/api/items/4.json>][json-url].
+이제 응답이 단일 콘텐츠 타입에 고정되지 않으므로,  
+API 엔드포인트에 포맷 접미사(format suffix)를 지원하도록 해보겠습니다.
 
-Start by adding a `format` keyword argument to both of the views, like so.
-`def snippet_list(request, format=None):`
-and
+포맷 접미사를 사용하면 [<http://example.com/api/items/4.json>][json-url]과 같이  
+특정 포맷을 명시적으로 나타내는 URL을 사용할 수 있습니다.
+
+먼저 두 view 모두에 `format` 키워드 인자를 추가합니다.
+
+`def snippet_list(request, format=None):`  
 `def snippet_detail(request, pk, format=None):`
 
-Now update the `snippets/urls.py` file slightly, to append a set of `format_suffix_patterns` in addition to the existing URLs.
+그 다음 `snippets/urls.py` 파일을 수정하여 기존 URL 패턴에 `format_suffix_patterns`를 추가합니다.
 
 ```python
 from django.urls import path
@@ -124,13 +143,14 @@ urlpatterns = [
 urlpatterns = format_suffix_patterns(urlpatterns)
 ```
 
-We don't necessarily need to add these extra url patterns in, but it gives us a simple, clean way of referring to a specific format.
+이 설정은 필수는 아니지만, 특정 포맷을 명확하게 지정할 수 있는 간단하고 깔끔한 방법을 제공합니다.
 
 ## How's it looking?
 
-Go ahead and test the API from the command line, as we did in [tutorial part 1][tut-1].  Everything is working pretty similarly, although we've got some nicer error handling if we send invalid requests.
+[tutorial part 1][tut-1]에서 했던 것처럼 커맨드라인에서 API를 테스트해 보세요.  
+동작 방식은 거의 동일하지만, 잘못된 요청을 보냈을 때 에러 처리가 더 깔끔해졌습니다.
 
-We can get a list of all of the snippets, as before.
+이전과 마찬가지로 모든 스니펫 목록을 조회할 수 있습니다.
 
 ```bash
 http http://127.0.0.1:8000/snippets/
@@ -157,24 +177,24 @@ HTTP/1.1 200 OK
 ]
 ```
 
-We can control the format of the response that we get back, either by using the `Accept` header:
+`Accept` 헤더를 사용해 응답 포맷을 제어할 수도 있습니다.
 
 ```bash
-http http://127.0.0.1:8000/snippets/ Accept:application/json  # Request JSON
-http http://127.0.0.1:8000/snippets/ Accept:text/html         # Request HTML
+http http://127.0.0.1:8000/snippets/ Accept:application/json  # JSON 요청
+http http://127.0.0.1:8000/snippets/ Accept:text/html         # HTML 요청
 ```
 
-Or by appending a format suffix:
+또는 포맷 접미사를 사용할 수도 있습니다.
 
 ```bash
-http http://127.0.0.1:8000/snippets.json  # JSON suffix
-http http://127.0.0.1:8000/snippets.api   # Browsable API suffix
+http http://127.0.0.1:8000/snippets.json  # JSON 접미사
+http http://127.0.0.1:8000/snippets.api   # Browsable API 접미사
 ```
 
-Similarly, we can control the format of the request that we send, using the `Content-Type` header.
+요청에 사용하는 포맷 역시 `Content-Type` 헤더로 제어할 수 있습니다.
 
 ```bash
-# POST using form data
+# 폼 데이터로 POST
 http --form POST http://127.0.0.1:8000/snippets/ code="print(123)"
 
 {
@@ -186,7 +206,7 @@ http --form POST http://127.0.0.1:8000/snippets/ code="print(123)"
     "style": "friendly"
 }
 
-# POST using JSON
+# JSON으로 POST
 http --json POST http://127.0.0.1:8000/snippets/ code="print(456)"
 
 {
@@ -199,21 +219,26 @@ http --json POST http://127.0.0.1:8000/snippets/ code="print(456)"
 }
 ```
 
-If you add a `--debug` switch to the `http` requests above, you will be able to see the request type in request headers.
+위의 `http` 요청에 `--debug` 옵션을 추가하면, 요청 헤더에서 실제 요청 타입을 확인할 수 있습니다.
 
-Now go and open the API in a web browser, by visiting [<http://127.0.0.1:8000/snippets/>][devserver].
+이제 브라우저를 열고 [<http://127.0.0.1:8000/snippets/>][devserver]로 접속해 보세요.
 
 ### Browsability
 
-Because the API chooses the content type of the response based on the client request, it will, by default, return an HTML-formatted representation of the resource when that resource is requested by a web browser.  This allows for the API to return a fully web-browsable HTML representation.
+API는 클라이언트 요청에 따라 응답의 콘텐츠 타입을 결정하므로,  
+웹 브라우저에서 접근하면 기본적으로 HTML 형식의 리소스 표현을 반환합니다.
 
-Having a web-browsable API is a huge usability win, and makes developing and using your API much easier.  It also dramatically lowers the barrier-to-entry for other developers wanting to inspect and work with your API.
+이로 인해 API는 완전히 웹에서 탐색 가능한 HTML 인터페이스를 제공하게 됩니다.
 
-See the [browsable api][browsable-api] topic for more information about the browsable API feature and how to customize it.
+웹에서 탐색 가능한 API는 사용성과 개발 경험을 크게 향상시키며,  
+다른 개발자들이 API를 이해하고 활용하는 진입 장벽도 크게 낮춰 줍니다.
+
+자세한 내용과 커스터마이징 방법은 [browsable api][browsable-api] 문서를 참고하세요.
 
 ## What's next?
 
-In [tutorial part 3][tut-3], we'll start using class-based views, and see how generic views reduce the amount of code we need to write.
+다음 단계인 [tutorial part 3][tut-3]에서는 클래스 기반 view를 사용하고,  
+제네릭 view를 통해 작성해야 할 코드 양을 어떻게 줄일 수 있는지 살펴봅니다.
 
 [json-url]: http://example.com/api/items/4.json
 [devserver]: http://127.0.0.1:8000/snippets/
