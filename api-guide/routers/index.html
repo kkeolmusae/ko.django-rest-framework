@@ -413,17 +413,17 @@
 
                 
                   <li class="main">
-                    <a href="#routers">Routers</a>
+                    <a href="#routers">라우터 (Routers)</a>
                   </li>
 
                   
                     <li>
-                      <a href="#usage">Usage</a>
+                      <a href="#usage">사용법 (Usage)</a>
                     </li>
                   
                 
                   <li class="main">
-                    <a href="#api-guide">API Guide</a>
+                    <a href="#api">API 가이드</a>
                   </li>
 
                   
@@ -437,25 +437,25 @@
                   
                 
                   <li class="main">
-                    <a href="#custom-routers">Custom Routers</a>
+                    <a href="#custom-routers">커스텀 라우터 (Custom Routers)</a>
                   </li>
 
                   
                     <li>
-                      <a href="#customizing-dynamic-routes">Customizing dynamic routes</a>
+                      <a href="#_2">동적 라우트 커스터마이징</a>
                     </li>
                   
                     <li>
-                      <a href="#example">Example</a>
+                      <a href="#_3">예제</a>
                     </li>
                   
                     <li>
-                      <a href="#advanced-custom-routers">Advanced custom routers</a>
+                      <a href="#_4">고급 커스텀 라우터</a>
                     </li>
                   
                 
                   <li class="main">
-                    <a href="#third-party-packages">Third Party Packages</a>
+                    <a href="#third-party-packages">서드파티 패키지 (Third Party Packages)</a>
                   </li>
 
                   
@@ -492,15 +492,16 @@
                 
               
 
-              <h1 id="routers"><a class="toclink" href="#routers">Routers</a></h1>
+              <h1 id="routers"><a class="toclink" href="#routers">라우터 (Routers)</a></h1>
 <blockquote>
-<p>Resource routing allows you to quickly declare all of the common routes for a given resourceful controller.  Instead of declaring separate routes for your index... a resourceful route declares them in a single line of code.</p>
-<p>&mdash; <a href="https://guides.rubyonrails.org/routing.html">Ruby on Rails Documentation</a></p>
+<p>리소스 라우팅을 사용하면 특정 리소스형 컨트롤러에 대해 공통적으로 사용되는 모든 라우트를 빠르게 선언할 수 있습니다.<br />
+index, show 등의 개별 라우트를 각각 선언하는 대신, 리소스 라우트는 한 줄의 코드로 이를 모두 선언합니다.</p>
+<p>&mdash; <a href="https://guides.rubyonrails.org/routing.html">Ruby on Rails 문서</a></p>
 </blockquote>
-<p>Some Web frameworks such as Rails provide functionality for automatically determining how the URLs for an application should be mapped to the logic that deals with handling incoming requests.</p>
-<p>REST framework adds support for automatic URL routing to Django, and provides you with a simple, quick and consistent way of wiring your view logic to a set of URLs.</p>
-<h2 id="usage"><a class="toclink" href="#usage">Usage</a></h2>
-<p>Here's an example of a simple URL conf, that uses <code>SimpleRouter</code>.</p>
+<p>Rails와 같은 일부 웹 프레임워크는 애플리케이션의 URL을 들어오는 요청을 처리하는 로직과 어떻게 매핑할지 자동으로 결정해주는 기능을 제공합니다.</p>
+<p>Django REST framework는 Django에 자동 URL 라우팅에 대한 지원을 추가하여, 뷰 로직을 URL 집합에 연결하는 간단하고 빠르며 일관된 방법을 제공합니다.</p>
+<h2 id="usage"><a class="toclink" href="#usage">사용법 (Usage)</a></h2>
+<p>다음은 <code>SimpleRouter</code>를 사용하는 간단한 URL 설정 예제입니다.</p>
 <pre><code>from rest_framework import routers
 
 router = routers.SimpleRouter()
@@ -508,32 +509,38 @@ router.register(r'users', UserViewSet)
 router.register(r'accounts', AccountViewSet)
 urlpatterns = router.urls
 </code></pre>
-<p>There are two mandatory arguments to the <code>register()</code> method:</p>
+<p><code>register()</code> 메서드에는 두 개의 필수 인자가 있습니다.</p>
 <ul>
-<li><code>prefix</code> - The URL prefix to use for this set of routes.</li>
-<li><code>viewset</code> - The viewset class.</li>
+<li><code>prefix</code> - 이 라우트 집합에 사용할 URL 접두사</li>
+<li><code>viewset</code> - 뷰셋 클래스</li>
 </ul>
-<p>Optionally, you may also specify an additional argument:</p>
+<p>선택적으로 다음 인자를 추가할 수도 있습니다.</p>
 <ul>
-<li><code>basename</code> - The base to use for the URL names that are created.  If unset the basename will be automatically generated based on the <code>queryset</code> attribute of the viewset, if it has one.  Note that if the viewset does not include a <code>queryset</code> attribute then you must set <code>basename</code> when registering the viewset.</li>
+<li><code>basename</code> - 생성될 URL 이름의 기본(base) 값<br />
+  지정하지 않으면, 뷰셋에 <code>queryset</code> 속성이 있는 경우 이를 기반으로 자동 생성됩니다.<br />
+  단, 뷰셋에 <code>queryset</code> 속성이 없다면 반드시 <code>basename</code>을 명시적으로 지정해야 합니다.</li>
 </ul>
-<p>The example above would generate the following URL patterns:</p>
+<p>위 예제는 다음과 같은 URL 패턴을 생성합니다.</p>
 <ul>
-<li>URL pattern: <code>^users/$</code>  Name: <code>'user-list'</code></li>
-<li>URL pattern: <code>^users/{pk}/$</code>  Name: <code>'user-detail'</code></li>
-<li>URL pattern: <code>^accounts/$</code>  Name: <code>'account-list'</code></li>
-<li>URL pattern: <code>^accounts/{pk}/$</code>  Name: <code>'account-detail'</code></li>
+<li>URL 패턴: <code>^users/$</code>  이름: <code>'user-list'</code></li>
+<li>URL 패턴: <code>^users/{pk}/$</code>  이름: <code>'user-detail'</code></li>
+<li>URL 패턴: <code>^accounts/$</code>  이름: <code>'account-list'</code></li>
+<li>URL 패턴: <code>^accounts/{pk}/$</code>  이름: <code>'account-detail'</code></li>
 </ul>
 <hr />
-<p><strong>Note</strong>: The <code>basename</code> argument is used to specify the initial part of the view name pattern.  In the example above, that's the <code>user</code> or <code>account</code> part.</p>
-<p>Typically you won't <em>need</em> to specify the <code>basename</code> argument, but if you have a viewset where you've defined a custom <code>get_queryset</code> method, then the viewset may not have a <code>.queryset</code> attribute set.  If you try to register that viewset you'll see an error like this:</p>
+<p><strong>참고</strong>: <code>basename</code> 인자는 뷰 이름 패턴의 앞부분을 지정하는 데 사용됩니다.<br />
+위 예제에서는 <code>user</code>, <code>account</code> 부분에 해당합니다.</p>
+<p>일반적으로 <code>basename</code>을 직접 지정할 필요는 없습니다.<br />
+하지만 커스텀 <code>get_queryset</code> 메서드를 정의한 뷰셋의 경우, <code>.queryset</code> 속성이 설정되어 있지 않을 수 있습니다.<br />
+이런 뷰셋을 등록하려고 하면 다음과 같은 에러가 발생합니다.</p>
 <pre><code>'basename' argument not specified, and could not automatically determine the name from the viewset, as it does not have a '.queryset' attribute.
 </code></pre>
-<p>This means you'll need to explicitly set the <code>basename</code> argument when registering the viewset, as it could not be automatically determined from the model name.</p>
+<p>이는 모델 이름으로부터 <code>basename</code>을 자동으로 추론할 수 없다는 의미이므로, 뷰셋을 등록할 때 <code>basename</code>을 명시적으로 지정해야 합니다.</p>
 <hr />
-<h3 id="using-include-with-routers"><a class="toclink" href="#using-include-with-routers">Using <code>include</code> with routers</a></h3>
-<p>The <code>.urls</code> attribute on a router instance is simply a standard list of URL patterns. There are a number of different styles for how you can include these URLs.</p>
-<p>For example, you can append <code>router.urls</code> to a list of existing views...</p>
+<h3 id="include"><a class="toclink" href="#include">라우터와 함께 <code>include</code> 사용하기</a></h3>
+<p>라우터 인스턴스의 <code>.urls</code> 속성은 표준 Django URL 패턴 리스트입니다.<br />
+이를 포함시키는 방법에는 여러 가지가 있습니다.</p>
+<p>예를 들어, 기존 URL 패턴 리스트에 <code>router.urls</code>를 추가할 수 있습니다.</p>
 <pre><code>router = routers.SimpleRouter()
 router.register(r'users', UserViewSet)
 router.register(r'accounts', AccountViewSet)
@@ -544,34 +551,37 @@ urlpatterns = [
 
 urlpatterns += router.urls
 </code></pre>
-<p>Alternatively you can use Django's <code>include</code> function, like so...</p>
+<p>또는 Django의 <code>include</code> 함수를 사용할 수도 있습니다.</p>
 <pre><code>urlpatterns = [
     path('forgot-password', ForgotPasswordFormView.as_view()),
     path('', include(router.urls)),
 ]
 </code></pre>
-<p>You may use <code>include</code> with an application namespace:</p>
+<p>애플리케이션 네임스페이스와 함께 사용할 수도 있습니다.</p>
 <pre><code>urlpatterns = [
     path('forgot-password/', ForgotPasswordFormView.as_view()),
     path('api/', include((router.urls, 'app_name'))),
 ]
 </code></pre>
-<p>Or both an application and instance namespace:</p>
+<p>애플리케이션 네임스페이스와 인스턴스 네임스페이스를 모두 사용할 수도 있습니다.</p>
 <pre><code>urlpatterns = [
     path('forgot-password/', ForgotPasswordFormView.as_view()),
     path('api/', include((router.urls, 'app_name'), namespace='instance_name')),
 ]
 </code></pre>
-<p>See Django's <a href="https://docs.djangoproject.com/en/stable/topics/http/urls/#url-namespaces">URL namespaces docs</a> and the <a href="https://docs.djangoproject.com/en/stable/ref/urls/#include"><code>include</code> API reference</a> for more details.</p>
+<p>자세한 내용은 Django의 <a href="https://docs.djangoproject.com/en/stable/topics/http/urls/#url-namespaces">URL 네임스페이스 문서</a>와 <a href="https://docs.djangoproject.com/en/stable/ref/urls/#include"><code>include</code> API 레퍼런스</a>를 참고하세요.</p>
 <hr />
-<p><strong>Note</strong>: If using namespacing with hyperlinked serializers you'll also need to ensure that any <code>view_name</code> parameters
-on the serializers correctly reflect the namespace. In the examples above you'd need to include a parameter such as
-<code>view_name='app_name:user-detail'</code> for serializer fields hyperlinked to the user detail view.</p>
-<p>The automatic <code>view_name</code> generation uses a pattern like <code>%(model_name)-detail</code>. Unless your models names actually clash
-you may be better off <strong>not</strong> namespacing your Django REST Framework views when using hyperlinked serializers.</p>
+<p><strong>참고</strong>: 하이퍼링크드(serializer) 시리얼라이저에서 네임스페이싱을 사용하는 경우,<br />
+시리얼라이저의 <code>view_name</code> 파라미터도 해당 네임스페이스를 올바르게 반영해야 합니다.<br />
+위 예제에서는 사용자 상세 뷰에 대해 <code>view_name='app_name:user-detail'</code> 과 같이 지정해야 합니다.</p>
+<p>자동 <code>view_name</code> 생성은 <code>%(model_name)-detail</code> 형태의 패턴을 사용합니다.<br />
+모델 이름이 충돌하지 않는다면, 하이퍼링크드 시리얼라이저를 사용할 때는<br />
+Django REST Framework 뷰를 <strong>네임스페이싱하지 않는 편이 더 나을 수 있습니다</strong>.</p>
 <hr />
-<h3 id="routing-for-extra-actions"><a class="toclink" href="#routing-for-extra-actions">Routing for extra actions</a></h3>
-<p>A viewset may <a href="../viewsets/#marking-extra-actions-for-routing">mark extra actions for routing</a> by decorating a method with the <code>@action</code> decorator. These extra actions will be included in the generated routes. For example, given the <code>set_password</code> method on the <code>UserViewSet</code> class:</p>
+<h3 id="_1"><a class="toclink" href="#_1">추가 액션을 위한 라우팅</a></h3>
+<p>뷰셋은 <code>@action</code> 데코레이터를 사용해 <a href="../viewsets/#marking-extra-actions-for-routing">추가 액션을 라우팅 대상으로 표시</a>할 수 있습니다.<br />
+이 추가 액션들은 자동으로 생성되는 라우트에 포함됩니다.</p>
+<p>예를 들어, <code>UserViewSet</code> 클래스에 <code>set_password</code> 메서드가 있다면 다음과 같습니다.</p>
 <pre><code>from myapp.permissions import IsAdminOrIsSelf
 from rest_framework.decorators import action
 
@@ -582,14 +592,15 @@ class UserViewSet(ModelViewSet):
     def set_password(self, request, pk=None):
         ...
 </code></pre>
-<p>The following route would be generated:</p>
+<p>다음과 같은 라우트가 생성됩니다.</p>
 <ul>
-<li>URL pattern: <code>^users/{pk}/set_password/$</code></li>
-<li>URL name: <code>'user-set-password'</code></li>
+<li>URL 패턴: <code>^users/{pk}/set_password/$</code></li>
+<li>URL 이름: <code>'user-set-password'</code></li>
 </ul>
-<p>By default, the URL pattern is based on the method name, and the URL name is the combination of the <code>ViewSet.basename</code> and the hyphenated method name.
-If you don't want to use the defaults for either of these values, you can instead provide the <code>url_path</code> and <code>url_name</code> arguments to the <code>@action</code> decorator.</p>
-<p>For example, if you want to change the URL for our custom action to <code>^users/{pk}/change-password/$</code>, you could write:</p>
+<p>기본적으로 URL 패턴은 메서드 이름을 기반으로 하며,<br />
+URL 이름은 <code>ViewSet.basename</code>과 하이픈으로 연결된 메서드 이름의 조합입니다.</p>
+<p>기본값을 사용하지 않으려면, <code>@action</code> 데코레이터에 <code>url_path</code>와 <code>url_name</code> 인자를 직접 지정할 수 있습니다.</p>
+<p>예를 들어 URL을 <code>^users/{pk}/change-password/$</code>로 변경하고 싶다면 다음과 같이 작성할 수 있습니다.</p>
 <pre><code>from myapp.permissions import IsAdminOrIsSelf
 from rest_framework.decorators import action
 
@@ -601,16 +612,20 @@ class UserViewSet(ModelViewSet):
     def set_password(self, request, pk=None):
         ...
 </code></pre>
-<p>The above example would now generate the following URL pattern:</p>
+<p>이 경우 다음과 같은 URL이 생성됩니다.</p>
 <ul>
-<li>URL path: <code>^users/{pk}/change-password/$</code></li>
-<li>URL name: <code>'user-change_password'</code></li>
+<li>URL 경로: <code>^users/{pk}/change-password/$</code></li>
+<li>URL 이름: <code>'user-change_password'</code></li>
 </ul>
-<h3 id="using-django-path-with-routers"><a class="toclink" href="#using-django-path-with-routers">Using Django <code>path()</code> with routers</a></h3>
-<p>By default, the URLs created by routers use regular expressions. This behavior can be modified by setting the <code>use_regex_path</code> argument to <code>False</code> when instantiating the router, in this case <a href="https://docs.djangoproject.com/en/stable/topics/http/urls/#path-converters">path converters</a> are used. For example:</p>
+<h3 id="django-path"><a class="toclink" href="#django-path">라우터에서 Django <code>path()</code> 사용하기</a></h3>
+<p>기본적으로 라우터가 생성하는 URL은 정규식을 사용합니다.<br />
+이 동작은 라우터 생성 시 <code>use_regex_path=False</code>를 설정하면 변경할 수 있으며, 이 경우 <a href="https://docs.djangoproject.com/en/stable/topics/http/urls/#path-converters">path 컨버터</a>가 사용됩니다.</p>
 <pre><code>router = SimpleRouter(use_regex_path=False)
 </code></pre>
-<p>The router will match lookup values containing any characters except slashes and period characters.  For a more restrictive (or lenient) lookup pattern, set the <code>lookup_value_regex</code> attribute on the viewset or <code>lookup_value_converter</code> if using path converters.  For example, you can limit the lookup to valid UUIDs:</p>
+<p>라우터는 슬래시(<code>/</code>)와 점(<code>.</code>)을 제외한 모든 문자를 포함하는 lookup 값을 매칭합니다.<br />
+보다 엄격하거나 느슨한 패턴이 필요하다면, 뷰셋에 <code>lookup_value_regex</code>를 설정하거나<br />
+path 컨버터를 사용할 경우 <code>lookup_value_converter</code>를 설정할 수 있습니다.</p>
+<p>예를 들어 lookup 값을 UUID로 제한하려면 다음과 같이 작성할 수 있습니다.</p>
 <pre><code>class MyModelViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     lookup_field = 'my_model_id'
     lookup_value_regex = '[0-9a-f]{32}'
@@ -619,77 +634,91 @@ class MyPathModelViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     lookup_field = 'my_model_uuid'
     lookup_value_converter = 'uuid'
 </code></pre>
-<p>Note that path converters will be used on all URLs registered in the router, including viewset actions.</p>
-<h1 id="api-guide"><a class="toclink" href="#api-guide">API Guide</a></h1>
+<p>path 컨버터는 뷰셋 액션을 포함해 라우터에 등록된 모든 URL에 적용됩니다.</p>
+<h1 id="api"><a class="toclink" href="#api">API 가이드</a></h1>
 <h2 id="simplerouter"><a class="toclink" href="#simplerouter">SimpleRouter</a></h2>
-<p>This router includes routes for the standard set of <code>list</code>, <code>create</code>, <code>retrieve</code>, <code>update</code>, <code>partial_update</code> and <code>destroy</code> actions.  The viewset can also mark additional methods to be routed, using the <code>@action</code> decorator.</p>
+<p>이 라우터는 <code>list</code>, <code>create</code>, <code>retrieve</code>, <code>update</code>, <code>partial_update</code>, <code>destroy</code> 액션에 대한 기본 라우트를 포함합니다.<br />
+또한 <code>@action</code> 데코레이터를 사용해 추가 메서드를 라우팅할 수 있습니다.</p>
 <table border=1>
-    <tr><th>URL Style</th><th>HTTP Method</th><th>Action</th><th>URL Name</th></tr>
+    <tr><th>URL 형식</th><th>HTTP 메서드</th><th>액션</th><th>URL 이름</th></tr>
     <tr><td rowspan=2>{prefix}/</td><td>GET</td><td>list</td><td rowspan=2>{basename}-list</td></tr></tr>
     <tr><td>POST</td><td>create</td></tr>
-    <tr><td>{prefix}/{url_path}/</td><td>GET, or as specified by `methods` argument</td><td>`@action(detail=False)` decorated method</td><td>{basename}-{url_name}</td></tr>
+    <tr><td>{prefix}/{url_path}/</td><td>GET (또는 methods 인자로 지정된 메서드)</td><td>`@action(detail=False)` 메서드</td><td>{basename}-{url_name}</td></tr>
     <tr><td rowspan=4>{prefix}/{lookup}/</td><td>GET</td><td>retrieve</td><td rowspan=4>{basename}-detail</td></tr></tr>
     <tr><td>PUT</td><td>update</td></tr>
     <tr><td>PATCH</td><td>partial_update</td></tr>
     <tr><td>DELETE</td><td>destroy</td></tr>
-    <tr><td>{prefix}/{lookup}/{url_path}/</td><td>GET, or as specified by `methods` argument</td><td>`@action(detail=True)` decorated method</td><td>{basename}-{url_name}</td></tr>
+    <tr><td>{prefix}/{lookup}/{url_path}/</td><td>GET (또는 methods 인자로 지정된 메서드)</td><td>`@action(detail=True)` 메서드</td><td>{basename}-{url_name}</td></tr>
 </table>
 
-<p>By default, the URLs created by <code>SimpleRouter</code> are appended with a trailing slash.
-This behavior can be modified by setting the <code>trailing_slash</code> argument to <code>False</code> when instantiating the router.  For example:</p>
+<p>기본적으로 <code>SimpleRouter</code>가 생성하는 URL에는 trailing slash(<code>/</code>)가 붙습니다.<br />
+이 동작은 라우터 생성 시 <code>trailing_slash=False</code>로 변경할 수 있습니다.</p>
 <pre><code>router = SimpleRouter(trailing_slash=False)
 </code></pre>
-<p>Trailing slashes are conventional in Django, but are not used by default in some other frameworks such as Rails.  Which style you choose to use is largely a matter of preference, although some javascript frameworks may expect a particular routing style.</p>
+<p>Django에서는 trailing slash가 관례이지만, Rails와 같은 일부 프레임워크에서는 기본적으로 사용하지 않습니다.<br />
+어떤 방식을 사용할지는 취향의 문제이며, 일부 JavaScript 프레임워크는 특정 라우팅 스타일을 기대할 수도 있습니다.</p>
 <h2 id="defaultrouter"><a class="toclink" href="#defaultrouter">DefaultRouter</a></h2>
-<p>This router is similar to <code>SimpleRouter</code> as above, but additionally includes a default API root view, that returns a response containing hyperlinks to all the list views.  It also generates routes for optional <code>.json</code> style format suffixes.</p>
+<p>이 라우터는 <code>SimpleRouter</code>와 유사하지만, 추가로 기본 API 루트 뷰를 포함합니다.<br />
+이 루트 뷰는 모든 list 뷰에 대한 하이퍼링크를 반환합니다.<br />
+또한 <code>.json</code>과 같은 포맷 접미사(format suffix)에 대한 라우트도 생성합니다.</p>
 <table border=1>
-    <tr><th>URL Style</th><th>HTTP Method</th><th>Action</th><th>URL Name</th></tr>
-    <tr><td>[.format]</td><td>GET</td><td>automatically generated root view</td><td>api-root</td></tr></tr>
+    <tr><th>URL 형식</th><th>HTTP 메서드</th><th>액션</th><th>URL 이름</th></tr>
+    <tr><td>[.format]</td><td>GET</td><td>자동 생성된 루트 뷰</td><td>api-root</td></tr></tr>
     <tr><td rowspan=2>{prefix}/[.format]</td><td>GET</td><td>list</td><td rowspan=2>{basename}-list</td></tr></tr>
     <tr><td>POST</td><td>create</td></tr>
-    <tr><td>{prefix}/{url_path}/[.format]</td><td>GET, or as specified by `methods` argument</td><td>`@action(detail=False)` decorated method</td><td>{basename}-{url_name}</td></tr>
+    <tr><td>{prefix}/{url_path}/[.format]</td><td>GET (또는 methods 인자로 지정된 메서드)</td><td>`@action(detail=False)` 메서드</td><td>{basename}-{url_name}</td></tr>
     <tr><td rowspan=4>{prefix}/{lookup}/[.format]</td><td>GET</td><td>retrieve</td><td rowspan=4>{basename}-detail</td></tr></tr>
     <tr><td>PUT</td><td>update</td></tr>
     <tr><td>PATCH</td><td>partial_update</td></tr>
     <tr><td>DELETE</td><td>destroy</td></tr>
-    <tr><td>{prefix}/{lookup}/{url_path}/[.format]</td><td>GET, or as specified by `methods` argument</td><td>`@action(detail=True)` decorated method</td><td>{basename}-{url_name}</td></tr>
+    <tr><td>{prefix}/{lookup}/{url_path}/[.format]</td><td>GET (또는 methods 인자로 지정된 메서드)</td><td>`@action(detail=True)` 메서드</td><td>{basename}-{url_name}</td></tr>
 </table>
 
-<p>As with <code>SimpleRouter</code> the trailing slashes on the URL routes can be removed by setting the <code>trailing_slash</code> argument to <code>False</code> when instantiating the router.</p>
+<p><code>SimpleRouter</code>와 마찬가지로, <code>trailing_slash=False</code>를 설정해 URL의 trailing slash를 제거할 수 있습니다.</p>
 <pre><code>router = DefaultRouter(trailing_slash=False)
 </code></pre>
-<h1 id="custom-routers"><a class="toclink" href="#custom-routers">Custom Routers</a></h1>
-<p>Implementing a custom router isn't something you'd need to do very often, but it can be useful if you have specific requirements about how the URLs for your API are structured.  Doing so allows you to encapsulate the URL structure in a reusable way that ensures you don't have to write your URL patterns explicitly for each new view.</p>
-<p>The simplest way to implement a custom router is to subclass one of the existing router classes.  The <code>.routes</code> attribute is used to template the URL patterns that will be mapped to each viewset. The <code>.routes</code> attribute is a list of <code>Route</code> named tuples.</p>
-<p>The arguments to the <code>Route</code> named tuple are:</p>
-<p><strong>url</strong>: A string representing the URL to be routed.  May include the following format strings:</p>
+<h1 id="custom-routers"><a class="toclink" href="#custom-routers">커스텀 라우터 (Custom Routers)</a></h1>
+<p>커스텀 라우터를 구현할 일은 많지 않지만, API URL 구조에 대한 특정 요구사항이 있는 경우 유용할 수 있습니다. 이를 통해 각 뷰마다 URL 패턴을 직접 작성하지 않아도 되도록, URL 구조를 재사용 가능한 형태로 캡슐화할 수 있습니다.</p>
+<p>가장 간단한 방법은 기존 라우터 클래스를 상속받는 것입니다.<br />
+<code>.routes</code> 속성은 각 뷰셋에 매핑될 URL 패턴의 템플릿 역할을 하며,<br />
+<code>Route</code> 네임드 튜플의 리스트로 구성됩니다.</p>
+<p><code>Route</code> 네임드 튜플의 인자는 다음과 같습니다.</p>
+<p><strong>url</strong>: 라우팅될 URL 문자열<br />
+다음과 같은 포맷 문자열을 포함할 수 있습니다.</p>
 <ul>
-<li><code>{prefix}</code> - The URL prefix to use for this set of routes.</li>
-<li><code>{lookup}</code> - The lookup field used to match against a single instance.</li>
-<li><code>{trailing_slash}</code> - Either a '/' or an empty string, depending on the <code>trailing_slash</code> argument.</li>
+<li><code>{prefix}</code> - 이 라우트 집합에 사용할 URL 접두사</li>
+<li><code>{lookup}</code> - 단일 인스턴스를 매칭하는 lookup 필드</li>
+<li><code>{trailing_slash}</code> - <code>/</code> 또는 빈 문자열</li>
 </ul>
-<p><strong>mapping</strong>: A mapping of HTTP method names to the view methods</p>
-<p><strong>name</strong>: The name of the URL as used in <code>reverse</code> calls. May include the following format string:</p>
+<p><strong>mapping</strong>: HTTP 메서드와 뷰 메서드의 매핑</p>
+<p><strong>name</strong>: <code>reverse</code> 호출에 사용되는 URL 이름<br />
+다음 포맷 문자열을 포함할 수 있습니다.</p>
 <ul>
-<li><code>{basename}</code> - The base to use for the URL names that are created.</li>
+<li><code>{basename}</code> - URL 이름의 기본값</li>
 </ul>
-<p><strong>initkwargs</strong>: A dictionary of any additional arguments that should be passed when instantiating the view.  Note that the <code>detail</code>, <code>basename</code>, and <code>suffix</code> arguments are reserved for viewset introspection and are also used by the browsable API to generate the view name and breadcrumb links.</p>
-<h2 id="customizing-dynamic-routes"><a class="toclink" href="#customizing-dynamic-routes">Customizing dynamic routes</a></h2>
-<p>You can also customize how the <code>@action</code> decorator is routed. Include the <code>DynamicRoute</code> named tuple in the <code>.routes</code> list, setting the <code>detail</code> argument as appropriate for the list-based and detail-based routes. In addition to <code>detail</code>, the arguments to <code>DynamicRoute</code> are:</p>
-<p><strong>url</strong>: A string representing the URL to be routed. May include the same format strings as <code>Route</code>, and additionally accepts the <code>{url_path}</code> format string.</p>
-<p><strong>name</strong>: The name of the URL as used in <code>reverse</code> calls. May include the following format strings:</p>
+<p><strong>initkwargs</strong>: 뷰 인스턴스 생성 시 전달될 추가 인자 딕셔너리<br />
+<code>detail</code>, <code>basename</code>, <code>suffix</code> 인자는 예약되어 있으며,<br />
+브라우저블 API에서 뷰 이름과 breadcrumb 생성을 위해 사용됩니다.</p>
+<h2 id="_2"><a class="toclink" href="#_2">동적 라우트 커스터마이징</a></h2>
+<p><code>@action</code> 데코레이터가 어떻게 라우팅되는지도 커스터마이징할 수 있습니다.<br />
+<code>.routes</code> 리스트에 <code>DynamicRoute</code> 네임드 튜플을 포함시키면 됩니다.</p>
+<p><code>DynamicRoute</code>의 인자는 다음과 같습니다.</p>
+<p><strong>url</strong>: 라우팅될 URL 문자열<br />
+<code>Route</code>와 동일한 포맷 문자열과 함께 <code>{url_path}</code>를 추가로 사용할 수 있습니다.</p>
+<p><strong>name</strong>: <code>reverse</code> 호출에 사용되는 URL 이름<br />
+다음 포맷 문자열을 포함할 수 있습니다.</p>
 <ul>
-<li><code>{basename}</code> - The base to use for the URL names that are created.</li>
-<li><code>{url_name}</code> - The <code>url_name</code> provided to the <code>@action</code>.</li>
+<li><code>{basename}</code></li>
+<li><code>{url_name}</code> - <code>@action</code>에 제공된 <code>url_name</code></li>
 </ul>
-<p><strong>initkwargs</strong>: A dictionary of any additional arguments that should be passed when instantiating the view.</p>
-<h2 id="example"><a class="toclink" href="#example">Example</a></h2>
-<p>The following example will only route to the <code>list</code> and <code>retrieve</code> actions, and does not use the trailing slash convention.</p>
+<p><strong>initkwargs</strong>: 뷰 인스턴스 생성 시 전달될 추가 인자 딕셔너리</p>
+<h2 id="_3"><a class="toclink" href="#_3">예제</a></h2>
+<p>다음 예제는 <code>list</code>와 <code>retrieve</code> 액션만 라우팅하며, trailing slash를 사용하지 않습니다.</p>
 <pre><code>from rest_framework.routers import Route, DynamicRoute, SimpleRouter
 
 class CustomReadOnlyRouter(SimpleRouter):
     """
-    A router for read-only APIs, which doesn't use trailing slashes.
+    trailing slash를 사용하지 않는 읽기 전용 API 라우터
     """
     routes = [
         Route(
@@ -714,11 +743,11 @@ class CustomReadOnlyRouter(SimpleRouter):
         )
     ]
 </code></pre>
-<p>Let's take a look at the routes our <code>CustomReadOnlyRouter</code> would generate for a simple viewset.</p>
+<p>이제 <code>CustomReadOnlyRouter</code>가 생성하는 라우트를 간단한 뷰셋에 적용해 보겠습니다.</p>
 <p><code>views.py</code>:</p>
 <pre><code>class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    A viewset that provides the standard actions
+    표준 액션을 제공하는 뷰셋
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -727,8 +756,7 @@ class CustomReadOnlyRouter(SimpleRouter):
     @action(detail=True)
     def group_names(self, request, pk=None):
         """
-        Returns a list of all the group names that the given
-        user belongs to.
+        해당 사용자가 속한 모든 그룹 이름을 반환합니다.
         """
         user = self.get_object()
         groups = user.groups.all()
@@ -739,31 +767,37 @@ class CustomReadOnlyRouter(SimpleRouter):
 router.register('users', UserViewSet)
 urlpatterns = router.urls
 </code></pre>
-<p>The following mappings would be generated...</p>
+<p>다음과 같은 매핑이 생성됩니다.</p>
 <table border=1>
-    <tr><th>URL</th><th>HTTP Method</th><th>Action</th><th>URL Name</th></tr>
+    <tr><th>URL</th><th>HTTP 메서드</th><th>액션</th><th>URL 이름</th></tr>
     <tr><td>/users</td><td>GET</td><td>list</td><td>user-list</td></tr>
     <tr><td>/users/{username}</td><td>GET</td><td>retrieve</td><td>user-detail</td></tr>
     <tr><td>/users/{username}/group_names</td><td>GET</td><td>group_names</td><td>user-group-names</td></tr>
 </table>
 
-<p>For another example of setting the <code>.routes</code> attribute, see the source code for the <code>SimpleRouter</code> class.</p>
-<h2 id="advanced-custom-routers"><a class="toclink" href="#advanced-custom-routers">Advanced custom routers</a></h2>
-<p>If you want to provide totally custom behavior, you can override <code>BaseRouter</code> and override the <code>get_urls(self)</code> method.  The method should inspect the registered viewsets and return a list of URL patterns.  The registered prefix, viewset and basename tuples may be inspected by accessing the <code>self.registry</code> attribute.</p>
-<p>You may also want to override the <code>get_default_basename(self, viewset)</code> method, or else always explicitly set the <code>basename</code> argument when registering your viewsets with the router.</p>
-<h1 id="third-party-packages"><a class="toclink" href="#third-party-packages">Third Party Packages</a></h1>
-<p>The following third party packages are also available.</p>
+<p><code>.routes</code> 속성을 설정하는 또 다른 예시는 <code>SimpleRouter</code> 클래스의 소스 코드를 참고하세요.</p>
+<h2 id="_4"><a class="toclink" href="#_4">고급 커스텀 라우터</a></h2>
+<p>완전히 커스텀한 동작이 필요하다면 <code>BaseRouter</code>를 상속받아<br />
+<code>get_urls(self)</code> 메서드를 오버라이드할 수 있습니다.<br />
+이 메서드는 등록된 뷰셋을 검사하여 URL 패턴 리스트를 반환해야 합니다.</p>
+<p>등록된 <code>(prefix, viewset, basename)</code> 튜플은 <code>self.registry</code> 속성을 통해 확인할 수 있습니다.</p>
+<p>또한 <code>get_default_basename(self, viewset)</code> 메서드를 오버라이드하거나,<br />
+라우터에 뷰셋을 등록할 때 항상 <code>basename</code>을 명시적으로 지정할 수도 있습니다.</p>
+<h1 id="third-party-packages"><a class="toclink" href="#third-party-packages">서드파티 패키지 (Third Party Packages)</a></h1>
+<p>다음과 같은 서드파티 패키지들도 사용할 수 있습니다.</p>
 <h2 id="drf-nested-routers"><a class="toclink" href="#drf-nested-routers">DRF Nested Routers</a></h2>
-<p>The <a href="https://github.com/alanjds/drf-nested-routers">drf-nested-routers package</a> provides routers and relationship fields for working with nested resources.</p>
+<p><a href="https://github.com/alanjds/drf-nested-routers">drf-nested-routers 패키지</a>는 중첩된 리소스를 다루기 위한 라우터와 관계 필드를 제공합니다.</p>
 <h2 id="modelrouter-wqdbrest"><a class="toclink" href="#modelrouter-wqdbrest">ModelRouter (wq.db.rest)</a></h2>
-<p>The <a href="https://wq.io/wq.db">wq.db package</a> provides an advanced <a href="https://wq.io/docs/router">ModelRouter</a> class (and singleton instance) that extends <code>DefaultRouter</code> with a <code>register_model()</code> API. Much like Django's <code>admin.site.register</code>, the only required argument to <code>rest.router.register_model</code> is a model class.  Reasonable defaults for a url prefix, serializer, and viewset will be inferred from the model and global configuration.</p>
+<p><a href="https://wq.io/wq.db">wq.db 패키지</a>는 <code>register_model()</code> API를 제공하는<br />
+고급 <a href="https://wq.io/docs/router">ModelRouter</a> 클래스를 제공합니다.</p>
+<p>Django의 <code>admin.site.register</code>와 유사하게, <code>rest.router.register_model</code>에는 모델 클래스 하나만 전달하면 됩니다. URL prefix, serializer, viewset에 대한 합리적인 기본값이 모델과 전역 설정을 기반으로 자동 추론됩니다.</p>
 <pre><code>from wq.db import rest
 from myapp.models import MyModel
 
 rest.router.register_model(MyModel)
 </code></pre>
 <h2 id="drf-extensions"><a class="toclink" href="#drf-extensions">DRF-extensions</a></h2>
-<p>The <a href="https://chibisov.github.io/drf-extensions/docs/"><code>DRF-extensions</code> package</a> provides <a href="https://chibisov.github.io/drf-extensions/docs/#routers">routers</a> for creating <a href="https://chibisov.github.io/drf-extensions/docs/#nested-routes">nested viewsets</a>, <a href="https://chibisov.github.io/drf-extensions/docs/#collection-level-controllers">collection level controllers</a> with <a href="https://chibisov.github.io/drf-extensions/docs/#controller-endpoint-name">customizable endpoint names</a>.</p>
+<p><a href="https://chibisov.github.io/drf-extensions/docs/"><code>DRF-extensions</code> 패키지</a>는 중첩 뷰셋, 컬렉션 레벨 컨트롤러, 커스터마이즈 가능한 엔드포인트 이름을 위한 다양한 <a href="https://chibisov.github.io/drf-extensions/docs/#routers">라우터</a>를 제공합니다.</p>
             
 
           </div> <!--/span-->
