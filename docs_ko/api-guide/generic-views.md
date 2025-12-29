@@ -4,21 +4,24 @@ source:
     - generics.py
 ---
 
-# Generic views
+# 제네릭 뷰 (Generic views)
 
-> Django’s generic views... were developed as a shortcut for common usage patterns... They take certain common idioms and patterns found in view development and abstract them so that you can quickly write common views of data without having to repeat yourself.
+> Django의 제네릭 뷰는 공통적인 사용 패턴을 위한 지름길로 개발되었습니다.  
+> 뷰 개발에서 자주 등장하는 관용구와 패턴을 추상화하여, 같은 코드를 반복하지 않고도 데이터에 대한 일반적인 뷰를 빠르게 작성할 수 있도록 합니다.
 >
 > &mdash; [Django Documentation][cite]
 
-One of the key benefits of class-based views is the way they allow you to compose bits of reusable behavior.  REST framework takes advantage of this by providing a number of pre-built views that provide for commonly used patterns.
+클래스 기반 뷰의 핵심적인 장점 중 하나는 재사용 가능한 동작을 조합할 수 있다는 점입니다.  
+REST framework는 이를 활용하여, 자주 사용되는 패턴을 처리하는 여러 가지 사전 정의된 뷰를 제공합니다.
 
-The generic views provided by REST framework allow you to quickly build API views that map closely to your database models.
+REST framework가 제공하는 제네릭 뷰를 사용하면 데이터베이스 모델과 밀접하게 매핑되는 API 뷰를 빠르게 구축할 수 있습니다.
 
-If the generic views don't suit the needs of your API, you can drop down to using the regular `APIView` class, or reuse the mixins and base classes used by the generic views to compose your own set of reusable generic views.
+제네릭 뷰가 API 요구사항에 맞지 않는 경우에는 일반 `APIView` 클래스를 직접 사용하거나,  
+제네릭 뷰에서 사용하는 mixin과 베이스 클래스를 재사용하여 자신만의 재사용 가능한 제네릭 뷰 세트를 구성할 수 있습니다.
 
-## Examples
+## 예제 (Examples)
 
-Typically when using the generic views, you'll override the view, and set several class attributes.
+일반적으로 제네릭 뷰를 사용할 때는 뷰 클래스를 상속하고 여러 클래스 속성을 설정합니다.
 
     from django.contrib.auth.models import User
     from myapp.serializers import UserSerializer
@@ -30,7 +33,7 @@ Typically when using the generic views, you'll override the view, and set severa
         serializer_class = UserSerializer
         permission_classes = [IsAdminUser]
 
-For more complex cases you might also want to override various methods on the view class.  For example.
+더 복잡한 경우에는 뷰 클래스의 여러 메서드를 오버라이드할 수도 있습니다. 예를 들면 다음과 같습니다.
 
     class UserList(generics.ListCreateAPIView):
         queryset = User.objects.all()
@@ -38,59 +41,90 @@ For more complex cases you might also want to override various methods on the vi
         permission_classes = [IsAdminUser]
 
         def list(self, request):
-            # Note the use of `get_queryset()` instead of `self.queryset`
+            # `self.queryset` 대신 `get_queryset()`을 사용하는 점에 주의
             queryset = self.get_queryset()
             serializer = UserSerializer(queryset, many=True)
             return Response(serializer.data)
 
-For very simple cases you might want to pass through any class attributes using the `.as_view()` method.  For example, your URLconf might include something like the following entry:
+아주 단순한 경우에는 `.as_view()` 메서드를 사용하여 클래스 속성을 그대로 전달할 수도 있습니다.  
+예를 들어 URL 설정에는 다음과 같은 항목이 포함될 수 있습니다.
 
     path('users/', ListCreateAPIView.as_view(queryset=User.objects.all(), serializer_class=UserSerializer), name='user-list')
 
 ---
 
-# API Reference
+# API 참조 (API Reference)
 
 ## GenericAPIView
 
-This class extends REST framework's `APIView` class, adding commonly required behavior for standard list and detail views.
+이 클래스는 REST framework의 `APIView` 클래스를 확장한 것으로,  
+표준적인 목록(list) 및 상세(detail) 뷰에 공통적으로 필요한 동작을 추가로 제공합니다.
 
-Each of the concrete generic views provided is built by combining `GenericAPIView`, with one or more mixin classes.
+REST framework에서 제공하는 모든 구체적인 제네릭 뷰는  
+`GenericAPIView`와 하나 이상의 mixin 클래스를 조합하여 구성됩니다.
 
-### Attributes
+### 속성 (Attributes)
 
-**Basic settings**:
+**기본 설정 (Basic settings)**
 
-The following attributes control the basic view behavior.
+다음 속성들은 뷰의 기본 동작을 제어합니다.
 
-* `queryset` - The queryset that should be used for returning objects from this view.  Typically, you must either set this attribute, or override the `get_queryset()` method. If you are overriding a view method, it is important that you call `get_queryset()` instead of accessing this property directly, as `queryset` will get evaluated once, and those results will be cached for all subsequent requests.
-* `serializer_class` - The serializer class that should be used for validating and deserializing input, and for serializing output.  Typically, you must either set this attribute, or override the `get_serializer_class()` method.
-* `lookup_field` - The model field that should be used for performing object lookup of individual model instances.  Defaults to `'pk'`.  Note that when using hyperlinked APIs you'll need to ensure that *both* the API views *and* the serializer classes set the lookup fields if you need to use a custom value.
-* `lookup_url_kwarg` - The URL keyword argument that should be used for object lookup.  The URL conf should include a keyword argument corresponding to this value.  If unset this defaults to using the same value as `lookup_field`.
+* `queryset`  
+  이 뷰에서 객체를 반환하는 데 사용할 queryset입니다.  
+  일반적으로 이 속성을 설정하거나 `get_queryset()` 메서드를 오버라이드해야 합니다.  
+  뷰 메서드를 오버라이드하는 경우, 이 속성에 직접 접근하지 말고 반드시 `get_queryset()`을 호출해야 합니다.  
+  `queryset`은 한 번만 평가되며, 그 결과는 이후 모든 요청에 대해 캐시됩니다.
 
-**Pagination**:
+* `serializer_class`  
+  입력 데이터를 검증하고 역직렬화하며, 출력 데이터를 직렬화하는 데 사용할 serializer 클래스입니다.  
+  일반적으로 이 속성을 설정하거나 `get_serializer_class()` 메서드를 오버라이드해야 합니다.
 
-The following attributes are used to control pagination when used with list views.
+* `lookup_field`  
+  개별 모델 인스턴스를 조회할 때 사용할 모델 필드입니다.  
+  기본값은 `'pk'`입니다.  
+  하이퍼링크 기반 API를 사용하는 경우, 사용자 정의 값을 사용하려면  
+  API 뷰와 serializer 클래스 **모두**에서 lookup 필드를 설정해야 합니다.
 
-* `pagination_class` - The pagination class that should be used when paginating list results. Defaults to the same value as the `DEFAULT_PAGINATION_CLASS` setting, which is `'rest_framework.pagination.PageNumberPagination'`. Setting `pagination_class=None` will disable pagination on this view.
+* `lookup_url_kwarg`  
+  객체 조회에 사용할 URL 키워드 인자입니다.  
+  URL 설정에는 이 값에 해당하는 키워드 인자가 포함되어야 합니다.  
+  설정하지 않으면 `lookup_field`와 동일한 값을 사용합니다.
 
-**Filtering**:
+**페이지네이션 (Pagination)**
 
-* `filter_backends` - A list of filter backend classes that should be used for filtering the queryset.  Defaults to the same value as the `DEFAULT_FILTER_BACKENDS` setting.
+다음 속성들은 목록 뷰에서 페이지네이션을 제어하는 데 사용됩니다.
 
-### Methods
+* `pagination_class`  
+  목록 결과를 페이지네이션할 때 사용할 페이지네이션 클래스입니다.  
+  기본값은 `DEFAULT_PAGINATION_CLASS` 설정과 동일하며,  
+  이는 `'rest_framework.pagination.PageNumberPagination'`입니다.  
+  `pagination_class = None`으로 설정하면 해당 뷰에서 페이지네이션이 비활성화됩니다.
 
-**Base methods**:
+**필터링 (Filtering)**
+
+* `filter_backends`  
+  queryset을 필터링하는 데 사용할 필터 백엔드 클래스 목록입니다.  
+  기본값은 `DEFAULT_FILTER_BACKENDS` 설정과 동일합니다.
+
+---
+
+### 메서드 (Methods)
+
+**기본 메서드 (Base methods)**
 
 #### `get_queryset(self)`
 
-Returns the queryset that should be used for list views, and that should be used as the base for lookups in detail views.  Defaults to returning the queryset specified by the `queryset` attribute.
+목록 뷰에서 사용할 queryset을 반환하며,  
+상세 뷰에서는 객체 조회의 기준이 되는 queryset으로 사용됩니다.  
+기본적으로 `queryset` 속성에 지정된 값을 반환합니다.
 
-This method should always be used rather than accessing `self.queryset` directly, as `self.queryset` gets evaluated only once, and those results are cached for all subsequent requests.
+이 메서드는 `self.queryset`에 직접 접근하는 대신 항상 사용해야 합니다.  
+`self.queryset`은 한 번만 평가되고 이후 요청에 대해 캐시되기 때문입니다.
 
-May be overridden to provide dynamic behavior, such as returning a queryset, that is specific to the user making the request.
+요청 사용자에 따라 서로 다른 queryset을 반환하는 등  
+동적인 동작을 구현하기 위해 오버라이드할 수 있습니다.
 
-For example:
+예:
 
     def get_queryset(self):
         user = self.request.user
@@ -98,31 +132,36 @@ For example:
 
 ---
 
-**Note:** If the `serializer_class` used in the generic view spans orm relations, leading to an n+1 problem, you could optimize your queryset in this method using `select_related` and `prefetch_related`. To get more information about n+1 problem and use cases of the mentioned methods refer to related section in [django documentation][django-docs-select-related].
+**참고(Note):**  
+제네릭 뷰에서 사용하는 `serializer_class`가 ORM 관계를 가로질러 접근하면서 N+1 문제를 유발하는 경우,  
+이 메서드에서 `select_related`와 `prefetch_related`를 사용해 queryset을 최적화할 수 있습니다.  
+N+1 문제와 관련 메서드의 사용 사례에 대해서는 [Django 문서][django-docs-select-related]를 참고하세요.
 
 ---
 
-### Avoiding N+1 Queries
+### N+1 쿼리 방지 (Avoiding N+1 Queries)
 
-When listing objects (e.g. using `ListAPIView` or `ModelViewSet`), serializers may trigger an N+1 query pattern if related objects are accessed individually for each item.
+객체 목록을 반환할 때(예: `ListAPIView`, `ModelViewSet`),  
+serializer가 각 항목마다 관련 객체에 접근하면 N+1 쿼리 패턴이 발생할 수 있습니다.
 
-To prevent this, optimize the queryset in `get_queryset()` or by setting the `queryset` class attribute using [`select_related()`](https://docs.djangoproject.com/en/stable/ref/models/querysets/#select-related) and [`prefetch_related()`](https://docs.djangoproject.com/en/stable/ref/models/querysets/#prefetch-related), depending on the type of relationship.
+이를 방지하려면 `get_queryset()` 메서드나 `queryset` 클래스 속성에서  
+관계 유형에 따라 `select_related()` 또는 `prefetch_related()`를 사용해 queryset을 최적화해야 합니다.
 
-**For ForeignKey and OneToOneField**:
+**ForeignKey 및 OneToOneField의 경우**
 
-Use `select_related()` to fetch related objects in the same query:
+같은 쿼리에서 관련 객체를 함께 가져오기 위해 `select_related()`를 사용합니다.
 
     def get_queryset(self):
         return Order.objects.select_related("customer", "billing_address")
 
-**For reverse and many-to-many relationships**:
+**역참조 및 다대다 관계의 경우**
 
-Use `prefetch_related()` to efficiently load collections of related objects:
+관련 객체 컬렉션을 효율적으로 로딩하기 위해 `prefetch_related()`를 사용합니다.
 
     def get_queryset(self):
         return Book.objects.prefetch_related("categories", "reviews__user")
 
-**Combining both**:
+**두 방법을 함께 사용하는 경우**
 
     def get_queryset(self):
         return (
@@ -131,17 +170,18 @@ Use `prefetch_related()` to efficiently load collections of related objects:
             .prefetch_related("items__product")
         )
 
-These optimizations reduce repeated database access and improve list view performance.
+이러한 최적화는 중복된 데이터베이스 접근을 줄이고 목록 뷰의 성능을 향상시킵니다.
 
 ---
 
 #### `get_object(self)`
 
-Returns an object instance that should be used for detail views.  Defaults to using the `lookup_field` parameter to filter the base queryset.
+상세(detail) 뷰에서 사용할 객체 인스턴스를 반환합니다.  
+기본적으로 `lookup_field`를 사용하여 기본 queryset에서 객체를 조회합니다.
 
-May be overridden to provide more complex behavior, such as object lookups based on more than one URL kwarg.
+여러 개의 URL 파라미터를 사용하는 등 더 복잡한 조회 로직이 필요한 경우 오버라이드할 수 있습니다.
 
-For example:
+예:
 
     def get_object(self):
         queryset = self.get_queryset()
@@ -153,13 +193,14 @@ For example:
         self.check_object_permissions(self.request, obj)
         return obj
 
-Note that if your API doesn't include any object level permissions, you may optionally exclude the `self.check_object_permissions`, and simply return the object from the `get_object_or_404` lookup.
+객체 수준 권한이 필요 없는 API라면  
+`self.check_object_permissions` 호출을 생략하고 `get_object_or_404` 결과만 반환해도 됩니다.
 
 #### `filter_queryset(self, queryset)`
 
-Given a queryset, filter it with whichever filter backends are in use, returning a new queryset.
+주어진 queryset에 현재 사용 중인 필터 백엔드를 적용하여 새로운 queryset을 반환합니다.
 
-For example:
+예:
 
     def filter_queryset(self, queryset):
         filter_backends = [CategoryFilter]
@@ -176,216 +217,228 @@ For example:
 
 #### `get_serializer_class(self)`
 
-Returns the class that should be used for the serializer.  Defaults to returning the `serializer_class` attribute.
+사용할 serializer 클래스를 반환합니다.  
+기본적으로 `serializer_class` 속성을 반환합니다.
 
-May be overridden to provide dynamic behavior, such as using different serializers for read and write operations, or providing different serializers to different types of users.
+읽기/쓰기 작업에 따라 서로 다른 serializer를 사용하거나,  
+사용자 유형에 따라 다른 serializer를 제공하고 싶은 경우 오버라이드할 수 있습니다.
 
-For example:
+예:
 
     def get_serializer_class(self):
         if self.request.user.is_staff:
             return FullAccountSerializer
         return BasicAccountSerializer
 
-**Save and deletion hooks**:
+**저장 및 삭제 훅 (Save and deletion hooks)**
 
-The following methods are provided by the mixin classes, and provide easy overriding of the object save or deletion behavior.
+다음 메서드들은 mixin 클래스에서 제공되며,  
+객체 저장 또는 삭제 동작을 쉽게 커스터마이즈할 수 있도록 합니다.
 
-* `perform_create(self, serializer)` - Called by `CreateModelMixin` when saving a new object instance.
-* `perform_update(self, serializer)` - Called by `UpdateModelMixin` when saving an existing object instance.
-* `perform_destroy(self, instance)` - Called by `DestroyModelMixin` when deleting an object instance.
+* `perform_create(self, serializer)` – 새 객체 저장 시 호출 (`CreateModelMixin`)
+* `perform_update(self, serializer)` – 기존 객체 수정 시 호출 (`UpdateModelMixin`)
+* `perform_destroy(self, instance)` – 객체 삭제 시 호출 (`DestroyModelMixin`)
 
-These hooks are particularly useful for setting attributes that are implicit in the request, but are not part of the request data.  For instance, you might set an attribute on the object based on the request user, or based on a URL keyword argument.
+이 훅들은 요청 데이터에는 없지만 요청 맥락에 의해 결정되는 값을 설정할 때 특히 유용합니다.
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-These override points are also particularly useful for adding behavior that occurs before or after saving an object, such as emailing a confirmation, or logging the update.
+또한 저장 전·후에 이메일 발송이나 로그 기록과 같은 추가 동작을 넣는 데도 유용합니다.
 
     def perform_update(self, serializer):
         instance = serializer.save()
         send_email_confirmation(user=self.request.user, modified=instance)
 
-You can also use these hooks to provide additional validation, by raising a `ValidationError()`. This can be useful if you need some validation logic to apply at the point of database save. For example:
+`ValidationError()`를 발생시켜 추가 검증 로직을 구현하는 데에도 사용할 수 있습니다.
 
     def perform_create(self, serializer):
         queryset = SignupRequest.objects.filter(user=self.request.user)
         if queryset.exists():
-            raise ValidationError('You have already signed up')
+            raise ValidationError('이미 가입 요청이 존재합니다')
         serializer.save(user=self.request.user)
 
-**Other methods**:
+**기타 메서드 (Other methods)**
 
-You won't typically need to override the following methods, although you might need to call into them if you're writing custom views using `GenericAPIView`.
+다음 메서드들은 일반적으로 오버라이드할 필요는 없지만,  
+`GenericAPIView`를 사용해 커스텀 뷰를 작성할 때 내부적으로 호출될 수 있습니다.
 
-* `get_serializer_context(self)` - Returns a dictionary containing any extra context that should be supplied to the serializer.  Defaults to including `'request'`, `'view'` and `'format'` keys.
-* `get_serializer(self, instance=None, data=None, many=False, partial=False)` - Returns a serializer instance.
-* `get_paginated_response(self, data)` - Returns a paginated style `Response` object.
-* `paginate_queryset(self, queryset)` - Paginate a queryset if required, either returning a page object, or `None` if pagination is not configured for this view.
-* `filter_queryset(self, queryset)` - Given a queryset, filter it with whichever filter backends are in use, returning a new queryset.
+* `get_serializer_context(self)` – serializer에 전달할 추가 컨텍스트 반환 (`request`, `view`, `format`)
+* `get_serializer(self, instance=None, data=None, many=False, partial=False)` – serializer 인스턴스 반환
+* `get_paginated_response(self, data)` – 페이지네이션된 `Response` 반환
+* `paginate_queryset(self, queryset)` – queryset을 페이지네이션하거나, 비활성화 시 `None` 반환
+* `filter_queryset(self, queryset)` – 필터 백엔드를 적용한 queryset 반환
 
 ---
 
-# Mixins
+# 믹스인 (Mixins)
 
-The mixin classes provide the actions that are used to provide the basic view behavior.  Note that the mixin classes provide action methods rather than defining the handler methods, such as `.get()` and `.post()`, directly.  This allows for more flexible composition of behavior.
+mixin 클래스는 기본적인 뷰 동작을 제공하는 액션 메서드들을 정의합니다.  
+`.get()`이나 `.post()` 같은 핸들러 메서드를 직접 정의하지 않는다는 점에 유의하세요.  
+이를 통해 동작을 더 유연하게 조합할 수 있습니다.
 
-The mixin classes can be imported from `rest_framework.mixins`.
+mixin 클래스들은 `rest_framework.mixins`에서 import할 수 있습니다.
 
 ## ListModelMixin
 
-Provides a `.list(request, *args, **kwargs)` method, that implements listing a queryset.
+queryset 목록을 반환하는 `.list(request, *args, **kwargs)` 메서드를 제공합니다.
 
-If the queryset is populated, this returns a `200 OK` response, with a serialized representation of the queryset as the body of the response.  The response data may optionally be paginated.
+queryset이 존재하면 `200 OK` 응답과 함께 직렬화된 데이터가 반환되며,  
+선택적으로 페이지네이션이 적용될 수 있습니다.
 
 ## CreateModelMixin
 
-Provides a `.create(request, *args, **kwargs)` method, that implements creating and saving a new model instance.
+새 모델 인스턴스를 생성하고 저장하는 `.create(request, *args, **kwargs)` 메서드를 제공합니다.
 
-If an object is created this returns a `201 Created` response, with a serialized representation of the object as the body of the response.  If the representation contains a key named `url`, then the `Location` header of the response will be populated with that value.
+객체가 생성되면 `201 Created` 응답과 함께 직렬화된 객체가 반환됩니다.  
+직렬화 결과에 `url` 키가 포함되어 있다면, 해당 값이 `Location` 헤더에 설정됩니다.
 
-If the request data provided for creating the object was invalid, a `400 Bad Request` response will be returned, with the error details as the body of the response.
+요청 데이터가 유효하지 않은 경우 `400 Bad Request` 응답이 반환됩니다.
 
 ## RetrieveModelMixin
 
-Provides a `.retrieve(request, *args, **kwargs)` method, that implements returning an existing model instance in a response.
+기존 모델 인스턴스를 반환하는 `.retrieve(request, *args, **kwargs)` 메서드를 제공합니다.
 
-If an object can be retrieved this returns a `200 OK` response, with a serialized representation of the object as the body of the response.  Otherwise, it will return a `404 Not Found`.
+객체를 찾을 수 있으면 `200 OK`, 그렇지 않으면 `404 Not Found`가 반환됩니다.
 
 ## UpdateModelMixin
 
-Provides a `.update(request, *args, **kwargs)` method, that implements updating and saving an existing model instance.
+기존 모델 인스턴스를 수정하고 저장하는 `.update(request, *args, **kwargs)` 메서드를 제공합니다.
 
-Also provides a `.partial_update(request, *args, **kwargs)` method, which is similar to the `update` method, except that all fields for the update will be optional.  This allows support for HTTP `PATCH` requests.
+또한 `PATCH` 요청을 위한 `.partial_update(request, *args, **kwargs)` 메서드도 제공합니다.
 
-If an object is updated this returns a `200 OK` response, with a serialized representation of the object as the body of the response.
-
-If the request data provided for updating the object was invalid, a `400 Bad Request` response will be returned, with the error details as the body of the response.
+성공 시 `200 OK` 응답이 반환되며,  
+유효하지 않은 데이터가 전달된 경우 `400 Bad Request`가 반환됩니다.
 
 ## DestroyModelMixin
 
-Provides a `.destroy(request, *args, **kwargs)` method, that implements deletion of an existing model instance.
+기존 모델 인스턴스를 삭제하는 `.destroy(request, *args, **kwargs)` 메서드를 제공합니다.
 
-If an object is deleted this returns a `204 No Content` response, otherwise it will return a `404 Not Found`.
+삭제 성공 시 `204 No Content`, 실패 시 `404 Not Found`를 반환합니다.
 
 ---
 
-# Concrete View Classes
+# 구체적인 뷰 클래스 (Concrete View Classes)
 
-The following classes are the concrete generic views.  If you're using generic views this is normally the level you'll be working at unless you need heavily customized behavior.
+다음 클래스들은 실제로 가장 많이 사용되는 제네릭 뷰들입니다.  
+특별한 커스터마이징이 필요하지 않다면 일반적으로 이 수준의 클래스를 사용하게 됩니다.
 
-The view classes can be imported from `rest_framework.generics`.
+뷰 클래스들은 `rest_framework.generics`에서 import할 수 있습니다.
 
 ## CreateAPIView
 
-Used for **create-only** endpoints.
+**생성 전용** 엔드포인트에 사용됩니다.
 
-Provides a `post` method handler.
+`post` 메서드를 제공합니다.
 
-Extends: [GenericAPIView], [CreateModelMixin]
+확장: [GenericAPIView], [CreateModelMixin]
 
 ## ListAPIView
 
-Used for **read-only** endpoints to represent a **collection of model instances**.
+**읽기 전용**, **모델 인스턴스 컬렉션**을 표현하는 엔드포인트에 사용됩니다.
 
-Provides a `get` method handler.
+`get` 메서드를 제공합니다.
 
-Extends: [GenericAPIView], [ListModelMixin]
+확장: [GenericAPIView], [ListModelMixin]
 
 ## RetrieveAPIView
 
-Used for **read-only** endpoints to represent a **single model instance**.
+**읽기 전용**, **단일 모델 인스턴스**를 표현하는 엔드포인트에 사용됩니다.
 
-Provides a `get` method handler.
+`get` 메서드를 제공합니다.
 
-Extends: [GenericAPIView], [RetrieveModelMixin]
+확장: [GenericAPIView], [RetrieveModelMixin]
 
 ## DestroyAPIView
 
-Used for **delete-only** endpoints for a **single model instance**.
+**삭제 전용**, **단일 모델 인스턴스** 엔드포인트에 사용됩니다.
 
-Provides a `delete` method handler.
+`delete` 메서드를 제공합니다.
 
-Extends: [GenericAPIView], [DestroyModelMixin]
+확장: [GenericAPIView], [DestroyModelMixin]
 
 ## UpdateAPIView
 
-Used for **update-only** endpoints for a **single model instance**.
+**수정 전용**, **단일 모델 인스턴스** 엔드포인트에 사용됩니다.
 
-Provides `put` and `patch` method handlers.
+`put`, `patch` 메서드를 제공합니다.
 
-Extends: [GenericAPIView], [UpdateModelMixin]
+확장: [GenericAPIView], [UpdateModelMixin]
 
 ## ListCreateAPIView
 
-Used for **read-write** endpoints to represent a **collection of model instances**.
+**읽기/쓰기**, **모델 인스턴스 컬렉션** 엔드포인트에 사용됩니다.
 
-Provides `get` and `post` method handlers.
+`get`, `post` 메서드를 제공합니다.
 
-Extends: [GenericAPIView], [ListModelMixin], [CreateModelMixin]
+확장: [GenericAPIView], [ListModelMixin], [CreateModelMixin]
 
 ## RetrieveUpdateAPIView
 
-Used for **read or update** endpoints to represent a **single model instance**.
+**읽기 또는 수정**, **단일 모델 인스턴스** 엔드포인트에 사용됩니다.
 
-Provides `get`, `put` and `patch` method handlers.
+`get`, `put`, `patch` 메서드를 제공합니다.
 
-Extends: [GenericAPIView], [RetrieveModelMixin], [UpdateModelMixin]
+확장: [GenericAPIView], [RetrieveModelMixin], [UpdateModelMixin]
 
 ## RetrieveDestroyAPIView
 
-Used for **read or delete** endpoints to represent a **single model instance**.
+**읽기 또는 삭제**, **단일 모델 인스턴스** 엔드포인트에 사용됩니다.
 
-Provides `get` and `delete` method handlers.
+`get`, `delete` 메서드를 제공합니다.
 
-Extends: [GenericAPIView], [RetrieveModelMixin], [DestroyModelMixin]
+확장: [GenericAPIView], [RetrieveModelMixin], [DestroyModelMixin]
 
 ## RetrieveUpdateDestroyAPIView
 
-Used for **read-write-delete** endpoints to represent a **single model instance**.
+**읽기/수정/삭제**, **단일 모델 인스턴스** 엔드포인트에 사용됩니다.
 
-Provides `get`, `put`, `patch` and `delete` method handlers.
+`get`, `put`, `patch`, `delete` 메서드를 제공합니다.
 
-Extends: [GenericAPIView], [RetrieveModelMixin], [UpdateModelMixin], [DestroyModelMixin]
+확장: [GenericAPIView], [RetrieveModelMixin], [UpdateModelMixin], [DestroyModelMixin]
 
 ---
 
-# Customizing the generic views
+# 제네릭 뷰 커스터마이징 (Customizing the generic views)
 
-Often you'll want to use the existing generic views, but use some slightly customized behavior.  If you find yourself reusing some bit of customized behavior in multiple places, you might want to refactor the behavior into a common class that you can then just apply to any view or viewset as needed.
+대부분의 경우 기존 제네릭 뷰를 사용하면서 일부 동작만 커스터마이징하면 충분합니다.  
+동일한 커스터마이징 로직을 여러 곳에서 반복해서 사용한다면,  
+이를 공통 클래스로 분리하는 것이 좋습니다.
 
-## Creating custom mixins
+## 커스텀 믹스인 생성 (Creating custom mixins)
 
-For example, if you need to lookup objects based on multiple fields in the URL conf, you could create a mixin class like the following:
+예를 들어 URL 설정에서 여러 필드를 기준으로 객체를 조회해야 한다면  
+다음과 같은 mixin 클래스를 만들 수 있습니다.
 
     class MultipleFieldLookupMixin:
         """
-        Apply this mixin to any view or viewset to get multiple field filtering
-        based on a `lookup_fields` attribute, instead of the default single field filtering.
+        기본 단일 필드 조회 대신,
+        `lookup_fields` 속성에 지정된 여러 필드를 기준으로 객체를 조회하도록 하는 mixin
         """
         def get_object(self):
-            queryset = self.get_queryset()             # Get the base queryset
-            queryset = self.filter_queryset(queryset)  # Apply any filter backends
+            queryset = self.get_queryset()             # 기본 queryset 가져오기
+            queryset = self.filter_queryset(queryset)  # 필터 백엔드 적용
             filter = {}
             for field in self.lookup_fields:
-                if self.kwargs.get(field): # Ignore empty fields.
+                if self.kwargs.get(field):  # 비어 있는 필드는 무시
                     filter[field] = self.kwargs[field]
-            obj = get_object_or_404(queryset, **filter)  # Lookup the object
+            obj = get_object_or_404(queryset, **filter)
             self.check_object_permissions(self.request, obj)
             return obj
 
-You can then simply apply this mixin to a view or viewset anytime you need to apply the custom behavior.
+필요한 경우 이 mixin을 뷰나 뷰셋에 적용하면 됩니다.
 
     class RetrieveUserView(MultipleFieldLookupMixin, generics.RetrieveAPIView):
         queryset = User.objects.all()
         serializer_class = UserSerializer
         lookup_fields = ['account', 'username']
 
-Using custom mixins is a good option if you have custom behavior that needs to be used.
+커스텀 믹스인은 특정 동작을 재사용해야 할 때 매우 좋은 선택입니다.
 
-## Creating custom base classes
+## 커스텀 베이스 클래스 생성 (Creating custom base classes)
 
-If you are using a mixin across multiple views, you can take this a step further and create your own set of base views that can then be used throughout your project.  For example:
+여러 뷰에서 동일한 mixin을 반복적으로 사용한다면,  
+이를 한 단계 더 발전시켜 공통 베이스 뷰 클래스를 만들 수 있습니다.
 
     class BaseRetrieveView(MultipleFieldLookupMixin,
                            generics.RetrieveAPIView):
@@ -395,28 +448,34 @@ If you are using a mixin across multiple views, you can take this a step further
                                         generics.RetrieveUpdateDestroyAPIView):
         pass
 
-Using custom base classes is a good option if you have custom behavior that consistently needs to be repeated across a large number of views throughout your project.
+커스텀 베이스 클래스는 프로젝트 전반에 걸쳐  
+일관된 동작이 반복적으로 필요할 때 유용합니다.
 
 ---
 
-# PUT as create
+# PUT을 생성으로 사용하는 경우 (PUT as create)
 
-Prior to version 3.0 the REST framework mixins treated `PUT` as either an update or a create operation, depending on if the object already existed or not.
+REST framework 3.0 이전 버전에서는  
+객체가 존재하지 않을 경우 `PUT` 요청을 생성(create)으로 처리했습니다.
 
-Allowing `PUT` as create operations is problematic, as it necessarily exposes information about the existence or non-existence of objects. It's also not obvious that transparently allowing re-creating of previously deleted instances is necessarily a better default behavior than simply returning `404` responses.
+하지만 `PUT`을 생성으로 허용하면 객체의 존재 여부를 노출하게 되며,  
+삭제된 객체를 다시 생성하는 동작이 직관적이지 않을 수 있습니다.
 
-Both styles "`PUT` as 404" and "`PUT` as create" can be valid in different circumstances, but from version 3.0 onwards we now use 404 behavior as the default, due to it being simpler and more obvious.
+"`PUT` 시 404 반환"과 "`PUT` 시 생성" 두 방식 모두 상황에 따라 유효할 수 있지만,  
+3.0 버전 이후부터는 더 단순하고 명확한 동작을 위해  
+기본값으로 `404` 동작을 사용합니다.
 
 ---
 
-# Third party packages
+# 서드파티 패키지 (Third party packages)
 
-The following third party packages provide additional generic view implementations.
+다음 서드파티 패키지들은 추가적인 제네릭 뷰 구현을 제공합니다.
 
 ## Django Rest Multiple Models
 
-[Django Rest Multiple Models][django-rest-multiple-models] provides a generic view (and mixin) for sending multiple serialized models and/or querysets via a single API request.
-
+[Django Rest Multiple Models][django-rest-multiple-models]는  
+하나의 API 요청으로 여러 개의 직렬화된 모델이나 queryset을 반환할 수 있는  
+제네릭 뷰(및 mixin)를 제공합니다.
 
 [cite]: https://docs.djangoproject.com/en/stable/ref/class-based-views/#base-vs-generic-views
 [GenericAPIView]: #genericapiview

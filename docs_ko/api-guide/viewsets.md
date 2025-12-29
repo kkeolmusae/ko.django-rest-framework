@@ -5,22 +5,21 @@ source:
 
 # ViewSets
 
-> After routing has determined which controller to use for a request, your controller is responsible for making sense of the request and producing the appropriate output.
+> 라우팅을 통해 어떤 컨트롤러를 사용할지 결정되면, 컨트롤러는 요청을 이해하고 적절한 출력을 생성하는 책임을 집니다.
 >
 > &mdash; [Ruby on Rails Documentation][cite]
 
+Django REST framework는 서로 관련된 여러 뷰의 로직을 하나의 클래스에 결합할 수 있도록 `ViewSet`이라는 개념을 제공합니다. 다른 프레임워크에서도 개념적으로 유사한 구현을 ‘Resources’ 또는 ‘Controllers’와 같은 이름으로 찾아볼 수 있습니다.
 
-Django REST framework allows you to combine the logic for a set of related views in a single class, called a `ViewSet`.  In other frameworks you may also find conceptually similar implementations named something like 'Resources' or 'Controllers'.
+`ViewSet` 클래스는 `.get()`이나 `.post()` 같은 메서드 핸들러를 제공하지 않는 **클래스 기반 View의 한 유형**이며, 대신 `.list()`, `.create()`와 같은 액션을 제공합니다.
 
-A `ViewSet` class is simply **a type of class-based View, that does not provide any method handlers** such as `.get()` or `.post()`, and instead provides actions such as `.list()` and `.create()`.
+`ViewSet`의 메서드 핸들러는 `.as_view()` 메서드를 통해 뷰가 최종적으로 생성되는 시점에 해당 액션과 바인딩됩니다.
 
-The method handlers for a `ViewSet` are only bound to the corresponding actions at the point of finalizing the view, using the `.as_view()` method.
-
-Typically, rather than explicitly registering the views in a viewset in the urlconf, you'll register the viewset with a router class, that automatically determines the urlconf for you.
+일반적으로 viewset의 각 뷰를 urlconf에 명시적으로 등록하기보다는, router 클래스에 viewset을 등록하여 URL 구성을 자동으로 생성하도록 합니다.
 
 ## Example
 
-Let's define a simple viewset that can be used to list or retrieve all the users in the system.
+시스템의 모든 사용자를 목록 조회(list)하거나 단일 사용자 조회(retrieve)할 수 있는 간단한 viewset을 정의해봅시다.
 
     from django.contrib.auth.models import User
     from django.shortcuts import get_object_or_404
@@ -30,7 +29,7 @@ Let's define a simple viewset that can be used to list or retrieve all the users
 
     class UserViewSet(viewsets.ViewSet):
         """
-        A simple ViewSet for listing or retrieving users.
+        사용자를 목록 조회하거나 단일 조회하는 간단한 ViewSet
         """
         def list(self, request):
             queryset = User.objects.all()
@@ -43,12 +42,12 @@ Let's define a simple viewset that can be used to list or retrieve all the users
             serializer = UserSerializer(user)
             return Response(serializer.data)
 
-If we need to, we can bind this viewset into two separate views, like so:
+필요하다면 다음과 같이 이 viewset을 두 개의 개별 뷰로 바인딩할 수도 있습니다.
 
     user_list = UserViewSet.as_view({'get': 'list'})
     user_detail = UserViewSet.as_view({'get': 'retrieve'})
 
-Typically we wouldn't do this, but would instead register the viewset with a router, and allow the urlconf to be automatically generated.
+하지만 일반적으로는 이렇게 하지 않고, router에 viewset을 등록하여 urlconf가 자동으로 생성되도록 합니다.
 
     from myapp.views import UserViewSet
     from rest_framework.routers import DefaultRouter
@@ -58,36 +57,37 @@ Typically we wouldn't do this, but would instead register the viewset with a rou
     urlpatterns = router.urls
 
 !!! warning
-    Do not use `.as_view()` with `@action` methods. It bypasses router setup and may ignore action settings like `permission_classes`. Use `DefaultRouter` for actions.
+    `@action` 메서드와 함께 `.as_view()`를 사용하지 마세요.  
+    이는 router 설정을 우회하며 `permission_classes` 같은 action 설정을 무시할 수 있습니다.  
+    action에는 `DefaultRouter`를 사용하세요.
 
-Rather than writing your own viewsets, you'll often want to use the existing base classes that provide a default set of behavior.  For example:
+직접 viewset을 작성하기보다는, 기본 동작을 제공하는 기존 베이스 클래스를 사용하는 경우가 많습니다. 예를 들어 다음과 같습니다.
 
     class UserViewSet(viewsets.ModelViewSet):
         """
-        A viewset for viewing and editing user instances.
+        사용자 인스턴스를 조회하고 수정하기 위한 ViewSet
         """
         serializer_class = UserSerializer
         queryset = User.objects.all()
 
-There are two main advantages of using a `ViewSet` class over using a `View` class.
+`ViewSet`을 사용하는 것은 일반 `View`를 사용하는 것에 비해 두 가지 주요 장점이 있습니다.
 
-* Repeated logic can be combined into a single class.  In the above example, we only need to specify the `queryset` once, and it'll be used across multiple views.
-* By using routers, we no longer need to deal with wiring up the URL conf ourselves.
+* 반복되는 로직을 하나의 클래스에 결합할 수 있습니다. 위 예제에서는 `queryset`을 한 번만 정의하면 여러 뷰에서 재사용됩니다.
+* router를 사용함으로써 URL conf를 직접 연결할 필요가 없습니다.
 
-Both of these come with a trade-off.  Using regular views and URL confs is more explicit and gives you more control.  ViewSets are helpful if you want to get up and running quickly, or when you have a large API and you want to enforce a consistent URL configuration throughout.
-
+다만, 이에 따른 트레이드오프도 존재합니다. 일반 뷰와 URL conf를 사용하는 방식은 더 명시적이며 세밀한 제어가 가능합니다. ViewSet은 빠르게 개발을 시작하거나, 규모가 큰 API에서 일관된 URL 구성을 강제하고자 할 때 유용합니다.
 
 ## ViewSet actions
 
-The default routers included with REST framework will provide routes for a standard set of create/retrieve/update/destroy style actions, as shown below:
+REST framework에 포함된 기본 router는 다음과 같은 표준 create / retrieve / update / destroy 액션에 대한 라우트를 자동으로 제공합니다.
 
     class UserViewSet(viewsets.ViewSet):
         """
-        Example empty viewset demonstrating the standard
-        actions that will be handled by a router class.
+        router 클래스에 의해 처리되는
+        표준 액션들을 보여주는 예제 ViewSet
 
-        If you're using format suffixes, make sure to also include
-        the `format=None` keyword argument for each action.
+        format suffix를 사용하는 경우,
+        각 액션에 format=None 인자를 포함해야 합니다.
         """
 
         def list(self, request):
@@ -108,22 +108,22 @@ The default routers included with REST framework will provide routes for a stand
         def destroy(self, request, pk=None):
             pass
 
-## Introspecting ViewSet actions
+## ViewSet actions 정보 확인(Introspection)
 
-During dispatch, the following attributes are available on the `ViewSet`.
+요청이 dispatch되는 동안, `ViewSet`에서는 다음과 같은 속성들을 사용할 수 있습니다.
 
-* `basename` - the base to use for the URL names that are created.
-* `action` - the name of the current action (e.g., `list`, `create`).
-* `detail` - boolean indicating if the current action is configured for a list or detail view.
-* `suffix` - the display suffix for the viewset type - mirrors the `detail` attribute.
-* `name` - the display name for the viewset. This argument is mutually exclusive to `suffix`.
-* `description` - the display description for the individual view of a viewset.
+* `basename` - 생성되는 URL name의 기준이 되는 이름
+* `action` - 현재 액션의 이름 (예: `list`, `create`)
+* `detail` - 현재 액션이 목록 뷰인지, 상세 뷰인지를 나타내는 boolean 값
+* `suffix` - viewset 타입에 대한 표시용 접미사 (`detail` 속성과 동일한 의미)
+* `name` - viewset의 표시 이름 (`suffix`와 상호 배타적)
+* `description` - viewset의 개별 뷰에 대한 설명
 
-You may inspect these attributes to adjust behavior based on the current action. For example, you could restrict permissions to everything except the `list` action similar to this:
+이 속성들을 활용하여 현재 액션에 따라 동작을 조정할 수 있습니다. 예를 들어 `list` 액션에만 접근 권한을 허용하려면 다음과 같이 구현할 수 있습니다.
 
     def get_permissions(self):
         """
-        Instantiates and returns the list of permissions that this view requires.
+        이 뷰에서 필요한 permission 인스턴스 목록을 생성하여 반환
         """
         if self.action == 'list':
             permission_classes = [IsAuthenticated]
@@ -131,13 +131,18 @@ You may inspect these attributes to adjust behavior based on the current action.
             permission_classes = [IsAdminUser]
         return [permission() for permission in permission_classes]
 
-**Note**: the `action` attribute is not available in the `get_parsers`, `get_authenticators` and `get_content_negotiator` methods, as it is set _after_ they are called in the framework lifecycle. If you override one of these methods and try to access the `action` attribute in them, you will get an `AttributeError` error.
+**Note**: `action` 속성은 `get_parsers`, `get_authenticators`, `get_content_negotiator` 메서드에서는 사용할 수 없습니다.  
+이는 해당 속성이 프레임워크 라이프사이클에서 이 메서드들이 호출된 이후에 설정되기 때문입니다.  
+이 메서드들 안에서 `action`에 접근하면 `AttributeError`가 발생합니다.
 
-## Marking extra actions for routing
+## 추가 액션을 라우팅 대상으로 표시하기
 
-If you have ad-hoc methods that should be routable, you can mark them as such with the `@action` decorator. Like regular actions, extra actions may be intended for either a single object, or an entire collection. To indicate this, set the `detail` argument to `True` or `False`. The router will configure its URL patterns accordingly. e.g., the `DefaultRouter` will configure detail actions to contain `pk` in their URL patterns.
+임의로 정의한 메서드를 라우팅 대상으로 만들고 싶다면 `@action` 데코레이터를 사용할 수 있습니다.  
+일반 액션과 마찬가지로, 추가 액션은 단일 객체(detail)용이거나 컬렉션(list)용일 수 있습니다.  
+이를 나타내기 위해 `detail=True` 또는 `False`를 지정합니다. router는 이에 맞게 URL 패턴을 구성합니다.  
+예를 들어 `DefaultRouter`는 detail 액션의 URL에 `pk`를 포함시킵니다.
 
-A more complete example of extra actions:
+추가 액션의 보다 완전한 예시는 다음과 같습니다.
 
     from django.contrib.auth.models import User
     from rest_framework import status, viewsets
@@ -147,7 +152,7 @@ A more complete example of extra actions:
 
     class UserViewSet(viewsets.ModelViewSet):
         """
-        A viewset that provides the standard actions
+        표준 액션을 제공하는 ViewSet
         """
         queryset = User.objects.all()
         serializer_class = UserSerializer
@@ -176,14 +181,13 @@ A more complete example of extra actions:
             serializer = self.get_serializer(recent_users, many=True)
             return Response(serializer.data)
 
-
-The `action` decorator will route `GET` requests by default, but may also accept other HTTP methods by setting the `methods` argument.  For example:
+`action` 데코레이터는 기본적으로 `GET` 요청을 라우팅하지만, `methods` 인자를 통해 다른 HTTP 메서드도 허용할 수 있습니다. 예를 들어 다음과 같습니다.
 
         @action(detail=True, methods=['post', 'delete'])
         def unset_password(self, request, pk=None):
            ...
 
-Argument `methods` also supports HTTP methods defined as [HTTPMethod](https://docs.python.org/3/library/http.html#http.HTTPMethod). Example below is identical to the one above: 
+`methods` 인자는 [HTTPMethod](https://docs.python.org/3/library/http.html#http.HTTPMethod)에 정의된 HTTP 메서드도 지원합니다. 아래 예시는 위와 동일한 동작을 합니다.
 
         from http import HTTPMethod
 
@@ -191,54 +195,53 @@ Argument `methods` also supports HTTP methods defined as [HTTPMethod](https://do
         def unset_password(self, request, pk=None):
            ...
 
-The decorator allows you to override any viewset-level configuration such as `permission_classes`, `serializer_class`, `filter_backends`...:
+또한 데코레이터를 통해 `permission_classes`, `serializer_class`, `filter_backends` 등 viewset 레벨의 설정을 덮어쓸 수 있습니다.
 
         @action(detail=True, methods=['post'], permission_classes=[IsAdminOrIsSelf])
         def set_password(self, request, pk=None):
            ...
 
-The two new actions will then be available at the urls `^users/{pk}/set_password/$` and `^users/{pk}/unset_password/$`. Use the `url_path` and `url_name` parameters to change the URL segment and the reverse URL name of the action.
+이 두 개의 새로운 액션은 각각  
+`^users/{pk}/set_password/$`, `^users/{pk}/unset_password/$` URL에서 사용할 수 있습니다.  
+`url_path`와 `url_name` 파라미터를 사용하면 URL 경로와 reverse URL 이름을 변경할 수 있습니다.
 
-To view all extra actions, call the `.get_extra_actions()` method.
+모든 추가 액션을 확인하려면 `.get_extra_actions()` 메서드를 호출하세요.
 
-### Routing additional HTTP methods for extra actions
+### 추가 액션에 대한 HTTP 메서드 확장 라우팅
 
-Extra actions can map additional HTTP methods to separate `ViewSet` methods. For example, the above password set/unset methods could be consolidated into a single route. Note that additional mappings do not accept arguments.
+추가 액션은 여러 HTTP 메서드를 각각 다른 `ViewSet` 메서드에 매핑할 수도 있습니다.  
+예를 들어 위의 비밀번호 설정/해제 메서드를 하나의 라우트로 통합할 수 있습니다.  
+단, 추가 매핑 메서드는 인자를 받을 수 없습니다.
 
-```python
 @action(detail=True, methods=["put"], name="Change Password")
 def password(self, request, pk=None):
-    """Update the user's password."""
+    """사용자의 비밀번호를 수정합니다."""
     ...
-
 
 @password.mapping.delete
 def delete_password(self, request, pk=None):
-    """Delete the user's password."""
+    """사용자의 비밀번호를 삭제합니다."""
     ...
-```
 
-## Reversing action URLs
+## 액션 URL reverse 하기
 
-If you need to get the URL of an action, use the `.reverse_action()` method. This is a convenience wrapper for `reverse()`, automatically passing the view's `request` object and prepending the `url_name` with the `.basename` attribute.
+액션의 URL을 얻고 싶다면 `.reverse_action()` 메서드를 사용하세요.  
+이 메서드는 `reverse()`를 감싼 convenience wrapper로, 자동으로 뷰의 `request` 객체를 전달하고 `url_name` 앞에 `.basename`을 붙여줍니다.
 
-Note that the `basename` is provided by the router during `ViewSet` registration. If you are not using a router, then you must provide the `basename` argument to the `.as_view()` method.
+`basename`은 `ViewSet`이 router에 등록될 때 제공됩니다. router를 사용하지 않는 경우에는 `.as_view()` 호출 시 `basename` 인자를 직접 지정해야 합니다.
 
-Using the example from the previous section:
+앞선 예제를 사용하면 다음과 같습니다.
 
-```pycon
 >>> view.reverse_action("set-password", args=["1"])
-'http://localhost:8000/api/users/1/set_password'
-```
+'<http://localhost:8000/api/users/1/set_password>'
 
-Alternatively, you can use the `url_name` attribute set by the `@action` decorator.
+또는 `@action` 데코레이터에 설정된 `url_name` 속성을 사용할 수도 있습니다.
 
-```pycon
 >>> view.reverse_action(view.set_password.url_name, args=["1"])
-'http://localhost:8000/api/users/1/set_password'
-```
+'<http://localhost:8000/api/users/1/set_password>'
 
-The `url_name` argument for `.reverse_action()` should match the same argument to the `@action` decorator. Additionally, this method can be used to reverse the default actions, such as `list` and `create`.
+`.reverse_action()`의 `url_name` 인자는 `@action` 데코레이터에 전달한 값과 일치해야 합니다.  
+또한 이 메서드는 `list`, `create`와 같은 기본 액션을 reverse하는 데에도 사용할 수 있습니다.
 
 ---
 
@@ -246,40 +249,43 @@ The `url_name` argument for `.reverse_action()` should match the same argument t
 
 ## ViewSet
 
-The `ViewSet` class inherits from `APIView`.  You can use any of the standard attributes such as `permission_classes`, `authentication_classes` in order to control the API policy on the viewset.
+`ViewSet` 클래스는 `APIView`를 상속합니다.  
+`permission_classes`, `authentication_classes`와 같은 표준 속성을 사용하여 API 정책을 제어할 수 있습니다.
 
-The `ViewSet` class does not provide any implementations of actions.  In order to use a `ViewSet` class you'll override the class and define the action implementations explicitly.
+`ViewSet` 클래스 자체는 액션에 대한 구현을 제공하지 않으므로, 실제 사용 시에는 클래스를 상속하여 액션 메서드를 직접 정의해야 합니다.
 
 ## GenericViewSet
 
-The `GenericViewSet` class inherits from `GenericAPIView`, and provides the default set of `get_object`, `get_queryset` methods and other generic view base behavior, but does not include any actions by default.
+`GenericViewSet` 클래스는 `GenericAPIView`를 상속하며,  
+`get_object`, `get_queryset`과 같은 기본 제네릭 뷰 동작을 제공하지만 액션은 기본으로 포함하지 않습니다.
 
-In order to use a `GenericViewSet` class you'll override the class and either mixin the required mixin classes, or define the action implementations explicitly.
+`GenericViewSet`을 사용하려면 필요한 mixin 클래스를 조합하거나, 액션 메서드를 직접 구현해야 합니다.
 
 ## ModelViewSet
 
-The `ModelViewSet` class inherits from `GenericAPIView` and includes implementations for various actions, by mixing in the behavior of the various mixin classes.
+`ModelViewSet` 클래스는 `GenericAPIView`를 상속하며, 여러 mixin의 동작을 조합하여 다양한 액션 구현을 제공합니다.
 
-The actions provided by the `ModelViewSet` class are `.list()`, `.retrieve()`, `.create()`, `.update()`, `.partial_update()`, and `.destroy()`.
+`ModelViewSet`이 기본으로 제공하는 액션은  
+`.list()`, `.retrieve()`, `.create()`, `.update()`, `.partial_update()`, `.destroy()` 입니다.
 
 #### Example
 
-Because `ModelViewSet` extends `GenericAPIView`, you'll normally need to provide at least the `queryset` and `serializer_class` attributes.  For example:
+`ModelViewSet`은 `GenericAPIView`를 확장하므로, 일반적으로 `queryset`과 `serializer_class`를 최소한으로 지정해야 합니다.
 
     class AccountViewSet(viewsets.ModelViewSet):
         """
-        A simple ViewSet for viewing and editing accounts.
+        계정을 조회하고 수정하기 위한 간단한 ViewSet
         """
         queryset = Account.objects.all()
         serializer_class = AccountSerializer
         permission_classes = [IsAccountAdminOrReadOnly]
 
-Note that you can use any of the standard attributes or method overrides provided by `GenericAPIView`.  For example, to use a `ViewSet` that dynamically determines the queryset it should operate on, you might do something like this:
+`GenericAPIView`에서 제공하는 표준 속성과 메서드 오버라이드를 그대로 사용할 수 있습니다.  
+예를 들어, 동적으로 queryset을 결정하는 ViewSet은 다음과 같이 작성할 수 있습니다.
 
     class AccountViewSet(viewsets.ModelViewSet):
         """
-        A simple ViewSet for viewing and editing the accounts
-        associated with the user.
+        사용자와 연관된 계정만을 조회/수정하는 ViewSet
         """
         serializer_class = AccountSerializer
         permission_classes = [IsAccountAdminOrReadOnly]
@@ -287,34 +293,40 @@ Note that you can use any of the standard attributes or method overrides provide
         def get_queryset(self):
             return self.request.user.accounts.all()
 
-Note however that upon removal of the `queryset` property from your `ViewSet`, any associated [router][routers] will be unable to derive the basename of your Model automatically, and so you will have to specify the `basename` kwarg as part of your [router registration][routers].
+다만 `ViewSet`에서 `queryset` 속성을 제거하면,  
+연결된 [router][routers]가 모델의 basename을 자동으로 추론할 수 없으므로  
+router 등록 시 `basename` 인자를 반드시 명시해야 합니다.
 
-Also note that although this class provides the complete set of create/list/retrieve/update/destroy actions by default, you can restrict the available operations by using the standard permission classes.
+또한 이 클래스는 기본적으로 모든 CRUD 액션을 제공하지만,  
+표준 permission 클래스를 사용하여 허용되는 동작을 제한할 수 있습니다.
 
 ## ReadOnlyModelViewSet
 
-The `ReadOnlyModelViewSet` class also inherits from `GenericAPIView`.  As with `ModelViewSet` it also includes implementations for various actions, but unlike `ModelViewSet` only provides the 'read-only' actions, `.list()` and `.retrieve()`.
+`ReadOnlyModelViewSet` 클래스 역시 `GenericAPIView`를 상속합니다.  
+`ModelViewSet`과 유사하지만, 읽기 전용 액션인 `.list()`와 `.retrieve()`만 제공합니다.
 
 #### Example
 
-As with `ModelViewSet`, you'll normally need to provide at least the `queryset` and `serializer_class` attributes.  For example:
+`ModelViewSet`과 마찬가지로 `queryset`과 `serializer_class`를 지정해야 합니다.
 
     class AccountViewSet(viewsets.ReadOnlyModelViewSet):
         """
-        A simple ViewSet for viewing accounts.
+        계정을 조회하기 위한 간단한 ViewSet
         """
         queryset = Account.objects.all()
         serializer_class = AccountSerializer
 
-Again, as with `ModelViewSet`, you can use any of the standard attributes and method overrides available to `GenericAPIView`.
+`GenericAPIView`에서 제공하는 모든 표준 속성과 메서드 오버라이드를 동일하게 사용할 수 있습니다.
 
 # Custom ViewSet base classes
 
-You may need to provide custom `ViewSet` classes that do not have the full set of `ModelViewSet` actions, or that customize the behavior in some other way.
+전체 `ModelViewSet` 액션을 제공하지 않거나, 특정 동작을 커스터마이징한  
+자체 `ViewSet` 베이스 클래스를 정의해야 할 수도 있습니다.
 
 ## Example
 
-To create a base viewset class that provides `create`, `list` and `retrieve` operations, inherit from `GenericViewSet`, and mixin the required actions:
+`create`, `list`, `retrieve` 액션만 제공하는 베이스 viewset을 만들려면  
+`GenericViewSet`을 상속하고 필요한 mixin을 조합하면 됩니다.
 
     from rest_framework import mixins, viewsets
 
@@ -323,14 +335,15 @@ To create a base viewset class that provides `create`, `list` and `retrieve` ope
                                     mixins.RetrieveModelMixin,
                                     viewsets.GenericViewSet):
         """
-        A viewset that provides `retrieve`, `create`, and `list` actions.
+        `retrieve`, `create`, `list` 액션을 제공하는 ViewSet
 
-        To use it, override the class and set the `.queryset` and
-        `.serializer_class` attributes.
+        사용 시에는 이 클래스를 상속하고
+        `.queryset`과 `.serializer_class`를 설정하세요.
         """
         pass
 
-By creating your own base `ViewSet` classes, you can provide common behavior that can be reused in multiple viewsets across your API.
+이처럼 공통 동작을 가진 베이스 `ViewSet` 클래스를 만들어두면,  
+API 전반에서 재사용할 수 있는 일관된 동작을 제공할 수 있습니다.
 
 [cite]: https://guides.rubyonrails.org/action_controller_overview.html
 [routers]: routers.md
