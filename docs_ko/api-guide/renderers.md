@@ -3,25 +3,29 @@ source:
     - renderers.py
 ---
 
-# Renderers
+# 렌더러 (Renderers)
 
-> Before a TemplateResponse instance can be returned to the client, it must be rendered. The rendering process takes the intermediate representation of template and context, and turns it into the final byte stream that can be served to the client.
+> TemplateResponse 인스턴스를 클라이언트에 반환하기 전에, 반드시 렌더링되어야 한다. 렌더링 과정은 템플릿과 컨텍스트의 중간 표현(intermediate representation)을 최종 바이트 스트림으로 변환하여 클라이언트에 제공할 수 있게 만든다.
 >
 > &mdash; [Django documentation][cite]
 
-REST framework includes a number of built in Renderer classes, that allow you to return responses with various media types.  There is also support for defining your own custom renderers, which gives you the flexibility to design your own media types.
+REST framework는 다양한 미디어 타입으로 응답을 반환할 수 있도록 여러 **내장 Renderer 클래스**를 제공한다.  
+또한 **커스텀 렌더러**를 직접 정의할 수도 있어, 원하는 미디어 타입을 설계하는 데 유연성을 제공한다.
 
-## How the renderer is determined
+## 렌더러가 결정되는 방식
 
-The set of valid renderers for a view is always defined as a list of classes.  When a view is entered REST framework will perform content negotiation on the incoming request, and determine the most appropriate renderer to satisfy the request.
+각 뷰에서 유효한 렌더러 집합은 항상 **클래스 리스트**로 정의된다.  
+뷰에 진입하면 REST framework는 들어온 요청에 대해 **콘텐츠 협상(content negotiation)** 을 수행하고, 요청을 만족시키기에 가장 적절한 렌더러를 결정한다.
 
-The basic process of content negotiation involves examining the request's `Accept` header, to determine which media types it expects in the response.  Optionally, format suffixes on the URL may be used to explicitly request a particular representation.  For example the URL `http://example.com/api/users_count.json` might be an endpoint that always returns JSON data.
+콘텐츠 협상의 기본 과정은 요청의 `Accept` 헤더를 확인하여, 응답에서 기대하는 미디어 타입을 결정하는 것이다.  
+또한 URL의 format suffix를 사용해 특정 표현(representation)을 명시적으로 요청할 수도 있다. 예를 들어 `http://example.com/api/users_count.json` 같은 URL은 항상 JSON 데이터를 반환하는 엔드포인트일 수 있다.
 
-For more information see the documentation on [content negotiation][conneg].
+자세한 내용은 [content negotiation][conneg] 문서를 참고하라.
 
-## Setting the renderers
+## 렌더러 설정하기
 
-The default set of renderers may be set globally, using the `DEFAULT_RENDERER_CLASSES` setting.  For example, the following settings would use `JSON` as the main media type and also include the self describing API.
+기본 렌더러 목록은 `DEFAULT_RENDERER_CLASSES` 설정을 통해 전역으로 지정할 수 있다.  
+예를 들어 아래 설정은 기본 미디어 타입으로 `JSON`을 사용하면서, self describing API도 함께 포함한다.
 
     REST_FRAMEWORK = {
         'DEFAULT_RENDERER_CLASSES': [
@@ -30,8 +34,8 @@ The default set of renderers may be set globally, using the `DEFAULT_RENDERER_CL
         ]
     }
 
-You can also set the renderers used for an individual view, or viewset,
-using the `APIView` class-based views.
+또는 개별 뷰/뷰셋 단위로 렌더러를 지정할 수도 있다.  
+`APIView` 기반 클래스 뷰에서 사용하는 예시는 다음과 같다.
 
     from django.contrib.auth.models import User
     from rest_framework.renderers import JSONRenderer
@@ -40,7 +44,7 @@ using the `APIView` class-based views.
 
     class UserCountView(APIView):
         """
-        A view that returns the count of active users in JSON.
+        활성 사용자 수를 JSON으로 반환하는 뷰.
         """
         renderer_classes = [JSONRenderer]
 
@@ -49,46 +53,48 @@ using the `APIView` class-based views.
             content = {'user_count': user_count}
             return Response(content)
 
-Or, if you're using the `@api_view` decorator with function based views.
+함수 기반 뷰에서 `@api_view` 데코레이터를 사용하는 경우에는 다음과 같이 설정할 수 있다.
 
     @api_view(['GET'])
     @renderer_classes([JSONRenderer])
     def user_count_view(request, format=None):
         """
-        A view that returns the count of active users in JSON.
+        활성 사용자 수를 JSON으로 반환하는 뷰.
         """
         user_count = User.objects.filter(active=True).count()
         content = {'user_count': user_count}
         return Response(content)
 
-## Ordering of renderer classes
+## 렌더러 클래스의 우선순위(순서)
 
-It's important when specifying the renderer classes for your API to think about what priority you want to assign to each media type.  If a client underspecifies the representations it can accept, such as sending an `Accept: */*` header, or not including an `Accept` header at all, then REST framework will select the first renderer in the list to use for the response.
+API에서 렌더러 클래스를 지정할 때는 각 미디어 타입에 어떤 우선순위를 둘지 고려하는 것이 중요하다.  
+클라이언트가 받을 수 있는 표현을 충분히 명시하지 않는 경우(예: `Accept: */*` 헤더를 보내거나, `Accept` 헤더를 아예 포함하지 않는 경우) REST framework는 리스트에서 **첫 번째 렌더러**를 선택해 응답을 생성한다.
 
-For example if your API serves JSON responses and the HTML browsable API, you might want to make `JSONRenderer` your default renderer, in order to send `JSON` responses to clients that do not specify an `Accept` header.
+예를 들어 API가 JSON 응답과 HTML Browsable API를 제공한다면, `Accept` 헤더를 명시하지 않는 클라이언트에게도 JSON을 보내기 위해 `JSONRenderer`를 기본 렌더러로 두는 것이 좋을 수 있다.
 
-If your API includes views that can serve both regular webpages and API responses depending on the request, then you might consider making `TemplateHTMLRenderer` your default renderer, in order to play nicely with older browsers that send [broken accept headers][browser-accept-headers].
+만약 하나의 뷰가 요청에 따라 일반 웹페이지와 API 응답을 모두 제공할 수 있다면, [깨진 accept 헤더를 보내는 오래된 브라우저][browser-accept-headers]와의 호환성을 위해 `TemplateHTMLRenderer`를 기본 렌더러로 두는 방안도 고려할 수 있다.
 
 ---
 
-# API Reference
+# API 레퍼런스
 
 ## JSONRenderer
 
-Renders the request data into `JSON`, using utf-8 encoding.
+요청 데이터를 utf-8 인코딩을 사용해 `JSON`으로 렌더링한다.
 
-Note that the default style is to include unicode characters, and render the response using a compact style with no unnecessary whitespace:
+기본 스타일은 유니코드 문자를 그대로 포함하며, 불필요한 공백 없이 compact 스타일로 렌더링한다:
 
     {"unicode black star":"★","value":999}
 
-The client may additionally include an `'indent'` media type parameter, in which case the returned `JSON` will be indented.  For example `Accept: application/json; indent=4`.
+클라이언트는 `'indent'` 미디어 타입 파라미터를 추가로 포함할 수 있으며, 이 경우 반환되는 `JSON`은 들여쓰기가 적용된다.  
+예: `Accept: application/json; indent=4`.
 
     {
         "unicode black star": "★",
         "value": 999
     }
 
-The default JSON encoding style can be altered using the `UNICODE_JSON` and `COMPACT_JSON` settings keys.
+기본 JSON 인코딩 스타일은 `UNICODE_JSON` 및 `COMPACT_JSON` 설정 키를 통해 변경할 수 있다.
 
 **.media_type**: `application/json`
 
@@ -98,14 +104,16 @@ The default JSON encoding style can be altered using the `UNICODE_JSON` and `COM
 
 ## TemplateHTMLRenderer
 
-Renders data to HTML, using Django's standard template rendering.
-Unlike other renderers, the data passed to the `Response` does not need to be serialized.  Also, unlike other renderers, you may want to include a `template_name` argument when creating the `Response`.
+Django의 표준 템플릿 렌더링을 사용해 데이터를 HTML로 렌더링한다.  
+다른 렌더러들과 달리, `Response`에 전달하는 데이터는 반드시 serialize될 필요가 없다.  
+또한 `Response` 생성 시 `template_name` 인자를 포함하는 편이 유용할 수 있다.
 
-The TemplateHTMLRenderer will create a `RequestContext`, using the `response.data` as the context dict, and determine a template name to use to render the context.
+TemplateHTMLRenderer는 `response.data`를 컨텍스트 딕셔너리로 사용해 `RequestContext`를 만들고, 해당 컨텍스트를 렌더링할 템플릿 이름을 결정한다.
 
 ---
 
-**Note:** When used with a view that makes use of a serializer the `Response` sent for rendering may not be a dictionary and will need to be wrapped in a dict before returning to allow the `TemplateHTMLRenderer` to render it. For example:
+**참고:** serializer를 사용하는 뷰와 함께 사용할 때, 렌더링할 `Response`의 `data`가 딕셔너리가 아닐 수 있다.  
+이 경우 `TemplateHTMLRenderer`가 렌더링할 수 있도록 반환 전에 dict로 감싸야 한다. 예:
 
 ```
 response.data = {'results': response.data}
@@ -113,17 +121,17 @@ response.data = {'results': response.data}
 
 ---
 
-The template name is determined by (in order of preference):
+템플릿 이름은 다음 우선순위로 결정된다:
 
-1. An explicit `template_name` argument passed to the response.
-2. An explicit `.template_name` attribute set on this class.
-3. The return result of calling `view.get_template_names()`.
+1. 응답(Response)에 전달된 명시적인 `template_name` 인자
+2. 이 클래스에 설정된 명시적인 `.template_name` 속성
+3. `view.get_template_names()` 호출 결과
 
-An example of a view that uses `TemplateHTMLRenderer`:
+`TemplateHTMLRenderer`를 사용하는 뷰 예시는 다음과 같다:
 
     class UserDetail(generics.RetrieveAPIView):
         """
-        A view that returns a templated HTML representation of a given user.
+        특정 사용자를 템플릿 기반 HTML로 반환하는 뷰.
         """
         queryset = User.objects.all()
         renderer_classes = [TemplateHTMLRenderer]
@@ -132,11 +140,11 @@ An example of a view that uses `TemplateHTMLRenderer`:
             self.object = self.get_object()
             return Response({'user': self.object}, template_name='user_detail.html')
 
-You can use `TemplateHTMLRenderer` either to return regular HTML pages using REST framework, or to return both HTML and API responses from a single endpoint.
+`TemplateHTMLRenderer`는 REST framework를 이용해 일반 HTML 페이지를 반환하는 용도로도 사용할 수 있고, 단일 엔드포인트에서 HTML과 API 응답을 모두 제공하는 용도로도 사용할 수 있다.
 
-If you're building websites that use `TemplateHTMLRenderer` along with other renderer classes, you should consider listing `TemplateHTMLRenderer` as the first class in the `renderer_classes` list, so that it will be prioritized first even for browsers that send poorly formed `ACCEPT:` headers.
+`TemplateHTMLRenderer`를 다른 렌더러들과 함께 사용해 웹사이트를 만들고 있다면, 브라우저가 잘못된 `ACCEPT:` 헤더를 보내더라도 우선순위가 높도록 `renderer_classes` 리스트의 첫 번째로 두는 것을 고려하라.
 
-See the [_HTML & Forms_ Topic Page][html-and-forms] for further examples of `TemplateHTMLRenderer` usage.
+`TemplateHTMLRenderer` 사용 예시는 [_HTML & Forms_ Topic Page][html-and-forms]도 참고하라.
 
 **.media_type**: `text/html`
 
@@ -144,13 +152,14 @@ See the [_HTML & Forms_ Topic Page][html-and-forms] for further examples of `Tem
 
 **.charset**: `utf-8`
 
-See also: `StaticHTMLRenderer`
+참고: `StaticHTMLRenderer`
 
 ## StaticHTMLRenderer
 
-A simple renderer that simply returns pre-rendered HTML.  Unlike other renderers, the data passed to the response object should be a string representing the content to be returned.
+사전 렌더링된 HTML을 그대로 반환하는 간단한 렌더러다.  
+다른 렌더러들과 달리, response 객체에 전달되는 데이터는 반환할 콘텐츠를 나타내는 **문자열**이어야 한다.
 
-An example of a view that uses `StaticHTMLRenderer`:
+`StaticHTMLRenderer`를 사용하는 뷰 예시는 다음과 같다:
 
     @api_view(['GET'])
     @renderer_classes([StaticHTMLRenderer])
@@ -158,7 +167,7 @@ An example of a view that uses `StaticHTMLRenderer`:
         data = '<html><body><h1>Hello, world</h1></body></html>'
         return Response(data)
 
-You can use `StaticHTMLRenderer` either to return regular HTML pages using REST framework, or to return both HTML and API responses from a single endpoint.
+`StaticHTMLRenderer`는 REST framework로 일반 HTML 페이지를 반환하거나, 단일 엔드포인트에서 HTML과 API 응답을 함께 제공하는 용도로 사용할 수 있다.
 
 **.media_type**: `text/html`
 
@@ -166,15 +175,15 @@ You can use `StaticHTMLRenderer` either to return regular HTML pages using REST 
 
 **.charset**: `utf-8`
 
-See also: `TemplateHTMLRenderer`
+참고: `TemplateHTMLRenderer`
 
 ## BrowsableAPIRenderer
 
-Renders data into HTML for the Browsable API:
+Browsable API를 위한 HTML로 데이터를 렌더링한다:
 
 ![The BrowsableAPIRenderer](../img/quickstart.png)
 
-This renderer will determine which other renderer would have been given highest priority, and use that to display an API style response within the HTML page.
+이 렌더러는 다른 렌더러들 중 우선순위가 가장 높은 렌더러(단, `BrowsableAPIRenderer`는 제외)를 결정한 다음, 그 렌더러를 사용해 HTML 페이지 안에서 API 스타일 응답을 표시한다.
 
 **.media_type**: `text/html`
 
@@ -184,9 +193,10 @@ This renderer will determine which other renderer would have been given highest 
 
 **.template**: `'rest_framework/api.html'`
 
-#### Customizing BrowsableAPIRenderer
+#### BrowsableAPIRenderer 커스터마이징
 
-By default the response content will be rendered with the highest priority renderer apart from `BrowsableAPIRenderer`.  If you need to customize this behavior, for example to use HTML as the default return format, but use JSON in the browsable API, you can do so by overriding the `get_default_renderer()` method.  For example:
+기본적으로 응답 콘텐츠는 `BrowsableAPIRenderer`를 제외한 렌더러 중 우선순위가 가장 높은 렌더러로 렌더링된다.  
+예를 들어 기본 반환 포맷은 HTML로 두되, browsable API에서는 JSON으로 보이게 하고 싶다면 `get_default_renderer()` 메서드를 오버라이드하여 커스터마이징할 수 있다. 예:
 
     class CustomBrowsableAPIRenderer(BrowsableAPIRenderer):
         def get_default_renderer(self, view):
@@ -194,22 +204,22 @@ By default the response content will be rendered with the highest priority rende
 
 ## AdminRenderer
 
-Renders data into HTML for an admin-like display:
+관리자(admin) 스타일의 표시를 위한 HTML로 데이터를 렌더링한다:
 
 ![The AdminRender view](../img/admin.png)
 
-This renderer is suitable for CRUD-style web APIs that should also present a user-friendly interface for managing the data.
+이 렌더러는 CRUD 스타일의 웹 API에서 데이터를 관리하기 위한 사용자 친화적 인터페이스를 함께 제공하고자 할 때 적합하다.
 
-Note that views that have nested or list serializers for their input won't work well with the `AdminRenderer`, as the HTML forms are unable to properly support them.
+입력용 serializer가 중첩(nested) serializer이거나 리스트 serializer를 포함하는 뷰는 `AdminRenderer`와 잘 맞지 않을 수 있다. HTML 폼이 이를 제대로 지원하기 어렵기 때문이다.
 
-**Note**: The `AdminRenderer` is only able to include links to detail pages when a properly configured `URL_FIELD_NAME` (`url` by default) attribute is present in the data. For `HyperlinkedModelSerializer` this will be the case, but for `ModelSerializer` or plain `Serializer` classes you'll need to make sure to include the field explicitly. For example here we use models `get_absolute_url` method:
+**참고**: `AdminRenderer`는 데이터에 올바르게 설정된 `URL_FIELD_NAME`(기본값 `url`) 속성이 존재할 때만 상세 페이지 링크를 포함할 수 있다.  
+`HyperlinkedModelSerializer`에서는 보통 해당 조건이 만족되지만, `ModelSerializer`나 일반 `Serializer`를 사용할 경우에는 필드를 명시적으로 포함해야 한다. 예를 들어 모델의 `get_absolute_url` 메서드를 사용하도록 설정할 수 있다:
 
     class AccountSerializer(serializers.ModelSerializer):
         url = serializers.CharField(source='get_absolute_url', read_only=True)
 
         class Meta:
             model = Account
-
 
 **.media_type**: `text/html`
 
@@ -221,9 +231,10 @@ Note that views that have nested or list serializers for their input won't work 
 
 ## HTMLFormRenderer
 
-Renders data returned by a serializer into an HTML form. The output of this renderer does not include the enclosing `<form>` tags, a hidden CSRF input or any submit buttons.
+serializer가 반환한 데이터를 HTML 폼으로 렌더링한다.  
+이 렌더러의 출력에는 `<form>` 태그, 숨겨진 CSRF 입력, submit 버튼이 포함되지 않는다.
 
-This renderer is not intended to be used directly, but can instead be used in templates by passing a serializer instance to the `render_form` template tag.
+이 렌더러는 직접 사용하기보다는, serializer 인스턴스를 `render_form` 템플릿 태그에 전달해 템플릿에서 사용하는 용도다.
 
     {% load rest_framework %}
 
@@ -233,7 +244,7 @@ This renderer is not intended to be used directly, but can instead be used in te
         <input type="submit" value="Save" />
     </form>
 
-For more information see the [HTML & Forms][html-and-forms] documentation.
+자세한 내용은 [HTML & Forms][html-and-forms] 문서를 참고하라.
 
 **.media_type**: `text/html`
 
@@ -245,7 +256,8 @@ For more information see the [HTML & Forms][html-and-forms] documentation.
 
 ## MultiPartRenderer
 
-This renderer is used for rendering HTML multipart form data.  **It is not suitable as a response renderer**, but is instead used for creating test requests, using REST framework's [test client and test request factory][testing].
+HTML multipart 폼 데이터를 렌더링하기 위한 렌더러다. **응답 렌더러로는 적합하지 않다.**  
+대신 REST framework의 [test client 및 test request factory][testing]로 테스트 요청을 만들 때 사용된다.
 
 **.media_type**: `multipart/form-data; boundary=BoUnDaRyStRiNg`
 
@@ -255,33 +267,37 @@ This renderer is used for rendering HTML multipart form data.  **It is not suita
 
 ---
 
-# Custom renderers
+# 커스텀 렌더러
 
-To implement a custom renderer, you should override `BaseRenderer`, set the `.media_type` and `.format` properties, and implement the `.render(self, data, accepted_media_type=None, renderer_context=None)` method.
+커스텀 렌더러를 구현하려면 `BaseRenderer`를 상속하고, `.media_type` 및 `.format` 속성을 설정한 뒤  
+`.render(self, data, accepted_media_type=None, renderer_context=None)` 메서드를 구현해야 한다.
 
-The method should return a bytestring, which will be used as the body of the HTTP response.
+이 메서드는 HTTP 응답 바디로 사용될 bytestring을 반환해야 한다.
 
-The arguments passed to the `.render()` method are:
+`.render()` 메서드에 전달되는 인자는 다음과 같다.
 
 ### `data`
 
-The request data, as set by the `Response()` instantiation.
+`Response()` 생성 시 설정된 요청 데이터.
 
 ### `accepted_media_type=None`
 
-Optional.  If provided, this is the accepted media type, as determined by the content negotiation stage.
+선택 사항.  
+콘텐츠 협상 단계에서 결정된 accepted media type이다.
 
-Depending on the client's `Accept:` header, this may be more specific than the renderer's `media_type` attribute, and may include media type parameters.  For example `"application/json; nested=true"`.
+클라이언트의 `Accept:` 헤더에 따라 렌더러의 `media_type` 속성보다 더 구체적일 수 있으며,  
+예를 들어 `"application/json; nested=true"` 같은 미디어 타입 파라미터를 포함할 수 있다.
 
 ### `renderer_context=None`
 
-Optional.  If provided, this is a dictionary of contextual information provided by the view.
+선택 사항.  
+뷰가 제공하는 컨텍스트 정보 딕셔너리.
 
-By default this will include the following keys: `view`, `request`, `response`, `args`, `kwargs`.
+기본적으로 다음 키들을 포함한다: `view`, `request`, `response`, `args`, `kwargs`.
 
-## Example
+## 예시
 
-The following is an example plaintext renderer that will return a response with the `data` parameter as the content of the response.
+아래는 `data` 파라미터를 응답 콘텐츠로 반환하는 **플레인 텍스트 렌더러** 예시다.
 
     from django.utils.encoding import smart_str
     from rest_framework import renderers
@@ -294,9 +310,10 @@ The following is an example plaintext renderer that will return a response with 
         def render(self, data, accepted_media_type=None, renderer_context=None):
             return smart_str(data, encoding=self.charset)
 
-## Setting the character set
+## 문자셋 설정하기
 
-By default renderer classes are assumed to be using the `UTF-8` encoding.  To use a different encoding, set the `charset` attribute on the renderer.
+기본적으로 렌더러 클래스들은 `UTF-8` 인코딩을 사용한다고 가정한다.  
+다른 인코딩을 사용하려면 렌더러에 `charset` 속성을 설정하라.
 
     class PlainTextRenderer(renderers.BaseRenderer):
         media_type = 'text/plain'
@@ -306,11 +323,13 @@ By default renderer classes are assumed to be using the `UTF-8` encoding.  To us
         def render(self, data, accepted_media_type=None, renderer_context=None):
             return data.encode(self.charset)
 
-Note that if a renderer class returns a unicode string, then the response content will be coerced into a bytestring by the `Response` class, with the `charset` attribute set on the renderer used to determine the encoding.
+렌더러 클래스가 유니코드 문자열을 반환하면, `Response` 클래스는 렌더러의 `charset` 값을 사용해 응답 콘텐츠를 bytestring으로 강제 변환한다.
 
-If the renderer returns a bytestring representing raw binary content, you should set a charset value of `None`, which will ensure the `Content-Type` header of the response will not have a `charset` value set.
+렌더러가 raw 바이너리 콘텐츠를 나타내는 bytestring을 반환한다면, charset 값을 `None`으로 설정해야 한다.  
+그러면 응답의 `Content-Type` 헤더에 `charset` 값이 포함되지 않는다.
 
-In some cases you may also want to set the `render_style` attribute to `'binary'`.  Doing so will also ensure that the browsable API will not attempt to display the binary content as a string.
+경우에 따라 `render_style` 속성을 `'binary'`로 설정하고 싶을 수도 있다.  
+이렇게 하면 browsable API가 바이너리 콘텐츠를 문자열로 표시하려고 시도하지 않게 된다.
 
     class JPEGRenderer(renderers.BaseRenderer):
         media_type = 'image/jpeg'
@@ -323,92 +342,94 @@ In some cases you may also want to set the `render_style` attribute to `'binary'
 
 ---
 
-# Advanced renderer usage
+# 고급 렌더러 사용법
 
-You can do some pretty flexible things using REST framework's renderers.  Some examples...
+REST framework의 렌더러를 사용하면 꽤 유연한 일을 할 수 있다. 예를 들면...
 
-* Provide either flat or nested representations from the same endpoint, depending on the requested media type.
-* Serve both regular HTML webpages, and JSON based API responses from the same endpoints.
-* Specify multiple types of HTML representation for API clients to use.
-* Underspecify a renderer's media type, such as using `media_type = 'image/*'`, and use the `Accept` header to vary the encoding of the response.
+* 요청된 미디어 타입에 따라 같은 엔드포인트에서 평면(flat) 또는 중첩(nested) 표현을 제공하기
+* 같은 엔드포인트에서 일반 HTML 웹페이지와 JSON 기반 API 응답을 모두 제공하기
+* API 클라이언트를 위해 여러 종류의 HTML 표현을 제공하기
+* `media_type = 'image/*'`처럼 렌더러의 미디어 타입을 덜 구체적으로 지정한 다음, `Accept` 헤더에 따라 응답 인코딩을 바꾸기
 
-## Varying behavior by media type
+## 미디어 타입에 따라 동작 달리하기
 
-In some cases you might want your view to use different serialization styles depending on the accepted media type.  If you need to do this you can access `request.accepted_renderer` to determine the negotiated renderer that will be used for the response.
+어떤 경우에는 accepted media type에 따라 뷰가 서로 다른 직렬화 스타일을 사용하고 싶을 수 있다.  
+이럴 때는 `request.accepted_renderer`를 통해 협상된 렌더러를 확인할 수 있다.
 
-For example:
+예:
 
     @api_view(['GET'])
     @renderer_classes([TemplateHTMLRenderer, JSONRenderer])
     def list_users(request):
         """
-        A view that can return JSON or HTML representations
-        of the users in the system.
+        시스템의 사용자 목록을 JSON 또는 HTML로 반환할 수 있는 뷰.
         """
         queryset = Users.objects.filter(active=True)
 
         if request.accepted_renderer.format == 'html':
-            # TemplateHTMLRenderer takes a context dict,
-            # and additionally requires a 'template_name'.
-            # It does not require serialization.
+            # TemplateHTMLRenderer는 context dict를 받고,
+            # 추가로 'template_name'이 필요하다.
+            # 직렬화가 필요 없다.
             data = {'users': queryset}
             return Response(data, template_name='list_users.html')
 
-        # JSONRenderer requires serialized data as normal.
+        # JSONRenderer는 평소처럼 직렬화된 데이터가 필요하다.
         serializer = UserSerializer(instance=queryset)
         data = serializer.data
         return Response(data)
 
-## Underspecifying the media type
+## 미디어 타입을 덜 구체적으로 지정하기
 
-In some cases you might want a renderer to serve a range of media types.
-In this case you can underspecify the media types it should respond to, by using a `media_type` value such as `image/*`, or `*/*`.
+어떤 경우에는 렌더러가 여러 미디어 타입 범위를 제공하도록 하고 싶을 수 있다.  
+이 경우 `image/*` 또는 `*/*` 같은 `media_type` 값을 사용해, 응답 가능한 미디어 타입을 덜 구체적으로 지정할 수 있다.
 
-If you underspecify the renderer's media type, you should make sure to specify the media type explicitly when you return the response, using the `content_type` attribute.  For example:
+렌더러의 미디어 타입을 덜 구체적으로 지정했다면, 응답을 반환할 때 `content_type` 속성을 사용하여 미디어 타입을 명시적으로 지정해야 한다. 예:
 
     return Response(data, content_type='image/png')
 
-## Designing your media types
+## 미디어 타입 설계하기
 
-For the purposes of many Web APIs, simple `JSON` responses with hyperlinked relations may be sufficient.  If you want to fully embrace RESTful design and [HATEOAS] you'll need to consider the design and usage of your media types in more detail.
+많은 Web API에서는 하이퍼링크 관계를 포함한 단순 `JSON` 응답만으로도 충분할 수 있다.  
+하지만 RESTful 설계를 완전히 받아들이고 [HATEOAS]를 구현하려면, 리소스를 표현하고 애플리케이션 상태를 구동하는 미디어 타입을 더 정교하게 설계하고 사용하는 것을 고려해야 한다.
 
-In [the words of Roy Fielding][quote], "A REST API should spend almost all of its descriptive effort in defining the media type(s) used for representing resources and driving application state, or in defining extended relation names and/or hypertext-enabled mark-up for existing standard media types.".
+[Roy Fielding의 말][quote]에 따르면, “REST API는 리소스를 표현하고 애플리케이션 상태를 구동하기 위해 사용되는 미디어 타입을 정의하거나, 확장 relation 이름 및/또는 기존 표준 미디어 타입을 위한 하이퍼텍스트 지원 마크업을 정의하는 데 대부분의 설명적 노력을 써야 한다.”
 
-For good examples of custom media types, see GitHub's use of a custom [application/vnd.github+json] media type, and Mike Amundsen's IANA approved [application/vnd.collection+json] JSON-based hypermedia.
+커스텀 미디어 타입의 좋은 예로는 GitHub의 [application/vnd.github+json] 미디어 타입, 그리고 Mike Amundsen의 IANA 승인 JSON 기반 하이퍼미디어 [application/vnd.collection+json] 미디어 타입이 있다.
 
-## HTML error views
+## HTML 오류 뷰
 
-Typically a renderer will behave the same regardless of if it's dealing with a regular response, or with a response caused by an exception being raised, such as an `Http404` or `PermissionDenied` exception, or a subclass of `APIException`.
+일반적으로 렌더러는 정상 응답이든 예외로 인해 발생한 응답이든 동일하게 동작한다.  
+예를 들어 `Http404` 또는 `PermissionDenied` 예외, 혹은 `APIException`의 하위 클래스가 발생한 경우가 그렇다.
 
-If you're using either the `TemplateHTMLRenderer` or the `StaticHTMLRenderer` and an exception is raised, the behavior is slightly different, and mirrors [Django's default handling of error views][django-error-views].
+하지만 `TemplateHTMLRenderer` 또는 `StaticHTMLRenderer`를 사용 중에 예외가 발생하면, 동작이 약간 달라지며 [Django의 기본 오류 뷰 처리 방식][django-error-views]을 따른다.
 
-Exceptions raised and handled by an HTML renderer will attempt to render using one of the following methods, by order of precedence.
+HTML 렌더러에 의해 처리되는 예외는 다음 우선순위로 렌더링을 시도한다.
 
-* Load and render a template named `{status_code}.html`.
-* Load and render a template named `api_exception.html`.
-* Render the HTTP status code and text, for example "404 Not Found".
+* `{status_code}.html` 이름의 템플릿을 로드해 렌더링
+* `api_exception.html` 템플릿을 로드해 렌더링
+* HTTP 상태 코드와 텍스트를 그대로 렌더링(예: "404 Not Found")
 
-Templates will render with a `RequestContext` which includes the `status_code` and `details` keys.
+템플릿은 `status_code`와 `details` 키를 포함하는 `RequestContext`로 렌더링된다.
 
-**Note**: If `DEBUG=True`, Django's standard traceback error page will be displayed instead of rendering the HTTP status code and text.
+**참고**: `DEBUG=True`인 경우, HTTP 상태 코드/텍스트를 렌더링하는 대신 Django의 표준 traceback 에러 페이지가 표시된다.
 
 ---
 
-# Third party packages
+# 서드파티 패키지
 
-The following third party packages are also available.
+다음과 같은 서드파티 패키지들도 사용할 수 있다.
 
 ## YAML
 
-[REST framework YAML][rest-framework-yaml] provides [YAML][yaml] parsing and rendering support. It was previously included directly in the REST framework package, and is now instead supported as a third-party package.
+[REST framework YAML][rest-framework-yaml]은 [YAML][yaml] 파싱 및 렌더링을 지원한다. 과거에는 REST framework에 포함되어 있었지만, 현재는 서드파티 패키지로 제공된다.
 
-#### Installation & configuration
+#### 설치 및 설정
 
-Install using pip.
+pip로 설치한다.
 
-    $ pip install djangorestframework-yaml
+    pip install djangorestframework-yaml
 
-Modify your REST framework settings.
+REST framework 설정을 수정한다.
 
     REST_FRAMEWORK = {
         'DEFAULT_PARSER_CLASSES': [
@@ -421,15 +442,15 @@ Modify your REST framework settings.
 
 ## XML
 
-[REST Framework XML][rest-framework-xml] provides a simple informal XML format. It was previously included directly in the REST framework package, and is now instead supported as a third-party package.
+[REST Framework XML][rest-framework-xml]은 간단한 비공식 XML 포맷을 제공한다. 과거에는 REST framework에 포함되어 있었지만, 현재는 서드파티 패키지로 제공된다.
 
-#### Installation & configuration
+#### 설치 및 설정
 
-Install using pip.
+pip로 설치한다.
 
-    $ pip install djangorestframework-xml
+    pip install djangorestframework-xml
 
-Modify your REST framework settings.
+REST framework 설정을 수정한다.
 
     REST_FRAMEWORK = {
         'DEFAULT_PARSER_CLASSES': [
@@ -442,20 +463,20 @@ Modify your REST framework settings.
 
 ## JSONP
 
-[REST framework JSONP][rest-framework-jsonp] provides JSONP rendering support. It was previously included directly in the REST framework package, and is now instead supported as a third-party package.
+[REST framework JSONP][rest-framework-jsonp]는 JSONP 렌더링을 지원한다. 과거에는 REST framework에 포함되어 있었지만, 현재는 서드파티 패키지로 제공된다.
 
 !!! warning
-    If you require cross-domain AJAX requests, you should generally be using the more modern approach of [CORS][cors] as an alternative to `JSONP`. See the [CORS documentation][cors-docs] for more details.
+    크로스 도메인 AJAX 요청이 필요하다면, 일반적으로 `JSONP` 대신 더 현대적인 접근인 [CORS][cors]를 사용하는 것이 바람직하다. 자세한 내용은 [CORS 문서][cors-docs]를 참고하라.
 
-    The `jsonp` approach is essentially a browser hack, and is [only appropriate for globally readable API endpoints][jsonp-security], where `GET` requests are unauthenticated and do not require any user permissions.
+    `jsonp` 방식은 사실상 브라우저 해킹에 가깝고, 인증이 필요 없고 사용자 권한이 필요 없는 `GET` 요청만 제공되는 **전 세계에 공개된(readable) API 엔드포인트**에서만 [적절하다][jsonp-security].
 
-#### Installation & configuration
+#### 설치 및 설정
 
-Install using pip.
+pip로 설치한다.
 
-    $ pip install djangorestframework-jsonp
+    pip install djangorestframework-jsonp
 
-Modify your REST framework settings.
+REST framework 설정을 수정한다.
 
     REST_FRAMEWORK = {
         'DEFAULT_RENDERER_CLASSES': [
@@ -465,19 +486,19 @@ Modify your REST framework settings.
 
 ## MessagePack
 
-[MessagePack][messagepack] is a fast, efficient binary serialization format.  [Juan Riaza][juanriaza] maintains the [djangorestframework-msgpack][djangorestframework-msgpack] package which provides MessagePack renderer and parser support for REST framework.
+[MessagePack][messagepack]은 빠르고 효율적인 바이너리 직렬화 포맷이다. [Juan Riaza][juanriaza]가 관리하는 [djangorestframework-msgpack][djangorestframework-msgpack] 패키지는 REST framework에 MessagePack 렌더러 및 파서 지원을 제공한다.
 
-## Microsoft Excel: XLSX (Binary Spreadsheet Endpoints)
+## Microsoft Excel: XLSX (바이너리 스프레드시트 엔드포인트)
 
-XLSX is the world's most popular binary spreadsheet format. [Tim Allen][flipperpa] of [The Wharton School][wharton] maintains [drf-excel][drf-excel], which renders an endpoint as an XLSX spreadsheet using OpenPyXL, and allows the client to download it. Spreadsheets can be styled on a per-view basis.
+XLSX는 세계에서 가장 널리 쓰이는 바이너리 스프레드시트 포맷이다. [The Wharton School][wharton]의 [Tim Allen][flipperpa]이 관리하는 [drf-excel][drf-excel]은 OpenPyXL을 사용해 엔드포인트를 XLSX 스프레드시트로 렌더링하고, 클라이언트가 이를 다운로드할 수 있게 한다. 스프레드시트 스타일은 뷰 단위로 지정할 수 있다.
 
-#### Installation & configuration
+#### 설치 및 설정
 
-Install using pip.
+pip로 설치한다.
 
-    $ pip install drf-excel
+    pip install drf-excel
 
-Modify your REST framework settings.
+REST framework 설정을 수정한다.
 
     REST_FRAMEWORK = {
         ...
@@ -489,7 +510,7 @@ Modify your REST framework settings.
         ],
     }
 
-To avoid having a file streamed without a filename (which the browser will often default to the filename "download", with no extension), we need to use a mixin to override the `Content-Disposition` header. If no filename is provided, it will default to `export.xlsx`. For example:
+브라우저가 파일명을 포함하지 않은 스트리밍 파일을 받으면(대개 확장자 없이 기본 파일명 "download"로 저장됨) 이를 피하기 위해 `Content-Disposition` 헤더를 오버라이드하는 믹스인을 사용해야 한다. 파일명이 제공되지 않으면 기본값은 `export.xlsx`이다. 예:
 
     from rest_framework.viewsets import ReadOnlyModelViewSet
     from drf_excel.mixins import XLSXFileMixin
@@ -506,24 +527,23 @@ To avoid having a file streamed without a filename (which the browser will often
 
 ## CSV
 
-Comma-separated values are a plain-text tabular data format, that can be easily imported into spreadsheet applications. [Mjumbe Poe][mjumbewu] maintains the [djangorestframework-csv][djangorestframework-csv] package which provides CSV renderer support for REST framework.
+CSV(Comma-separated values)는 평문 기반의 표 형식 데이터 포맷으로, 스프레드시트 애플리케이션에 쉽게 import할 수 있다. [Mjumbe Poe][mjumbewu]가 관리하는 [djangorestframework-csv][djangorestframework-csv] 패키지는 REST framework에 CSV 렌더러 지원을 제공한다.
 
 ## UltraJSON
 
-[UltraJSON][ultrajson] is an optimized C JSON encoder which can give significantly faster JSON rendering. [Adam Mertz][Amertz08] maintains [drf_ujson2][drf_ujson2], a fork of the now unmaintained [drf-ujson-renderer][drf-ujson-renderer], which implements JSON rendering using the UJSON package.
+[UltraJSON][ultrajson]은 최적화된 C 기반 JSON 인코더로, JSON 렌더링을 상당히 빠르게 할 수 있다. [Adam Mertz][Amertz08]가 관리하는 [drf_ujson2][drf_ujson2]는 현재 유지보수되지 않는 [drf-ujson-renderer][drf-ujson-renderer]의 포크로, UJSON 패키지를 사용한 JSON 렌더링을 구현한다.
 
 ## CamelCase JSON
 
-[djangorestframework-camel-case] provides camel case JSON renderers and parsers for REST framework.  This allows serializers to use Python-style underscored field names, but be exposed in the API as Javascript-style camel case field names.  It is maintained by [Vitaly Babiy][vbabiy].
+[djangorestframework-camel-case]는 camelCase JSON 렌더러 및 파서를 제공한다. 이를 통해 serializer에서는 Python 스타일의 snake_case 필드명을 사용하면서, API에서는 JavaScript 스타일의 camelCase 필드명을 노출할 수 있다. 이 패키지는 [Vitaly Babiy][vbabiy]가 관리한다.
 
 ## Pandas (CSV, Excel, PNG)
 
-[Django REST Pandas] provides a serializer and renderers that support additional data processing and output via the [Pandas] DataFrame API.  Django REST Pandas includes renderers for Pandas-style CSV files, Excel workbooks (both `.xls` and `.xlsx`), and a number of [other formats]. It is maintained by [S. Andrew Sheppard][sheppard] as part of the [wq Project][wq].
+[Django REST Pandas]는 [Pandas] DataFrame API를 통해 추가 데이터 처리 및 출력 포맷을 지원하는 serializer와 렌더러를 제공한다. Django REST Pandas에는 Pandas 스타일 CSV, Excel 워크북(`.xls`, `.xlsx`), 그리고 다양한 [기타 포맷][other formats]을 출력하는 렌더러가 포함된다. 이는 [wq Project][wq]의 일부로 [S. Andrew Sheppard][sheppard]가 관리한다.
 
 ## LaTeX
 
-[Rest Framework Latex] provides a renderer that outputs PDFs using Lualatex. It is maintained by [Pebble (S/F Software)][mypebble].
-
+[Rest Framework Latex]는 Lualatex를 사용해 PDF를 출력하는 렌더러를 제공한다. 이 패키지는 [Pebble (S/F Software)][mypebble]가 관리한다.
 
 [cite]: https://docs.djangoproject.com/en/stable/ref/template-response/#the-rendering-process
 [conneg]: content-negotiation.md
@@ -538,7 +558,6 @@ Comma-separated values are a plain-text tabular data format, that can be easily 
 [rest-framework-jsonp]: https://jpadilla.github.io/django-rest-framework-jsonp/
 [cors]: https://www.w3.org/TR/cors/
 [cors-docs]: https://www.django-rest-framework.org/topics/ajax-csrf-cors/
-[jsonp-security]: https://stackoverflow.com/questions/613962/is-jsonp-safe-to-use
 [rest-framework-yaml]: https://jpadilla.github.io/django-rest-framework-yaml/
 [rest-framework-xml]: https://jpadilla.github.io/django-rest-framework-xml/
 [messagepack]: https://msgpack.org/
@@ -548,8 +567,6 @@ Comma-separated values are a plain-text tabular data format, that can be easily 
 [wharton]: https://github.com/wharton
 [drf-excel]: https://github.com/wharton/drf-excel
 [vbabiy]: https://github.com/vbabiy
-[rest-framework-yaml]: https://jpadilla.github.io/django-rest-framework-yaml/
-[rest-framework-xml]: https://jpadilla.github.io/django-rest-framework-xml/
 [yaml]: http://www.yaml.org/
 [djangorestframework-msgpack]: https://github.com/juanriaza/django-rest-framework-msgpack
 [djangorestframework-csv]: https://github.com/mjumbewu/django-rest-framework-csv

@@ -3,873 +3,385 @@ source:
     - fields.py
 ---
 
-# Serializer fields
+# 시리얼라이저 필드 (Serializer fields)
 
-> Each field in a Form class is responsible not only for validating data, but also for "cleaning" it &mdash; normalizing it to a consistent format.
+> Form 클래스의 각 필드는 데이터 검증뿐만 아니라  
+> 데이터를 일관된 형식으로 “정제(cleaning)”하는 역할도 담당한다.
 >
-> &mdash; [Django documentation][cite]
+> &mdash; [Django 문서][cite]
 
-Serializer fields handle converting between primitive values and internal datatypes.  They also deal with validating input values, as well as retrieving and setting the values from their parent objects.
-
----
-
-**Note:** The serializer fields are declared in `fields.py`, but by convention you should import them using `from rest_framework import serializers` and refer to fields as `serializers.<FieldName>`.
+시리얼라이저 필드는 **원시(primitives) 값 ↔ 내부 데이터 타입** 간의 변환을 처리한다.  
+또한 입력 값에 대한 검증을 수행하고, 부모 객체로부터 값을 가져오거나 설정하는 역할도 담당한다.
 
 ---
 
-## Core arguments
+**참고:** 시리얼라이저 필드는 `fields.py`에 선언되어 있지만, 관례적으로  
+`from rest_framework import serializers` 형태로 import 한 뒤  
+`serializers.<FieldName>` 형태로 사용하는 것이 권장된다.
 
-Each serializer field class constructor takes at least these arguments.  Some Field classes take additional, field-specific arguments, but the following should always be accepted:
+---
+
+## 핵심 인자 (Core arguments)
+
+모든 시리얼라이저 필드 클래스의 생성자는 최소한 다음 인자들을 지원한다.  
+일부 필드는 추가적인 전용 인자를 가질 수 있지만, 아래 인자들은 항상 사용 가능해야 한다.
 
 ### `read_only`
 
-Read-only fields are included in the API output, but should not be included in the input during create or update operations. Any 'read_only' fields that are incorrectly included in the serializer input will be ignored.
+읽기 전용 필드는 API 출력에는 포함되지만, 생성(create)이나 수정(update) 시 입력값으로는 사용되지 않는다.  
+입력 데이터에 `read_only` 필드가 포함되어 있더라도 무시된다.
 
-Set this to `True` to ensure that the field is used when serializing a representation, but is not used when creating or updating an instance during deserialization.
+`True`로 설정하면 직렬화 시에는 포함되지만, 역직렬화 시 인스턴스를 생성·수정하는 데는 사용되지 않는다.
 
-Defaults to `False`
+기본값: `False`
 
 ### `write_only`
 
-Set this to `True` to ensure that the field may be used when updating or creating an instance, but is not included when serializing the representation.
+`True`로 설정하면 생성·수정 시 입력값으로는 사용되지만, 직렬화 결과에는 포함되지 않는다.
 
-Defaults to `False`
+기본값: `False`
 
 ### `required`
 
-Normally an error will be raised if a field is not supplied during deserialization.
-Set to false if this field is not required to be present during deserialization.
+기본적으로 역직렬화 시 해당 필드가 제공되지 않으면 오류가 발생한다.  
+역직렬화 시 필수 입력값이 아니도록 하려면 `False`로 설정한다.
 
-Setting this to `False` also allows the object attribute or dictionary key to be omitted from output when serializing the instance. If the key is not present it will simply not be included in the output representation.
+`False`로 설정하면, 직렬화 시에도 해당 속성이나 키가 존재하지 않을 경우 출력에서 생략된다.
 
-Defaults to `True`. If you're using [Model Serializer](https://www.django-rest-framework.org/api-guide/serializers/#modelserializer), the default value will be `False` when you have specified a `default`, or when the corresponding `Model` field has `blank=True` or `null=True` and is not part of a unique constraint at the same time. (Note that without a `default` value, [unique constraints will cause the field to be required](https://www.django-rest-framework.org/api-guide/validators/#optional-fields).)
+기본값: `True`  
+단, [ModelSerializer](https://www.django-rest-framework.org/api-guide/serializers/#modelserializer)를 사용하는 경우,
+`default`가 지정되었거나 모델 필드가 `blank=True` 또는 `null=True`인 경우 기본값은 `False`가 된다
+(단, unique 제약 조건에 포함된 경우는 예외).
 
 ### `default`
 
-If set, this gives the default value that will be used for the field if no input value is supplied. If not set the default behavior is to not populate the attribute at all.
+입력값이 제공되지 않았을 때 사용할 기본값을 지정한다.  
+설정하지 않으면 해당 속성은 아예 채워지지 않는다.
 
-The `default` is not applied during partial update operations. In the partial update case only fields that are provided in the incoming data will have a validated value returned.
+부분 업데이트(partial update)에서는 `default`가 적용되지 않는다.  
+이 경우 입력으로 전달된 필드만 검증 결과에 포함된다.
 
-May be set to a function or other callable, in which case the value will be evaluated each time it is used. When called, it will receive no arguments. If the callable has a `requires_context = True` attribute, then the serializer field will be passed as an argument.
+함수나 callable을 지정할 수도 있으며, 이 경우 매번 호출된다.  
+callable에 `requires_context = True` 속성이 있으면, serializer field 자체가 인자로 전달된다.
 
-For example:
+예시:
 
     class CurrentUserDefault:
         """
-        May be applied as a `default=...` value on a serializer field.
-        Returns the current user.
+        serializer field의 default 값으로 사용 가능
+        현재 사용자 반환
         """
         requires_context = True
 
         def __call__(self, serializer_field):
             return serializer_field.context['request'].user
 
-When serializing the instance, default will be used if the object attribute or dictionary key is not present in the instance.
+직렬화 시 객체에 해당 속성이나 키가 없으면 `default` 값이 사용된다.
 
-Note that setting a `default` value implies that the field is not required. Including both the `default` and `required` keyword arguments is invalid and will raise an error.
+`default`를 지정하면 해당 필드는 자동으로 `required=False`가 된다.  
+`default`와 `required`를 동시에 지정하는 것은 허용되지 않으며 오류가 발생한다.
 
 ### `allow_null`
 
-Normally an error will be raised if `None` is passed to a serializer field. Set this keyword argument to `True` if `None` should be considered a valid value.
+기본적으로 `None` 값이 전달되면 오류가 발생한다.  
+`True`로 설정하면 `None`을 유효한 값으로 허용한다.
 
-Note that, without an explicit `default`, setting this argument to `True` will imply a `default` value of `null` for serialization output, but does not imply a default for input deserialization.
+명시적인 `default` 없이 `allow_null=True`를 설정하면,  
+직렬화 출력에서 기본값이 `null`이 되지만 입력 역직렬화의 기본값을 의미하지는 않는다.
 
-Defaults to `False`
+기본값: `False`
 
 ### `source`
 
-The name of the attribute that will be used to populate the field.  May be a method that only takes a `self` argument, such as `URLField(source='get_absolute_url')`, or may use dotted notation to traverse attributes, such as `EmailField(source='user.email')`.
+필드를 채우는 데 사용할 속성 이름을 지정한다.  
+`URLField(source='get_absolute_url')` 처럼 인자 없는 메서드일 수도 있고,  
+`EmailField(source='user.email')` 처럼 점 표기법으로 속성을 탐색할 수도 있다.
 
-When serializing fields with dotted notation, it may be necessary to provide a `default` value if any object is not present or is empty during attribute traversal. Beware of possible n+1 problems when using source attribute if you are accessing a relational orm model. For example:
+점 표기법을 사용할 경우, 중간 객체가 없을 수 있으므로 `default` 설정이 필요할 수 있다.  
+또한 ORM 관계를 통해 접근하는 경우 N+1 쿼리 문제가 발생할 수 있으므로  
+`select_related`, `prefetch_related`를 적절히 사용해야 한다.  
+자세한 내용은 [Django 문서][django-docs-select-related]를 참고하자.
 
-    class CommentSerializer(serializers.Serializer):
-        email = serializers.EmailField(source="user.email")
+`source='*'`는 **전체 객체를 필드로 전달**한다는 특별한 의미를 가진다.  
+중첩 표현이나, 출력 생성을 위해 전체 객체가 필요한 필드에 유용하다.
 
-This case would require user object to be fetched from database when it is not prefetched. If that is not wanted, be sure to be using `prefetch_related` and `select_related` methods appropriately. For more information about the methods refer to [django documentation][django-docs-select-related].
-
-The value `source='*'` has a special meaning, and is used to indicate that the entire object should be passed through to the field.  This can be useful for creating nested representations, or for fields which require access to the complete object in order to determine the output representation.
-
-Defaults to the name of the field.
+기본값은 필드 이름과 동일하다.
 
 ### `validators`
 
-A list of validator functions which should be applied to the incoming field input, and which either raise a validation error or simply return. Validator functions should typically raise `serializers.ValidationError`, but Django's built-in `ValidationError` is also supported for compatibility with validators defined in the Django codebase or third party Django packages.
+입력값에 적용할 validator 함수 목록이다.  
+보통 `serializers.ValidationError`를 발생시키며,  
+Django의 `ValidationError`도 호환성을 위해 지원된다.
 
 ### `error_messages`
 
-A dictionary of error codes to error messages.
+에러 코드 → 에러 메시지 매핑 딕셔너리.
 
 ### `label`
 
-A short text string that may be used as the name of the field in HTML form fields or other descriptive elements.
+HTML 폼이나 설명 요소에서 사용될 필드의 짧은 이름.
 
 ### `help_text`
 
-A text string that may be used as a description of the field in HTML form fields or other descriptive elements.
+HTML 폼이나 설명 요소에서 사용될 필드 설명 텍스트.
 
 ### `initial`
 
-A value that should be used for pre-populating the value of HTML form fields. You may pass a callable to it, just as
-you may do with any regular Django `Field`:
+HTML 폼에서 미리 채워질 초기값.
 
     import datetime
     from rest_framework import serializers
+
     class ExampleSerializer(serializers.Serializer):
         day = serializers.DateField(initial=datetime.date.today)
 
 ### `style`
 
-A dictionary of key-value pairs that can be used to control how renderers should render the field.
+렌더러가 필드를 어떻게 렌더링할지 제어하는 키-값 딕셔너리.
 
-Two examples here are `'input_type'` and `'base_template'`:
+예시:
 
-    # Use <input type="password"> for the input.
+    # <input type="password">
     password = serializers.CharField(
         style={'input_type': 'password'}
     )
 
-    # Use a radio input instead of a select input.
+    # select 대신 radio input 사용
     color_channel = serializers.ChoiceField(
         choices=['red', 'green', 'blue'],
         style={'base_template': 'radio.html'}
     )
 
-For more details see the [HTML & Forms][html-and-forms] documentation.
+자세한 내용은 [HTML & Forms][html-and-forms] 문서를 참고하자.
 
 ---
 
-# Boolean fields
+# Boolean 필드
 
 ## BooleanField
 
-A boolean representation.
+불리언(Boolean) 표현 필드.
 
-When using HTML encoded form input be aware that omitting a value will always be treated as setting a field to `False`, even if it has a `default=True` option specified. This is because HTML checkbox inputs represent the unchecked state by omitting the value, so REST framework treats omission as if it is an empty checkbox input.
+HTML 폼 입력에서는 값이 생략되면 항상 `False`로 처리된다.  
+체크박스가 체크되지 않은 상태는 값이 전달되지 않기 때문이다.
 
-Note that Django 2.1 removed the `blank` kwarg from `models.BooleanField`.
-Prior to Django 2.1 `models.BooleanField` fields were always `blank=True`. Thus
-since Django 2.1 default `serializers.BooleanField` instances will be generated
-without the `required` kwarg (i.e. equivalent to `required=True`) whereas with
-previous versions of Django, default `BooleanField` instances will be generated
-with a `required=False` option.  If you want to control this behavior manually,
-explicitly declare the `BooleanField` on the serializer class, or use the
-`extra_kwargs` option to set the `required` flag.
+Django 2.1부터 `models.BooleanField`에서 `blank` 인자가 제거되었다.  
+이로 인해 Django 2.1 이후 기본 생성되는 `BooleanField`는 `required=True`와 동일하게 동작한다.  
+이 동작을 제어하려면 시리얼라이저에서 명시적으로 선언하거나 `extra_kwargs`를 사용하자.
 
-Corresponds to `django.db.models.fields.BooleanField`.
+모델 대응: `django.db.models.fields.BooleanField`
 
-**Signature:** `BooleanField()`
+**시그니처:** `BooleanField()`
 
 ---
 
-# String fields
+# 문자열 필드
 
 ## CharField
 
-A text representation. Optionally validates the text to be shorter than `max_length` and longer than `min_length`.
+문자열 표현 필드. `max_length`, `min_length` 검증 가능.
 
-Corresponds to `django.db.models.fields.CharField` or `django.db.models.fields.TextField`.
+모델 대응: `CharField`, `TextField`
 
-**Signature:** `CharField(max_length=None, min_length=None, allow_blank=False, trim_whitespace=True)`
+**시그니처:**  
+`CharField(max_length=None, min_length=None, allow_blank=False, trim_whitespace=True)`
 
-* `max_length` - Validates that the input contains no more than this number of characters.
-* `min_length` - Validates that the input contains no fewer than this number of characters.
-* `allow_blank` - If set to `True` then the empty string should be considered a valid value. If set to `False` then the empty string is considered invalid and will raise a validation error. Defaults to `False`.
-* `trim_whitespace` - If set to `True` then leading and trailing whitespace is trimmed. Defaults to `True`.
+* `max_length` – 최대 길이 검증
+* `min_length` – 최소 길이 검증
+* `allow_blank` – 빈 문자열 허용 여부 (기본 `False`)
+* `trim_whitespace` – 앞뒤 공백 제거 여부 (기본 `True`)
 
-The `allow_null` option is also available for string fields, although its usage is discouraged in favor of `allow_blank`. It is valid to set both `allow_blank=True` and `allow_null=True`, but doing so means that there will be two differing types of empty value permissible for string representations, which can lead to data inconsistencies and subtle application bugs.
+문자열 필드에서는 `allow_null` 대신 `allow_blank` 사용을 권장한다.
 
 ## EmailField
 
-A text representation, validates the text to be a valid email address.
+유효한 이메일 주소인지 검증하는 문자열 필드.
 
-Corresponds to `django.db.models.fields.EmailField`
+모델 대응: `EmailField`
 
-**Signature:** `EmailField(max_length=None, min_length=None, allow_blank=False)`
+**시그니처:** `EmailField(max_length=None, min_length=None, allow_blank=False)`
 
 ## RegexField
 
-A text representation, that validates the given value matches against a certain regular expression.
+정규식 패턴과 일치하는지 검증하는 문자열 필드.
 
-Corresponds to `django.forms.fields.RegexField`.
-
-**Signature:** `RegexField(regex, max_length=None, min_length=None, allow_blank=False)`
-
-The mandatory `regex` argument may either be a string, or a compiled python regular expression object.
-
-Uses Django's `django.core.validators.RegexValidator` for validation.
+**시그니처:** `RegexField(regex, max_length=None, min_length=None, allow_blank=False)`
 
 ## SlugField
 
-A `RegexField` that validates the input against the pattern `[a-zA-Z0-9_-]+`.
+`[a-zA-Z0-9_-]+` 패턴을 검증하는 `RegexField`.
 
-Corresponds to `django.db.models.fields.SlugField`.
-
-**Signature:** `SlugField(max_length=50, min_length=None, allow_blank=False)`
+**시그니처:** `SlugField(max_length=50, min_length=None, allow_blank=False)`
 
 ## URLField
 
-A `RegexField` that validates the input against a URL matching pattern. Expects fully qualified URLs of the form `http://<host>/<path>`.
+URL 형식을 검증하는 필드.
 
-Corresponds to `django.db.models.fields.URLField`.  Uses Django's `django.core.validators.URLValidator` for validation.
-
-**Signature:** `URLField(max_length=200, min_length=None, allow_blank=False)`
+**시그니처:** `URLField(max_length=200, min_length=None, allow_blank=False)`
 
 ## UUIDField
 
-A field that ensures the input is a valid UUID string. The `to_internal_value` method will return a `uuid.UUID` instance. On output the field will return a string in the canonical hyphenated format, for example:
+UUID 문자열을 검증하는 필드.
 
-    "de305d54-75b4-431b-adb2-eb6b9e546013"
-
-**Signature:** `UUIDField(format='hex_verbose')`
-
-* `format`: Determines the representation format of the uuid value
-    * `'hex_verbose'` - The canonical hex representation, including hyphens: `"5ce0e9a5-5ffa-654b-cee0-1238041fb31a"`
-    * `'hex'` - The compact hex representation of the UUID, not including hyphens: `"5ce0e9a55ffa654bcee01238041fb31a"`
-    * `'int'` - A 128 bit integer representation of the UUID: `"123456789012312313134124512351145145114"`
-    * `'urn'` - RFC 4122 URN representation of the UUID: `"urn:uuid:5ce0e9a5-5ffa-654b-cee0-1238041fb31a"`
-  Changing the `format` parameters only affects representation values. All formats are accepted by `to_internal_value`
-
-## FilePathField
-
-A field whose choices are limited to the filenames in a certain directory on the filesystem
-
-Corresponds to `django.forms.fields.FilePathField`.
-
-**Signature:** `FilePathField(path, match=None, recursive=False, allow_files=True, allow_folders=False, required=None, **kwargs)`
-
-* `path` - The absolute filesystem path to a directory from which this FilePathField should get its choice.
-* `match` - A regular expression, as a string, that FilePathField will use to filter filenames.
-* `recursive` - Specifies whether all subdirectories of path should be included.  Default is `False`.
-* `allow_files` - Specifies whether files in the specified location should be included. Default is `True`. Either this or `allow_folders` must be `True`.
-* `allow_folders` - Specifies whether folders in the specified location should be included. Default is `False`. Either this or `allow_files` must be `True`.
-
-## IPAddressField
-
-A field that ensures the input is a valid IPv4 or IPv6 string.
-
-Corresponds to `django.forms.fields.IPAddressField` and `django.forms.fields.GenericIPAddressField`.
-
-**Signature**: `IPAddressField(protocol='both', unpack_ipv4=False, **options)`
-
-* `protocol` Limits valid inputs to the specified protocol. Accepted values are 'both' (default), 'IPv4' or 'IPv6'. Matching is case-insensitive.
-* `unpack_ipv4` Unpacks IPv4 mapped addresses like ::ffff:192.0.2.1. If this option is enabled that address would be unpacked to 192.0.2.1. Default is disabled. Can only be used when protocol is set to 'both'.
+**시그니처:** `UUIDField(format='hex_verbose')`
 
 ---
 
-# Numeric fields
+# 숫자 필드
 
 ## IntegerField
 
-An integer representation.
+정수 표현 필드.
 
-Corresponds to `django.db.models.fields.IntegerField`, `django.db.models.fields.SmallIntegerField`, `django.db.models.fields.PositiveIntegerField` and `django.db.models.fields.PositiveSmallIntegerField`.
-
-**Signature**: `IntegerField(max_value=None, min_value=None)`
-
-* `max_value` Validate that the number provided is no greater than this value.
-* `min_value` Validate that the number provided is no less than this value.
+**시그니처:** `IntegerField(max_value=None, min_value=None)`
 
 ## BigIntegerField
 
-A biginteger representation.
+큰 정수 표현 필드.
 
-Corresponds to `django.db.models.fields.BigIntegerField`.
-
-**Signature**: `BigIntegerField(max_value=None, min_value=None, coerce_to_string=None)`
-
-* `max_value` Validate that the number provided is no greater than this value.
-* `min_value` Validate that the number provided is no less than this value.
-* `coerce_to_string` Set to `True` if string values should be returned for the representation, or `False` if `BigInteger` objects should be returned. Defaults to the same value as the `COERCE_BIGINT_TO_STRING` settings key, which will be `False` unless overridden. If `BigInteger` objects are returned by the serializer, then the final output format will be determined by the renderer.
+**시그니처:** `BigIntegerField(max_value=None, min_value=None, coerce_to_string=None)`
 
 ## FloatField
 
-A floating point representation.
+부동소수점 표현 필드.
 
-Corresponds to `django.db.models.fields.FloatField`.
-
-**Signature**: `FloatField(max_value=None, min_value=None)`
-
-* `max_value` Validate that the number provided is no greater than this value.
-* `min_value` Validate that the number provided is no less than this value.
+**시그니처:** `FloatField(max_value=None, min_value=None)`
 
 ## DecimalField
 
-A decimal representation, represented in Python by a `Decimal` instance.
+`Decimal` 기반의 소수 표현 필드.
 
-Corresponds to `django.db.models.fields.DecimalField`.
-
-**Signature**: `DecimalField(max_digits, decimal_places, coerce_to_string=None, max_value=None, min_value=None)`
-
-* `max_digits` The maximum number of digits allowed in the number. It must be either `None` or an integer greater than or equal to `decimal_places`.
-* `decimal_places` The number of decimal places to store with the number.
-* `coerce_to_string` Set to `True` if string values should be returned for the representation, or `False` if `Decimal` objects should be returned. Defaults to the same value as the `COERCE_DECIMAL_TO_STRING` settings key, which will be `True` unless overridden. If `Decimal` objects are returned by the serializer, then the final output format will be determined by the renderer. Note that setting `localize` will force the value to `True`.
-* `max_value` Validate that the number provided is no greater than this value. Should be an integer or `Decimal` object.
-* `min_value` Validate that the number provided is no less than this value. Should be an integer or `Decimal` object.
-* `localize` Set to `True` to enable localization of input and output based on the current locale. This will also force `coerce_to_string` to `True`. Defaults to `False`. Note that data formatting is enabled if you have set `USE_L10N=True` in your settings file.
-* `rounding` Sets the rounding mode used when quantizing to the configured precision. Valid values are [`decimal` module rounding modes][python-decimal-rounding-modes]. Defaults to `None`.
-* `normalize_output` Will normalize the decimal value when serialized. This will strip all trailing zeroes and change the value's precision to the minimum required precision to be able to represent the value without losing data. Defaults to `False`.
-
-#### Example usage
-
-To validate numbers up to 999 with a resolution of 2 decimal places, you would use:
-
-    serializers.DecimalField(max_digits=5, decimal_places=2)
-
-And to validate numbers up to anything less than one billion with a resolution of 10 decimal places:
-
-    serializers.DecimalField(max_digits=19, decimal_places=10)
+**시그니처:**  
+`DecimalField(max_digits, decimal_places, coerce_to_string=None, max_value=None, min_value=None)`
 
 ---
 
-# Date and time fields
+# 날짜 / 시간 필드
 
 ## DateTimeField
 
-A date and time representation.
+날짜 + 시간 표현 필드.
 
-Corresponds to `django.db.models.fields.DateTimeField`.
-
-**Signature:** `DateTimeField(format=api_settings.DATETIME_FORMAT, input_formats=None, default_timezone=None)`
-
-* `format` - A string representing the output format. If not specified, this defaults to the same value as the `DATETIME_FORMAT` settings key, which will be `'iso-8601'` unless set. Setting to a format string indicates that `to_representation` return values should be coerced to string output. Format strings are described below. Setting this value to `None` indicates that Python `datetime` objects should be returned by `to_representation`. In this case the datetime encoding will be determined by the renderer.
-* `input_formats` - A list of strings representing the input formats which may be used to parse the date.  If not specified, the `DATETIME_INPUT_FORMATS` setting will be used, which defaults to `['iso-8601']`.
-* `default_timezone` - A `tzinfo` subclass (`zoneinfo` or `pytz`) representing the timezone. If not specified and the `USE_TZ` setting is enabled, this defaults to the [current timezone][django-current-timezone]. If `USE_TZ` is disabled, then datetime objects will be naive.
-
-#### `DateTimeField` format strings.
-
-Format strings may either be [Python strftime formats][strftime] which explicitly specify the format, or the special string `'iso-8601'`, which indicates that [ISO 8601][iso8601] style datetimes should be used. (eg `'2013-01-29T12:34:56.000000Z'`)
-
-When a value of `None` is used for the format `datetime` objects will be returned by `to_representation` and the final output representation will be determined by the renderer class.
-
-#### `auto_now` and `auto_now_add` model fields.
-
-When using `ModelSerializer` or `HyperlinkedModelSerializer`, note that any model fields with `auto_now=True` or `auto_now_add=True` will use serializer fields that are `read_only=True` by default.
-
-If you want to override this behavior, you'll need to declare the `DateTimeField` explicitly on the serializer.  For example:
-
-    class CommentSerializer(serializers.ModelSerializer):
-        created = serializers.DateTimeField()
-
-        class Meta:
-            model = Comment
+**시그니처:**  
+`DateTimeField(format=api_settings.DATETIME_FORMAT, input_formats=None, default_timezone=None)`
 
 ## DateField
 
-A date representation.
+날짜 표현 필드.
 
-Corresponds to `django.db.models.fields.DateField`
-
-**Signature:** `DateField(format=api_settings.DATE_FORMAT, input_formats=None)`
-
-* `format` - A string representing the output format.  If not specified, this defaults to the same value as the `DATE_FORMAT` settings key, which will be `'iso-8601'` unless set. Setting to a format string indicates that `to_representation` return values should be coerced to string output. Format strings are described below. Setting this value to `None` indicates that Python `date` objects should be returned by `to_representation`. In this case the date encoding will be determined by the renderer.
-* `input_formats` - A list of strings representing the input formats which may be used to parse the date.  If not specified, the `DATE_INPUT_FORMATS` setting will be used, which defaults to `['iso-8601']`.
-
-#### `DateField` format strings
-
-Format strings may either be [Python strftime formats][strftime] which explicitly specify the format, or the special string `'iso-8601'`, which indicates that [ISO 8601][iso8601] style dates should be used. (eg `'2013-01-29'`)
+**시그니처:**  
+`DateField(format=api_settings.DATE_FORMAT, input_formats=None)`
 
 ## TimeField
 
-A time representation.
+시간 표현 필드.
 
-Corresponds to `django.db.models.fields.TimeField`
-
-**Signature:** `TimeField(format=api_settings.TIME_FORMAT, input_formats=None)`
-
-* `format` - A string representing the output format.  If not specified, this defaults to the same value as the `TIME_FORMAT` settings key, which will be `'iso-8601'` unless set. Setting to a format string indicates that `to_representation` return values should be coerced to string output. Format strings are described below. Setting this value to `None` indicates that Python `time` objects should be returned by `to_representation`. In this case the time encoding will be determined by the renderer.
-* `input_formats` - A list of strings representing the input formats which may be used to parse the date.  If not specified, the `TIME_INPUT_FORMATS` setting will be used, which defaults to `['iso-8601']`.
-
-#### `TimeField` format strings
-
-Format strings may either be [Python strftime formats][strftime] which explicitly specify the format, or the special string `'iso-8601'`, which indicates that [ISO 8601][iso8601] style times should be used. (eg `'12:34:56.000000'`)
+**시그니처:**  
+`TimeField(format=api_settings.TIME_FORMAT, input_formats=None)`
 
 ## DurationField
 
-A Duration representation.
-Corresponds to `django.db.models.fields.DurationField`
+`datetime.timedelta` 기반의 기간 필드.
 
-The `validated_data` for these fields will contain a `datetime.timedelta` instance.
-
-**Signature:** `DurationField(format=api_settings.DURATION_FORMAT, max_value=None, min_value=None)`
-
-* `format` - A string representing the output format.  If not specified, this defaults to the same value as the `DURATION_FORMAT` settings key, which will be `'django'` unless set. Formats are described below. Setting this value to `None` indicates that Python `timedelta` objects should be returned by `to_representation`. In this case the date encoding will be determined by the renderer.
-* `max_value` Validate that the duration provided is no greater than this value.
-* `min_value` Validate that the duration provided is no less than this value.
-
-#### `DurationField` formats
-Format may either be the special string `'iso-8601'`, which indicates that [ISO 8601][iso8601] style intervals should be used (eg `'P4DT1H15M20S'`), or `'django'` which indicates that Django interval format `'[DD] [HH:[MM:]]ss[.uuuuuu]'` should be used (eg: `'4 1:15:20'`).
+**시그니처:**  
+`DurationField(format=api_settings.DURATION_FORMAT, max_value=None, min_value=None)`
 
 ---
 
-# Choice selection fields
+# 선택 필드
 
 ## ChoiceField
 
-A field that can accept a value out of a limited set of choices.
+제한된 선택지 중 하나를 선택하는 필드.
 
-Used by `ModelSerializer` to automatically generate fields if the corresponding model field includes a `choices=…` argument.
-
-**Signature:** `ChoiceField(choices)`
-
-* `choices` - A list of valid values, or a list of `(key, display_name)` tuples.
-* `allow_blank` - If set to `True` then the empty string should be considered a valid value. If set to `False` then the empty string is considered invalid and will raise a validation error. Defaults to `False`.
-* `html_cutoff` - If set this will be the maximum number of choices that will be displayed by a HTML select drop down. Can be used to ensure that automatically generated ChoiceFields with very large possible selections do not prevent a template from rendering. Defaults to `None`.
-* `html_cutoff_text` - If set this will display a textual indicator if the maximum number of items have been cutoff in an HTML select drop down. Defaults to `"More than {count} items…"`
-
-Both the `allow_blank` and `allow_null` are valid options on `ChoiceField`, although it is highly recommended that you only use one and not both. `allow_blank` should be preferred for textual choices, and `allow_null` should be preferred for numeric or other non-textual choices.
+**시그니처:** `ChoiceField(choices)`
 
 ## MultipleChoiceField
 
-A field that can accept a set of zero, one or many values, chosen from a limited set of choices. Takes a single mandatory argument. `to_internal_value` returns a `set` containing the selected values.
+여러 개의 선택지를 허용하는 필드.
 
-**Signature:** `MultipleChoiceField(choices)`
-
-* `choices` - A list of valid values, or a list of `(key, display_name)` tuples.
-* `allow_blank` - If set to `True` then the empty string should be considered a valid value. If set to `False` then the empty string is considered invalid and will raise a validation error. Defaults to `False`.
-* `html_cutoff` - If set this will be the maximum number of choices that will be displayed by a HTML select drop down. Can be used to ensure that automatically generated ChoiceFields with very large possible selections do not prevent a template from rendering. Defaults to `None`.
-* `html_cutoff_text` - If set this will display a textual indicator if the maximum number of items have been cutoff in an HTML select drop down. Defaults to `"More than {count} items…"`
-
-As with `ChoiceField`, both the `allow_blank` and `allow_null` options are valid, although it is highly recommended that you only use one and not both. `allow_blank` should be preferred for textual choices, and `allow_null` should be preferred for numeric or other non-textual choices.
+**시그니처:** `MultipleChoiceField(choices)`
 
 ---
 
-# File upload fields
-
-#### Parsers and file uploads.
-
-The `FileField` and `ImageField` classes are only suitable for use with `MultiPartParser` or `FileUploadParser`. Most parsers, such as e.g. JSON don't support file uploads.
-Django's regular [FILE_UPLOAD_HANDLERS] are used for handling uploaded files.
+# 파일 업로드 필드
 
 ## FileField
 
-A file representation.  Performs Django's standard FileField validation.
+파일 표현 필드.
 
-Corresponds to `django.forms.fields.FileField`.
-
-**Signature:** `FileField(max_length=None, allow_empty_file=False, use_url=UPLOADED_FILES_USE_URL)`
-
-* `max_length` - Designates the maximum length for the file name.
-* `allow_empty_file` - Designates if empty files are allowed.
-* `use_url` - If set to `True` then URL string values will be used for the output representation. If set to `False` then filename string values will be used for the output representation. Defaults to the value of the `UPLOADED_FILES_USE_URL` settings key, which is `True` unless set otherwise.
+**시그니처:**  
+`FileField(max_length=None, allow_empty_file=False, use_url=UPLOADED_FILES_USE_URL)`
 
 ## ImageField
 
-An image representation. Validates the uploaded file content as matching a known image format.
+이미지 파일 표현 필드.
 
-Corresponds to `django.forms.fields.ImageField`.
-
-**Signature:** `ImageField(max_length=None, allow_empty_file=False, use_url=UPLOADED_FILES_USE_URL)`
-
-* `max_length` - Designates the maximum length for the file name.
-* `allow_empty_file` - Designates if empty files are allowed.
-* `use_url` - If set to `True` then URL string values will be used for the output representation. If set to `False` then filename string values will be used for the output representation. Defaults to the value of the `UPLOADED_FILES_USE_URL` settings key, which is `True` unless set otherwise.
-
-Requires either the `Pillow` package or `PIL` package.  The `Pillow` package is recommended, as `PIL` is no longer actively maintained.
+**시그니처:**  
+`ImageField(max_length=None, allow_empty_file=False, use_url=UPLOADED_FILES_USE_URL)`
 
 ---
 
-# Composite fields
+# 복합 필드
 
 ## ListField
 
-A field class that validates a list of objects.
+리스트를 검증하는 필드.
 
-**Signature**: `ListField(child=<A_FIELD_INSTANCE>, allow_empty=True, min_length=None, max_length=None)`
-
-* `child` - A field instance that should be used for validating the objects in the list. If this argument is not provided then objects in the list will not be validated.
-* `allow_empty` - Designates if empty lists are allowed.
-* `min_length` - Validates that the list contains no fewer than this number of elements.
-* `max_length` - Validates that the list contains no more than this number of elements.
-
-For example, to validate a list of integers you might use something like the following:
-
-    scores = serializers.ListField(
-       child=serializers.IntegerField(min_value=0, max_value=100)
-    )
-
-The `ListField` class also supports a declarative style that allows you to write reusable list field classes.
-
-    class StringListField(serializers.ListField):
-        child = serializers.CharField()
-
-We can now reuse our custom `StringListField` class throughout our application, without having to provide a `child` argument to it.
+**시그니처:**  
+`ListField(child=<FIELD>, allow_empty=True, min_length=None, max_length=None)`
 
 ## DictField
 
-A field class that validates a dictionary of objects. The keys in `DictField` are always assumed to be string values.
+딕셔너리를 검증하는 필드.
 
-**Signature**: `DictField(child=<A_FIELD_INSTANCE>, allow_empty=True)`
-
-* `child` - A field instance that should be used for validating the values in the dictionary. If this argument is not provided then values in the mapping will not be validated.
-* `allow_empty` - Designates if empty dictionaries are allowed.
-
-For example, to create a field that validates a mapping of strings to strings, you would write something like this:
-
-    document = DictField(child=CharField())
-
-You can also use the declarative style, as with `ListField`. For example:
-
-    class DocumentField(DictField):
-        child = CharField()
-
-## HStoreField
-
-A preconfigured `DictField` that is compatible with Django's postgres `HStoreField`.
-
-**Signature**: `HStoreField(child=<A_FIELD_INSTANCE>, allow_empty=True)`
-
-* `child` - A field instance that is used for validating the values in the dictionary. The default child field accepts both empty strings and null values.
-* `allow_empty` - Designates if empty dictionaries are allowed.
-
-Note that the child field **must** be an instance of `CharField`, as the hstore extension stores values as strings.
+**시그니처:**  
+`DictField(child=<FIELD>, allow_empty=True)`
 
 ## JSONField
 
-A field class that validates that the incoming data structure consists of valid JSON primitives. In its alternate binary mode, it will represent and validate JSON-encoded binary strings.
+JSON 구조를 검증하는 필드.
 
-**Signature**: `JSONField(binary, encoder)`
-
-* `binary` - If set to `True` then the field will output and validate a JSON encoded string, rather than a primitive data structure. Defaults to `False`.
-* `encoder` - Use this JSON encoder to serialize input object. Defaults to `None`.
+**시그니처:**  
+`JSONField(binary=False, encoder=None)`
 
 ---
 
-# Miscellaneous fields
+# 기타 필드
 
 ## ReadOnlyField
 
-A field class that simply returns the value of the field without modification.
-
-This field is used by default with `ModelSerializer` when including field names that relate to an attribute rather than a model field.
-
-**Signature**: `ReadOnlyField()`
-
-For example, if `has_expired` was a property on the `Account` model, then the following serializer would automatically generate it as a `ReadOnlyField`:
-
-    class AccountSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Account
-            fields = ['id', 'account_name', 'has_expired']
+값을 그대로 반환하는 읽기 전용 필드.
 
 ## HiddenField
 
-A field class that does not take a value based on user input, but instead takes its value from a default value or callable.
-
-**Signature**: `HiddenField()`
-
-For example, to include a field that always provides the current time as part of the serializer validated data, you would use the following:
-
-    modified = serializers.HiddenField(default=timezone.now)
-
-The `HiddenField` class is usually only needed if you have some validation that needs to run based on some pre-provided field values, but you do not want to expose all of those fields to the end user.
-
-For further examples on `HiddenField` see the [validators](validators.md) documentation.
-
----
-
-**Note:** `HiddenField()` does not appear in `partial=True` serializer (when making `PATCH` request).
-
----
+사용자 입력이 아닌 default 값으로 채워지는 필드.
 
 ## ModelField
 
-A generic field that can be tied to any arbitrary model field. The `ModelField` class delegates the task of serialization/deserialization to its associated model field.  This field can be used to create serializer fields for custom model fields, without having to create a new custom serializer field.
-
-This field is used by `ModelSerializer` to correspond to custom model field classes.
-
-**Signature:** `ModelField(model_field=<Django ModelField instance>)`
-
-The `ModelField` class is generally intended for internal use, but can be used by your API if needed.  In order to properly instantiate a `ModelField`, it must be passed a field that is attached to an instantiated model.  For example: `ModelField(model_field=MyModel()._meta.get_field('custom_field'))`
+모델 필드에 위임하는 범용 필드.
 
 ## SerializerMethodField
 
-This is a read-only field. It gets its value by calling a method on the serializer class it is attached to. It can be used to add any sort of data to the serialized representation of your object.
-
-**Signature**: `SerializerMethodField(method_name=None)`
-
-* `method_name` - The name of the method on the serializer to be called. If not included this defaults to `get_<field_name>`.
-
-The serializer method referred to by the `method_name` argument should accept a single argument (in addition to `self`), which is the object being serialized. It should return whatever you want to be included in the serialized representation of the object. For example:
-
-    from django.contrib.auth.models import User
-    from django.utils.timezone import now
-    from rest_framework import serializers
-
-    class UserSerializer(serializers.ModelSerializer):
-        days_since_joined = serializers.SerializerMethodField()
-
-        class Meta:
-            model = User
-            fields = '__all__'
-
-        def get_days_since_joined(self, obj):
-            return (now() - obj.date_joined).days
+시리얼라이저 메서드 호출 결과를 반환하는 읽기 전용 필드.
 
 ---
 
-# Custom fields
+# 커스텀 필드
 
-If you want to create a custom field, you'll need to subclass `Field` and then override either one or both of the `.to_representation()` and `.to_internal_value()` methods.  These two methods are used to convert between the initial datatype, and a primitive, serializable datatype. Primitive datatypes will typically be any of a number, string, boolean, `date`/`time`/`datetime` or `None`. They may also be any list or dictionary like object that only contains other primitive objects. Other types might be supported, depending on the renderer that you are using.
+`Field`를 상속하고 `.to_representation()`, `.to_internal_value()`를 구현하면 된다.  
+유효하지 않은 데이터는 `serializers.ValidationError`를 발생시켜야 한다.
 
-The `.to_representation()` method is called to convert the initial datatype into a primitive, serializable datatype.
+---
 
-The `.to_internal_value()` method is called to restore a primitive datatype into its internal python representation. This method should raise a `serializers.ValidationError` if the data is invalid.
+# 서드파티 패키지
 
-## Examples
-
-### A Basic Custom Field
-
-Let's look at an example of serializing a class that represents an RGB color value:
-
-    class Color:
-        """
-        A color represented in the RGB colorspace.
-        """
-        def __init__(self, red, green, blue):
-            assert(red >= 0 and green >= 0 and blue >= 0)
-            assert(red < 256 and green < 256 and blue < 256)
-            self.red, self.green, self.blue = red, green, blue
-
-    class ColorField(serializers.Field):
-        """
-        Color objects are serialized into 'rgb(#, #, #)' notation.
-        """
-        def to_representation(self, value):
-            return "rgb(%d, %d, %d)" % (value.red, value.green, value.blue)
-
-        def to_internal_value(self, data):
-            data = data.strip('rgb(').rstrip(')')
-            red, green, blue = [int(col) for col in data.split(',')]
-            return Color(red, green, blue)
-
-By default field values are treated as mapping to an attribute on the object.  If you need to customize how the field value is accessed and set you need to override `.get_attribute()` and/or `.get_value()`.
-
-As an example, let's create a field that can be used to represent the class name of the object being serialized:
-
-    class ClassNameField(serializers.Field):
-        def get_attribute(self, instance):
-            # We pass the object instance onto `to_representation`,
-            # not just the field attribute.
-            return instance
-
-        def to_representation(self, value):
-            """
-            Serialize the value's class name.
-            """
-            return value.__class__.__name__
-
-### Raising validation errors
-
-Our `ColorField` class above currently does not perform any data validation.
-To indicate invalid data, we should raise a `serializers.ValidationError`, like so:
-
-    def to_internal_value(self, data):
-        if not isinstance(data, str):
-            msg = 'Incorrect type. Expected a string, but got %s'
-            raise ValidationError(msg % type(data).__name__)
-
-        if not re.match(r'^rgb\([0-9]+,[0-9]+,[0-9]+\)$', data):
-            raise ValidationError('Incorrect format. Expected `rgb(#,#,#)`.')
-
-        data = data.strip('rgb(').rstrip(')')
-        red, green, blue = [int(col) for col in data.split(',')]
-
-        if any([col > 255 or col < 0 for col in (red, green, blue)]):
-            raise ValidationError('Value out of range. Must be between 0 and 255.')
-
-        return Color(red, green, blue)
-
-The `.fail()` method is a shortcut for raising `ValidationError` that takes a message string from the `error_messages` dictionary. For example:
-
-    default_error_messages = {
-        'incorrect_type': 'Incorrect type. Expected a string, but got {input_type}',
-        'incorrect_format': 'Incorrect format. Expected `rgb(#,#,#)`.',
-        'out_of_range': 'Value out of range. Must be between 0 and 255.'
-    }
-
-    def to_internal_value(self, data):
-        if not isinstance(data, str):
-            self.fail('incorrect_type', input_type=type(data).__name__)
-
-        if not re.match(r'^rgb\([0-9]+,[0-9]+,[0-9]+\)$', data):
-            self.fail('incorrect_format')
-
-        data = data.strip('rgb(').rstrip(')')
-        red, green, blue = [int(col) for col in data.split(',')]
-
-        if any([col > 255 or col < 0 for col in (red, green, blue)]):
-            self.fail('out_of_range')
-
-        return Color(red, green, blue)
-
-This style keeps your error messages cleaner and more separated from your code, and should be preferred.
-
-### Using `source='*'`
-
-Here we'll take an example of a _flat_ `DataPoint` model with `x_coordinate` and `y_coordinate` attributes.
-
-    class DataPoint(models.Model):
-        label = models.CharField(max_length=50)
-        x_coordinate = models.SmallIntegerField()
-        y_coordinate = models.SmallIntegerField()
-
-Using a custom field and `source='*'` we can provide a nested representation of
-the coordinate pair:
-
-    class CoordinateField(serializers.Field):
-
-        def to_representation(self, value):
-            ret = {
-                "x": value.x_coordinate,
-                "y": value.y_coordinate
-            }
-            return ret
-
-        def to_internal_value(self, data):
-            ret = {
-                "x_coordinate": data["x"],
-                "y_coordinate": data["y"],
-            }
-            return ret
-
-
-    class DataPointSerializer(serializers.ModelSerializer):
-        coordinates = CoordinateField(source='*')
-
-        class Meta:
-            model = DataPoint
-            fields = ['label', 'coordinates']
-
-Note that this example doesn't handle validation. Partly for that reason, in a
-real project, the coordinate nesting might be better handled with a nested serializer
-using `source='*'`, with two `IntegerField` instances, each with their own `source`
-pointing to the relevant field.
-
-The key points from the example, though, are:
-
-* `to_representation` is passed the entire `DataPoint` object and must map from that
-to the desired output.
-
-        >>> instance = DataPoint(label='Example', x_coordinate=1, y_coordinate=2)
-        >>> out_serializer = DataPointSerializer(instance)
-        >>> out_serializer.data
-        ReturnDict([('label', 'Example'), ('coordinates', {'x': 1, 'y': 2})])
-
-* Unless our field is to be read-only, `to_internal_value` must map back to a dict
-suitable for updating our target object. With `source='*'`, the return from
-`to_internal_value` will update the root validated data dictionary, rather than a single key.
-
-        >>> data = {
-        ...     "label": "Second Example",
-        ...     "coordinates": {
-        ...         "x": 3,
-        ...         "y": 4,
-        ...     }
-        ... }
-        >>> in_serializer = DataPointSerializer(data=data)
-        >>> in_serializer.is_valid()
-        True
-        >>> in_serializer.validated_data
-        OrderedDict([('label', 'Second Example'),
-                     ('y_coordinate', 4),
-                     ('x_coordinate', 3)])
-
-For completeness let's do the same thing again but with the nested serializer
-approach suggested above:
-
-    class NestedCoordinateSerializer(serializers.Serializer):
-        x = serializers.IntegerField(source='x_coordinate')
-        y = serializers.IntegerField(source='y_coordinate')
-
-
-    class DataPointSerializer(serializers.ModelSerializer):
-        coordinates = NestedCoordinateSerializer(source='*')
-
-        class Meta:
-            model = DataPoint
-            fields = ['label', 'coordinates']
-
-Here the mapping between the target and source attribute pairs (`x` and
-`x_coordinate`, `y` and `y_coordinate`) is handled in the `IntegerField`
-declarations. It's our `NestedCoordinateSerializer` that takes `source='*'`.
-
-Our new `DataPointSerializer` exhibits the same behavior as the custom field
-approach.
-
-Serializing:
-
-    >>> out_serializer = DataPointSerializer(instance)
-    >>> out_serializer.data
-    ReturnDict([('label', 'testing'),
-                ('coordinates', OrderedDict([('x', 1), ('y', 2)]))])
-
-Deserializing:
-
-    >>> in_serializer = DataPointSerializer(data=data)
-    >>> in_serializer.is_valid()
-    True
-    >>> in_serializer.validated_data
-    OrderedDict([('label', 'still testing'),
-                 ('x_coordinate', 3),
-                 ('y_coordinate', 4)])
-
-But we also get the built-in validation for free:
-
-    >>> invalid_data = {
-    ...     "label": "still testing",
-    ...     "coordinates": {
-    ...         "x": 'a',
-    ...         "y": 'b',
-    ...     }
-    ... }
-    >>> invalid_serializer = DataPointSerializer(data=invalid_data)
-    >>> invalid_serializer.is_valid()
-    False
-    >>> invalid_serializer.errors
-    ReturnDict([('coordinates',
-                 {'x': ['A valid integer is required.'],
-                  'y': ['A valid integer is required.']})])
-
-For this reason, the nested serializer approach would be the first to try. You
-would use the custom field approach when the nested serializer becomes infeasible
-or overly complex.
-
-
-# Third party packages
-
-The following third party packages are also available.
-
-## DRF Compound Fields
-
-The [drf-compound-fields][drf-compound-fields] package provides "compound" serializer fields, such as lists of simple values, which can be described by other fields rather than serializers with the `many=True` option. Also provided are fields for typed dictionaries and values that can be either a specific type or a list of items of that type.
-
-## DRF Extra Fields
-
-The [drf-extra-fields][drf-extra-fields] package provides extra serializer fields for REST framework, including `Base64ImageField` and `PointField` classes.
-
-## djangorestframework-recursive
-
-the [djangorestframework-recursive][djangorestframework-recursive] package provides a `RecursiveField` for serializing and deserializing recursive structures
-
-## django-rest-framework-gis
-
-The [django-rest-framework-gis][django-rest-framework-gis] package provides geographic addons for django rest framework like a `GeometryField` field and a GeoJSON serializer.
-
-## django-rest-framework-hstore
-
-The [django-rest-framework-hstore][django-rest-framework-hstore] package provides an `HStoreField` to support [django-hstore][django-hstore] `DictionaryField` model field.
+* DRF Compound Fields
+* DRF Extra Fields
+* djangorestframework-recursive
+* django-rest-framework-gis
+* django-rest-framework-hstore
 
 [cite]: https://docs.djangoproject.com/en/stable/ref/forms/api/#django.forms.Form.cleaned_data
 [html-and-forms]: ../topics/html-and-forms.md
-[FILE_UPLOAD_HANDLERS]: https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-FILE_UPLOAD_HANDLERS
-[strftime]: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior
-[iso8601]: https://www.w3.org/TR/NOTE-datetime
-[drf-compound-fields]: https://drf-compound-fields.readthedocs.io
-[drf-extra-fields]: https://github.com/Hipo/drf-extra-fields
-[djangorestframework-recursive]: https://github.com/heywbj/django-rest-framework-recursive
-[django-rest-framework-gis]: https://github.com/djangonauts/django-rest-framework-gis
-[django-rest-framework-hstore]: https://github.com/djangonauts/django-rest-framework-hstore
-[django-hstore]: https://github.com/djangonauts/django-hstore
-[python-decimal-rounding-modes]: https://docs.python.org/3/library/decimal.html#rounding-modes
-[django-current-timezone]: https://docs.djangoproject.com/en/stable/topics/i18n/timezones/#default-time-zone-and-current-time-zone
 [django-docs-select-related]: https://docs.djangoproject.com/en/stable/ref/models/querysets/#django.db.models.query.QuerySet.select_related
