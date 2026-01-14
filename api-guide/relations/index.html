@@ -413,12 +413,12 @@
 
                 
                   <li class="main">
-                    <a href="#serializer-relations">Serializer relations</a>
+                    <a href="#serializer-relations">시리얼라이저 관계 (Serializer relations)</a>
                   </li>
 
                   
                     <li>
-                      <a href="#inspecting-relationships">Inspecting relationships.</a>
+                      <a href="#relationships">관계(relationships) 살펴보기</a>
                     </li>
                   
                 
@@ -449,71 +449,71 @@
                   
                 
                   <li class="main">
-                    <a href="#nested-relationships">Nested relationships</a>
+                    <a href="#nested-relationships">중첩 관계 (Nested relationships)</a>
                   </li>
 
                   
                     <li>
-                      <a href="#example">Example</a>
+                      <a href="#_1">예시</a>
                     </li>
                   
                     <li>
-                      <a href="#writable-nested-serializers">Writable nested serializers</a>
+                      <a href="#writable-nested-serializers">쓰기 가능한 중첩 시리얼라이저 (Writable nested serializers)</a>
                     </li>
                   
                 
                   <li class="main">
-                    <a href="#custom-relational-fields">Custom relational fields</a>
+                    <a href="#custom-relational-fields">커스텀 관계 필드 (Custom relational fields)</a>
                   </li>
 
                   
                     <li>
-                      <a href="#example_1">Example</a>
+                      <a href="#_2">예시</a>
                     </li>
                   
                 
                   <li class="main">
-                    <a href="#custom-hyperlinked-fields">Custom hyperlinked fields</a>
+                    <a href="#custom-hyperlinked-fields">커스텀 하이퍼링크 필드 (Custom hyperlinked fields)</a>
                   </li>
 
                   
                     <li>
-                      <a href="#example_2">Example</a>
+                      <a href="#_3">예시</a>
                     </li>
                   
                 
                   <li class="main">
-                    <a href="#further-notes">Further notes</a>
+                    <a href="#further-notes">추가 메모 (Further notes)</a>
                   </li>
 
                   
                     <li>
-                      <a href="#the-queryset-argument">The queryset argument</a>
+                      <a href="#queryset">queryset 인자</a>
                     </li>
                   
                     <li>
-                      <a href="#customizing-the-html-display">Customizing the HTML display</a>
+                      <a href="#html">HTML 표시 커스터마이즈</a>
                     </li>
                   
                     <li>
-                      <a href="#select-field-cutoffs">Select field cutoffs</a>
+                      <a href="#select-field-cutoffs">선택 필드 컷오프 (Select field cutoffs)</a>
                     </li>
                   
                     <li>
-                      <a href="#reverse-relations">Reverse relations</a>
+                      <a href="#reverse-relations">역방향 관계 (Reverse relations)</a>
                     </li>
                   
                     <li>
-                      <a href="#generic-relationships">Generic relationships</a>
+                      <a href="#generic-relationships">제네릭 관계 (Generic relationships)</a>
                     </li>
                   
                     <li>
-                      <a href="#manytomanyfields-with-a-through-model">ManyToManyFields with a Through Model</a>
+                      <a href="#through-manytomanyfield">Through 모델이 있는 ManyToManyField</a>
                     </li>
                   
                 
                   <li class="main">
-                    <a href="#third-party-packages">Third Party Packages</a>
+                    <a href="#third-party-packages">서드파티 패키지 (Third Party Packages)</a>
                   </li>
 
                   
@@ -546,18 +546,22 @@
                 
               
 
-              <h1 id="serializer-relations"><a class="toclink" href="#serializer-relations">Serializer relations</a></h1>
+              <h1 id="serializer-relations"><a class="toclink" href="#serializer-relations">시리얼라이저 관계 (Serializer relations)</a></h1>
 <blockquote>
-<p>Data structures, not algorithms, are central to programming.</p>
+<p>데이터 구조(data structures)가 알고리즘(algorithms)보다 프로그래밍의 중심이다.</p>
 <p>&mdash; <a href="http://users.ece.utexas.edu/~adnan/pike.html">Rob Pike</a></p>
 </blockquote>
-<p>Relational fields are used to represent model relationships.  They can be applied to <code>ForeignKey</code>, <code>ManyToManyField</code> and <code>OneToOneField</code> relationships, as well as to reverse relationships, and custom relationships such as <code>GenericForeignKey</code>.</p>
+<p>관계 필드(Relational fields)는 모델 간의 관계를 표현하는 데 사용된다.<br />
+<code>ForeignKey</code>, <code>ManyToManyField</code>, <code>OneToOneField</code> 관계뿐 아니라 <strong>역방향(reverse) 관계</strong>, 그리고 <code>GenericForeignKey</code> 같은 <strong>커스텀 관계</strong>에도 적용할 수 있다.</p>
 <hr />
-<p><strong>Note:</strong> The relational fields are declared in <code>relations.py</code>, but by convention you should import them from the <code>serializers</code> module, using <code>from rest_framework import serializers</code> and refer to fields as <code>serializers.&lt;FieldName&gt;</code>.</p>
+<p><strong>참고:</strong> 관계 필드는 <code>relations.py</code>에 선언되어 있지만, 관례적으로<br />
+<code>from rest_framework import serializers</code>로 import 한 뒤<br />
+<code>serializers.&lt;FieldName&gt;</code> 형태로 사용하는 것이 권장된다.</p>
 <hr />
 <hr />
-<p><strong>Note:</strong> REST Framework does not attempt to automatically optimize querysets passed to serializers in terms of <code>select_related</code> and <code>prefetch_related</code> since it would be too much magic. A serializer with a field spanning an orm relation through its source attribute could require an additional database hit to fetch related objects from the database. It is the programmer's responsibility to optimize queries to avoid additional database hits which could occur while using such a serializer.</p>
-<p>For example, the following serializer would lead to a database hit each time evaluating the tracks field if it is not prefetched:</p>
+<p><strong>참고:</strong> REST Framework는 <code>select_related</code> / <code>prefetch_related</code> 관점에서 시리얼라이저에 전달된 queryset을 자동 최적화하지 않는다. 너무 “마법”이 많아지기 때문이다.<br />
+<code>source</code> 속성으로 ORM 관계를 가로지르는 필드를 가진 시리얼라이저는, 관련 객체를 가져오기 위해 추가 DB 조회가 발생할 수 있다. 이런 추가 조회를 피하도록 쿼리를 최적화하는 책임은 개발자에게 있다.</p>
+<p>예를 들어, 아래 시리얼라이저는 <code>tracks</code>가 prefetch 되어 있지 않다면 <code>tracks</code> 평가 시마다 DB hit가 발생할 수 있다:</p>
 <pre><code>class AlbumSerializer(serializers.ModelSerializer):
     tracks = serializers.SlugRelatedField(
         many=True,
@@ -569,20 +573,20 @@
         model = Album
         fields = ['album_name', 'artist', 'tracks']
 
-# For each album object, tracks should be fetched from database
+# 각 album 객체에 대해 tracks를 DB에서 가져와야 함
 qs = Album.objects.all()
 print(AlbumSerializer(qs, many=True).data)
 </code></pre>
-<p>If <code>AlbumSerializer</code> is used to serialize a fairly large queryset with <code>many=True</code> then it could be a serious performance problem. Optimizing the queryset passed to <code>AlbumSerializer</code> with:</p>
+<p><code>AlbumSerializer</code>를 <code>many=True</code>로 큰 queryset에 적용하면 심각한 성능 문제가 될 수 있다.<br />
+다음처럼 queryset을 최적화하면 문제를 해결할 수 있다:</p>
 <pre><code>qs = Album.objects.prefetch_related('tracks')
-# No additional database hits required
+# 추가 DB hit 없이 처리 가능
 print(AlbumSerializer(qs, many=True).data)
 </code></pre>
-<p>would solve the issue.</p>
 <hr />
-<h4 id="inspecting-relationships"><a class="toclink" href="#inspecting-relationships">Inspecting relationships.</a></h4>
-<p>When using the <code>ModelSerializer</code> class, serializer fields and relationships will be automatically generated for you. Inspecting these automatically generated fields can be a useful tool for determining how to customize the relationship style.</p>
-<p>To do so, open the Django shell, using <code>python manage.py shell</code>, then import the serializer class, instantiate it, and print the object representation…</p>
+<h4 id="relationships"><a class="toclink" href="#relationships">관계(relationships) 살펴보기</a></h4>
+<p><code>ModelSerializer</code>를 사용하면 필드와 관계가 자동 생성된다. 자동 생성된 필드를 확인하면 관계 표현 방식을 어떻게 커스터마이즈할지 결정하는 데 도움이 된다.</p>
+<p>Django shell에서 다음처럼 확인할 수 있다:</p>
 <pre><code>&gt;&gt;&gt; from myapp.serializers import AccountSerializer
 &gt;&gt;&gt; serializer = AccountSerializer()
 &gt;&gt;&gt; print(repr(serializer))
@@ -592,7 +596,7 @@ AccountSerializer():
     owner = PrimaryKeyRelatedField(queryset=User.objects.all())
 </code></pre>
 <h1 id="api-reference"><a class="toclink" href="#api-reference">API Reference</a></h1>
-<p>In order to explain the various types of relational fields, we'll use a couple of simple models for our examples.  Our models will be for music albums, and the tracks listed on each album.</p>
+<p>관계 필드 유형을 설명하기 위해, 음악 앨범과 앨범의 트랙 모델을 예시로 사용한다.</p>
 <pre><code>class Album(models.Model):
     album_name = models.CharField(max_length=100)
     artist = models.CharField(max_length=100)
@@ -611,8 +615,8 @@ class Track(models.Model):
         return '%d: %s' % (self.order, self.title)
 </code></pre>
 <h2 id="stringrelatedfield"><a class="toclink" href="#stringrelatedfield">StringRelatedField</a></h2>
-<p><code>StringRelatedField</code> may be used to represent the target of the relationship using its <code>__str__</code> method.</p>
-<p>For example, the following serializer:</p>
+<p><code>StringRelatedField</code>는 대상 객체를 그 객체의 <code>__str__</code> 메서드로 표현한다.</p>
+<p>예:</p>
 <pre><code>class AlbumSerializer(serializers.ModelSerializer):
     tracks = serializers.StringRelatedField(many=True)
 
@@ -620,7 +624,7 @@ class Track(models.Model):
         model = Album
         fields = ['album_name', 'artist', 'tracks']
 </code></pre>
-<p>Would serialize to the following representation:</p>
+<p>직렬화 결과 예:</p>
 <pre><code>{
     'album_name': 'Things We Lost In The Fire',
     'artist': 'Low',
@@ -632,14 +636,14 @@ class Track(models.Model):
     ]
 }
 </code></pre>
-<p>This field is read only.</p>
-<p><strong>Arguments</strong>:</p>
+<p>이 필드는 읽기 전용이다.</p>
+<p><strong>인자(Arguments)</strong>:</p>
 <ul>
-<li><code>many</code> - If applied to a to-many relationship, you should set this argument to <code>True</code>.</li>
+<li><code>many</code> - to-many 관계에 적용하는 경우 <code>True</code>로 설정한다.</li>
 </ul>
 <h2 id="primarykeyrelatedfield"><a class="toclink" href="#primarykeyrelatedfield">PrimaryKeyRelatedField</a></h2>
-<p><code>PrimaryKeyRelatedField</code> may be used to represent the target of the relationship using its primary key.</p>
-<p>For example, the following serializer:</p>
+<p><code>PrimaryKeyRelatedField</code>는 대상 객체를 기본키(primary key)로 표현한다.</p>
+<p>예:</p>
 <pre><code>class AlbumSerializer(serializers.ModelSerializer):
     tracks = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
@@ -647,7 +651,7 @@ class Track(models.Model):
         model = Album
         fields = ['album_name', 'artist', 'tracks']
 </code></pre>
-<p>Would serialize to a representation like this:</p>
+<p>직렬화 결과 예:</p>
 <pre><code>{
     'album_name': 'Undun',
     'artist': 'The Roots',
@@ -659,17 +663,17 @@ class Track(models.Model):
     ]
 }
 </code></pre>
-<p>By default this field is read-write, although you can change this behavior using the <code>read_only</code> flag.</p>
-<p><strong>Arguments</strong>:</p>
+<p>기본적으로 이 필드는 읽기/쓰기 가능이지만, <code>read_only</code>로 동작을 바꿀 수 있다.</p>
+<p><strong>인자(Arguments)</strong>:</p>
 <ul>
-<li><code>queryset</code> - The queryset used for model instance lookups when validating the field input. Relationships must either set a queryset explicitly, or set <code>read_only=True</code>.</li>
-<li><code>many</code> - If applied to a to-many relationship, you should set this argument to <code>True</code>.</li>
-<li><code>allow_null</code> - If set to <code>True</code>, the field will accept values of <code>None</code> or the empty string for nullable relationships. Defaults to <code>False</code>.</li>
-<li><code>pk_field</code> - Set to a field to control serialization/deserialization of the primary key's value. For example, <code>pk_field=UUIDField(format='hex')</code> would serialize a UUID primary key into its compact hex representation.</li>
+<li><code>queryset</code> - 입력 검증 시 모델 인스턴스 조회에 사용할 queryset. 관계 필드는 <code>queryset</code>을 명시하거나 <code>read_only=True</code>를 설정해야 한다.</li>
+<li><code>many</code> - to-many 관계에 적용하는 경우 <code>True</code>.</li>
+<li><code>allow_null</code> - nullable 관계에서 <code>None</code> 또는 빈 문자열을 허용할지 여부. 기본 <code>False</code>.</li>
+<li><code>pk_field</code> - PK 값의 직렬화/역직렬화 방식을 제어할 필드. 예: <code>pk_field=UUIDField(format='hex')</code>.</li>
 </ul>
 <h2 id="hyperlinkedrelatedfield"><a class="toclink" href="#hyperlinkedrelatedfield">HyperlinkedRelatedField</a></h2>
-<p><code>HyperlinkedRelatedField</code> may be used to represent the target of the relationship using a hyperlink.</p>
-<p>For example, the following serializer:</p>
+<p><code>HyperlinkedRelatedField</code>는 대상 객체를 하이퍼링크(URL)로 표현한다.</p>
+<p>예:</p>
 <pre><code>class AlbumSerializer(serializers.ModelSerializer):
     tracks = serializers.HyperlinkedRelatedField(
         many=True,
@@ -681,7 +685,7 @@ class Track(models.Model):
         model = Album
         fields = ['album_name', 'artist', 'tracks']
 </code></pre>
-<p>Would serialize to a representation like this:</p>
+<p>직렬화 결과 예:</p>
 <pre><code>{
     'album_name': 'Graceland',
     'artist': 'Paul Simon',
@@ -693,25 +697,24 @@ class Track(models.Model):
     ]
 }
 </code></pre>
-<p>By default this field is read-write, although you can change this behavior using the <code>read_only</code> flag.</p>
+<p>기본적으로 이 필드는 읽기/쓰기 가능이지만 <code>read_only</code>로 바꿀 수 있다.</p>
 <hr />
-<p><strong>Note</strong>: This field is designed for objects that map to a URL that accepts a single URL keyword argument, as set using the <code>lookup_field</code> and <code>lookup_url_kwarg</code> arguments.</p>
-<p>This is suitable for URLs that contain a single primary key or slug argument as part of the URL.</p>
-<p>If you require more complex hyperlinked representation you'll need to customize the field, as described in the <a href="#custom-hyperlinked-fields">custom hyperlinked fields</a> section, below.</p>
+<p><strong>참고</strong>: 이 필드는 <code>lookup_field</code>, <code>lookup_url_kwarg</code>로 지정된 단일 URL 파라미터(예: pk 또는 slug)를 받는 URL에 매핑되는 객체를 대상으로 설계되었다.<br />
+더 복잡한 형태의 하이퍼링크 표현이 필요하다면 아래의 <a href="#custom-hyperlinked-fields">custom hyperlinked fields</a> 섹션처럼 커스터마이즈해야 한다.</p>
 <hr />
-<p><strong>Arguments</strong>:</p>
+<p><strong>인자(Arguments)</strong>:</p>
 <ul>
-<li><code>view_name</code> - The view name that should be used as the target of the relationship.  If you're using <a href="https://www.django-rest-framework.org/api-guide/routers#defaultrouter">the standard router classes</a> this will be a string with the format <code>&lt;modelname&gt;-detail</code>. <strong>required</strong>.</li>
-<li><code>queryset</code> - The queryset used for model instance lookups when validating the field input. Relationships must either set a queryset explicitly, or set <code>read_only=True</code>.</li>
-<li><code>many</code> - If applied to a to-many relationship, you should set this argument to <code>True</code>.</li>
-<li><code>allow_null</code> - If set to <code>True</code>, the field will accept values of <code>None</code> or the empty string for nullable relationships. Defaults to <code>False</code>.</li>
-<li><code>lookup_field</code> - The field on the target that should be used for the lookup.  Should correspond to a URL keyword argument on the referenced view.  Default is <code>'pk'</code>.</li>
-<li><code>lookup_url_kwarg</code> - The name of the keyword argument defined in the URL conf that corresponds to the lookup field. Defaults to using the same value as <code>lookup_field</code>.</li>
-<li><code>format</code> - If using format suffixes, hyperlinked fields will use the same format suffix for the target unless overridden by using the <code>format</code> argument.</li>
+<li><code>view_name</code> - 관계 대상 뷰 이름. <a href="https://www.django-rest-framework.org/api-guide/routers#defaultrouter">표준 router</a>를 쓰면 <code>&lt;modelname&gt;-detail</code> 형태. <strong>필수</strong></li>
+<li><code>queryset</code> - 입력 검증 시 모델 인스턴스 조회에 사용할 queryset. <code>queryset</code> 또는 <code>read_only=True</code> 중 하나는 필요.</li>
+<li><code>many</code> - to-many 관계에 적용하는 경우 <code>True</code>.</li>
+<li><code>allow_null</code> - nullable 관계에서 <code>None</code> 또는 빈 문자열 허용 여부. 기본 <code>False</code>.</li>
+<li><code>lookup_field</code> - 조회에 사용할 대상 필드. 기본 <code>'pk'</code>.</li>
+<li><code>lookup_url_kwarg</code> - URLconf에서 lookup_field에 대응하는 kwarg 이름. 기본적으로 <code>lookup_field</code>와 동일.</li>
+<li><code>format</code> - format suffix를 사용하는 경우, 대상 링크에도 동일 format을 적용(필요 시 <code>format</code> 인자로 override 가능).</li>
 </ul>
 <h2 id="slugrelatedfield"><a class="toclink" href="#slugrelatedfield">SlugRelatedField</a></h2>
-<p><code>SlugRelatedField</code> may be used to represent the target of the relationship using a field on the target.</p>
-<p>For example, the following serializer:</p>
+<p><code>SlugRelatedField</code>는 대상 객체를 대상의 특정 필드 값(slug)으로 표현한다.</p>
+<p>예:</p>
 <pre><code>class AlbumSerializer(serializers.ModelSerializer):
     tracks = serializers.SlugRelatedField(
         many=True,
@@ -723,7 +726,7 @@ class Track(models.Model):
         model = Album
         fields = ['album_name', 'artist', 'tracks']
 </code></pre>
-<p>Would serialize to a representation like this:</p>
+<p>직렬화 결과 예:</p>
 <pre><code>{
     'album_name': 'Dear John',
     'artist': 'Loney Dear',
@@ -735,17 +738,18 @@ class Track(models.Model):
     ]
 }
 </code></pre>
-<p>By default this field is read-write, although you can change this behavior using the <code>read_only</code> flag.</p>
-<p>When using <code>SlugRelatedField</code> as a read-write field, you will normally want to ensure that the slug field corresponds to a model field with <code>unique=True</code>.</p>
-<p><strong>Arguments</strong>:</p>
+<p>기본적으로 읽기/쓰기 가능이지만 <code>read_only</code>로 변경 가능하다.</p>
+<p>쓰기 가능한 <code>SlugRelatedField</code>로 사용할 경우, 보통 <code>slug_field</code>는 <code>unique=True</code>인 모델 필드여야 한다.</p>
+<p><strong>인자(Arguments)</strong>:</p>
 <ul>
-<li><code>slug_field</code> - The field on the target that should be used to represent it.  This should be a field that uniquely identifies any given instance.  For example, <code>username</code>.  <strong>required</strong></li>
-<li><code>queryset</code> - The queryset used for model instance lookups when validating the field input. Relationships must either set a queryset explicitly, or set <code>read_only=True</code>.</li>
-<li><code>many</code> - If applied to a to-many relationship, you should set this argument to <code>True</code>.</li>
-<li><code>allow_null</code> - If set to <code>True</code>, the field will accept values of <code>None</code> or the empty string for nullable relationships. Defaults to <code>False</code>.</li>
+<li><code>slug_field</code> - 대상을 표현할 때 사용할 필드. 인스턴스를 유일하게 식별 가능한 필드여야 한다(예: <code>username</code>). <strong>필수</strong></li>
+<li><code>queryset</code> - 입력 검증 시 모델 인스턴스 조회에 사용할 queryset. <code>queryset</code> 또는 <code>read_only=True</code> 중 하나는 필요.</li>
+<li><code>many</code> - to-many 관계에 적용하는 경우 <code>True</code>.</li>
+<li><code>allow_null</code> - nullable 관계에서 <code>None</code> 또는 빈 문자열 허용 여부. 기본 <code>False</code>.</li>
 </ul>
 <h2 id="hyperlinkedidentityfield"><a class="toclink" href="#hyperlinkedidentityfield">HyperlinkedIdentityField</a></h2>
-<p>This field can be applied as an identity relationship, such as the <code>'url'</code> field on a HyperlinkedModelSerializer.  It can also be used for an attribute on the object.  For example, the following serializer:</p>
+<p>이 필드는 <code>HyperlinkedModelSerializer</code>의 <code>'url'</code> 필드처럼 <strong>자기 자신(identity)</strong> 을 하이퍼링크로 표현할 때 사용한다. 객체의 다른 속성에도 사용할 수 있다.</p>
+<p>예:</p>
 <pre><code>class AlbumSerializer(serializers.HyperlinkedModelSerializer):
     track_listing = serializers.HyperlinkedIdentityField(view_name='track-list')
 
@@ -753,29 +757,28 @@ class Track(models.Model):
         model = Album
         fields = ['album_name', 'artist', 'track_listing']
 </code></pre>
-<p>Would serialize to a representation like this:</p>
+<p>직렬화 결과 예:</p>
 <pre><code>{
     'album_name': 'The Eraser',
     'artist': 'Thom Yorke',
     'track_listing': 'http://www.example.com/api/track_list/12/',
 }
 </code></pre>
-<p>This field is always read-only.</p>
-<p><strong>Arguments</strong>:</p>
+<p>이 필드는 항상 읽기 전용이다.</p>
+<p><strong>인자(Arguments)</strong>:</p>
 <ul>
-<li><code>view_name</code> - The view name that should be used as the target of the relationship.  If you're using <a href="https://www.django-rest-framework.org/api-guide/routers#defaultrouter">the standard router classes</a> this will be a string with the format <code>&lt;model_name&gt;-detail</code>.  <strong>required</strong>.</li>
-<li><code>lookup_field</code> - The field on the target that should be used for the lookup.  Should correspond to a URL keyword argument on the referenced view.  Default is <code>'pk'</code>.</li>
-<li><code>lookup_url_kwarg</code> - The name of the keyword argument defined in the URL conf that corresponds to the lookup field. Defaults to using the same value as <code>lookup_field</code>.</li>
-<li><code>format</code> - If using format suffixes, hyperlinked fields will use the same format suffix for the target unless overridden by using the <code>format</code> argument.</li>
+<li><code>view_name</code> - 관계 대상 뷰 이름. <a href="https://www.django-rest-framework.org/api-guide/routers#defaultrouter">표준 router</a>를 쓰면 <code>&lt;model_name&gt;-detail</code> 형태. <strong>필수</strong></li>
+<li><code>lookup_field</code> - 조회에 사용할 대상 필드. 기본 <code>'pk'</code>.</li>
+<li><code>lookup_url_kwarg</code> - URLconf에서 lookup_field에 대응하는 kwarg 이름. 기본 <code>lookup_field</code>와 동일.</li>
+<li><code>format</code> - format suffix 사용 시 적용할 format(override 가능).</li>
 </ul>
 <hr />
-<h1 id="nested-relationships"><a class="toclink" href="#nested-relationships">Nested relationships</a></h1>
-<p>As opposed to previously discussed <em>references</em> to another entity, the referred entity can instead also be embedded or <em>nested</em>
-in the representation of the object that refers to it.
-Such nested relationships can be expressed by using serializers as fields.</p>
-<p>If the field is used to represent a to-many relationship, you should add the <code>many=True</code> flag to the serializer field.</p>
-<h2 id="example"><a class="toclink" href="#example">Example</a></h2>
-<p>For example, the following serializer:</p>
+<h1 id="nested-relationships"><a class="toclink" href="#nested-relationships">중첩 관계 (Nested relationships)</a></h1>
+<p>앞서 다룬 “다른 엔티티를 참조(reference)”하는 방식과 달리,<br />
+참조 대상 엔티티를 객체 표현 안에 <strong>임베드/중첩(nested)</strong> 시킬 수도 있다.<br />
+이런 중첩 관계는 <strong>시리얼라이저를 필드로 사용</strong>해 표현한다.</p>
+<p>to-many 관계를 표현하려면 시리얼라이저 필드에 <code>many=True</code>를 추가한다.</p>
+<h2 id="_1"><a class="toclink" href="#_1">예시</a></h2>
 <pre><code>class TrackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Track
@@ -788,7 +791,7 @@ class AlbumSerializer(serializers.ModelSerializer):
         model = Album
         fields = ['album_name', 'artist', 'tracks']
 </code></pre>
-<p>Would serialize to a nested representation like this:</p>
+<p>중첩 표현 예:</p>
 <pre><code>&gt;&gt;&gt; album = Album.objects.create(album_name="The Gray Album", artist='Danger Mouse')
 &gt;&gt;&gt; Track.objects.create(album=album, order=1, title='Public Service Announcement', duration=245)
 &lt;Track: Track object&gt;
@@ -809,8 +812,10 @@ class AlbumSerializer(serializers.ModelSerializer):
     ],
 }
 </code></pre>
-<h2 id="writable-nested-serializers"><a class="toclink" href="#writable-nested-serializers">Writable nested serializers</a></h2>
-<p>By default nested serializers are read-only. If you want to support write-operations to a nested serializer field you'll need to create <code>create()</code> and/or <code>update()</code> methods in order to explicitly specify how the child relationships should be saved:</p>
+<h2 id="writable-nested-serializers"><a class="toclink" href="#writable-nested-serializers">쓰기 가능한 중첩 시리얼라이저 (Writable nested serializers)</a></h2>
+<p>기본적으로 중첩 시리얼라이저는 읽기 전용이다.<br />
+중첩 필드에 대해 쓰기(create/update)를 지원하려면, 자식 관계를 어떻게 저장할지 명시하기 위해 <code>create()</code> 및/또는 <code>update()</code>를 구현해야 한다.</p>
+<p>예:</p>
 <pre><code>class TrackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Track
@@ -846,15 +851,15 @@ True
 &lt;Album: Album object&gt;
 </code></pre>
 <hr />
-<h1 id="custom-relational-fields"><a class="toclink" href="#custom-relational-fields">Custom relational fields</a></h1>
-<p>In rare cases where none of the existing relational styles fit the representation you need,
-you can implement a completely custom relational field, that describes exactly how the
-output representation should be generated from the model instance.</p>
-<p>To implement a custom relational field, you should override <code>RelatedField</code>, and implement the <code>.to_representation(self, value)</code> method. This method takes the target of the field as the <code>value</code> argument, and should return the representation that should be used to serialize the target. The <code>value</code> argument will typically be a model instance.</p>
-<p>If you want to implement a read-write relational field, you must also implement the <a href="https://www.django-rest-framework.org/api-guide/serializers/#to_internal_valueself-data"><code>.to_internal_value(self, data)</code> method</a>.</p>
-<p>To provide a dynamic queryset based on the <code>context</code>, you can also override <code>.get_queryset(self)</code> instead of specifying <code>.queryset</code> on the class or when initializing the field.</p>
-<h2 id="example_1"><a class="toclink" href="#example_1">Example</a></h2>
-<p>For example, we could define a relational field to serialize a track to a custom string representation, using its ordering, title, and duration:</p>
+<h1 id="custom-relational-fields"><a class="toclink" href="#custom-relational-fields">커스텀 관계 필드 (Custom relational fields)</a></h1>
+<p>기존 관계 표현 방식이 요구사항에 맞지 않는 드문 경우,<br />
+모델 인스턴스에서 출력 표현을 어떻게 생성할지 완전히 직접 정의하는 커스텀 관계 필드를 구현할 수 있다.</p>
+<p>커스텀 관계 필드를 만들려면 <code>RelatedField</code>를 상속하고 <code>.to_representation(self, value)</code>를 구현한다.<br />
+<code>value</code>는 보통 모델 인스턴스(관계 대상)이다.</p>
+<p>읽기/쓰기 필드로 만들려면 <a href="https://www.django-rest-framework.org/api-guide/serializers/#to_internal_valueself-data"><code>.to_internal_value(self, data)</code></a>도 구현해야 한다.</p>
+<p><code>context</code> 기반으로 동적 queryset이 필요하다면, <code>.queryset</code>을 지정하는 대신 <code>.get_queryset(self)</code>를 override 할 수도 있다.</p>
+<h2 id="_2"><a class="toclink" href="#_2">예시</a></h2>
+<p>트랙을 <code>order</code>, <code>title</code>, <code>duration</code>으로 구성된 문자열로 직렬화하는 관계 필드:</p>
 <pre><code>import time
 
 class TrackListingField(serializers.RelatedField):
@@ -869,7 +874,7 @@ class AlbumSerializer(serializers.ModelSerializer):
         model = Album
         fields = ['album_name', 'artist', 'tracks']
 </code></pre>
-<p>This custom field would then serialize to the following representation:</p>
+<p>직렬화 결과 예:</p>
 <pre><code>{
     'album_name': 'Sometimes I Wish We Were an Eagle',
     'artist': 'Bill Callahan',
@@ -882,28 +887,27 @@ class AlbumSerializer(serializers.ModelSerializer):
 }
 </code></pre>
 <hr />
-<h1 id="custom-hyperlinked-fields"><a class="toclink" href="#custom-hyperlinked-fields">Custom hyperlinked fields</a></h1>
-<p>In some cases you may need to customize the behavior of a hyperlinked field, in order to represent URLs that require more than a single lookup field.</p>
-<p>You can achieve this by overriding <code>HyperlinkedRelatedField</code>. There are two methods that may be overridden:</p>
-<p><strong>get_url(self, obj, view_name, request, format)</strong></p>
-<p>The <code>get_url</code> method is used to map the object instance to its URL representation.</p>
-<p>May raise a <code>NoReverseMatch</code> if the <code>view_name</code> and <code>lookup_field</code>
-attributes are not configured to correctly match the URL conf.</p>
-<p><strong>get_object(self, view_name, view_args, view_kwargs)</strong></p>
-<p>If you want to support a writable hyperlinked field then you'll also want to override <code>get_object</code>, in order to map incoming URLs back to the object they represent. For read-only hyperlinked fields there is no need to override this method.</p>
-<p>The return value of this method should the object that corresponds to the matched URL conf arguments.</p>
-<p>May raise an <code>ObjectDoesNotExist</code> exception.</p>
-<h2 id="example_2"><a class="toclink" href="#example_2">Example</a></h2>
-<p>Say we have a URL for a customer object that takes two keyword arguments, like so:</p>
+<h1 id="custom-hyperlinked-fields"><a class="toclink" href="#custom-hyperlinked-fields">커스텀 하이퍼링크 필드 (Custom hyperlinked fields)</a></h1>
+<p>단일 lookup 필드만으로 표현할 수 없는 URL(예: 여러 kwarg가 필요한 URL)을 표현하려면<br />
+<code>HyperlinkedRelatedField</code>를 override 해서 동작을 커스터마이즈할 수 있다.</p>
+<p>Override 가능한 메서드 2개:</p>
+<p><strong>get_url(self, obj, view_name, request, format)</strong><br />
+객체 인스턴스를 URL 표현으로 매핑한다.<br />
+<code>view_name</code>, <code>lookup_field</code> 설정이 URLconf와 맞지 않으면 <code>NoReverseMatch</code>가 발생할 수 있다.</p>
+<p><strong>get_object(self, view_name, view_args, view_kwargs)</strong><br />
+쓰기 가능한 하이퍼링크 필드를 지원하려면, 들어온 URL을 다시 객체로 매핑해야 하므로 이 메서드를 override 한다.<br />
+읽기 전용이면 override 필요 없다.<br />
+URLconf 인자에 해당하는 객체를 반환해야 하며, <code>ObjectDoesNotExist</code>를 발생시킬 수 있다.</p>
+<h2 id="_3"><a class="toclink" href="#_3">예시</a></h2>
+<p>고객(customer) URL이 다음처럼 두 개의 kwarg를 받는다고 하자:</p>
 <pre><code>/api/&lt;organization_slug&gt;/customers/&lt;customer_pk&gt;/
 </code></pre>
-<p>This cannot be represented with the default implementation, which accepts only a single lookup field.</p>
-<p>In this case we'd need to override <code>HyperlinkedRelatedField</code> to get the behavior we want:</p>
+<p>기본 구현은 단일 lookup만 지원하므로, 다음처럼 override 해야 한다:</p>
 <pre><code>from rest_framework import serializers
 from rest_framework.reverse import reverse
 
 class CustomerHyperlink(serializers.HyperlinkedRelatedField):
-    # We define these as class attributes, so we don't need to pass them as arguments.
+    # 클래스 속성으로 정의하면 인자로 매번 넘길 필요가 없다.
     view_name = 'customer-detail'
     queryset = Customer.objects.all()
 
@@ -921,61 +925,66 @@ class CustomerHyperlink(serializers.HyperlinkedRelatedField):
         }
         return self.get_queryset().get(**lookup_kwargs)
 </code></pre>
-<p>Note that if you wanted to use this style together with the generic views then you'd also need to override <code>.get_object</code> on the view in order to get the correct lookup behavior.</p>
-<p>Generally we recommend a flat style for API representations where possible, but the nested URL style can also be reasonable when used in moderation.</p>
+<p>이 스타일을 generic view와 함께 쓰려면, 뷰 쪽 <code>.get_object</code>도 lookup 로직에 맞게 override 해야 한다.</p>
+<p>가능하면 API 표현은 “평평한(flat)” 스타일을 권장하지만, 중첩 URL 스타일도 과하지 않게 쓰면 괜찮다.</p>
 <hr />
-<h1 id="further-notes"><a class="toclink" href="#further-notes">Further notes</a></h1>
-<h2 id="the-queryset-argument"><a class="toclink" href="#the-queryset-argument">The <code>queryset</code> argument</a></h2>
-<p>The <code>queryset</code> argument is only ever required for <em>writable</em> relationship field, in which case it is used for performing the model instance lookup, that maps from the primitive user input, into a model instance.</p>
-<p>In version 2.x a serializer class could <em>sometimes</em> automatically determine the <code>queryset</code> argument <em>if</em> a <code>ModelSerializer</code> class was being used.</p>
-<p>This behavior is now replaced with <em>always</em> using an explicit <code>queryset</code> argument for writable relational fields.</p>
-<p>Doing so reduces the amount of hidden 'magic' that <code>ModelSerializer</code> provides, makes the behavior of the field more clear, and ensures that it is trivial to move between using the <code>ModelSerializer</code> shortcut, or using fully explicit <code>Serializer</code> classes.</p>
-<h2 id="customizing-the-html-display"><a class="toclink" href="#customizing-the-html-display">Customizing the HTML display</a></h2>
-<p>The built-in <code>__str__</code> method of the model will be used to generate string representations of the objects used to populate the <code>choices</code> property. These choices are used to populate select HTML inputs in the browsable API.</p>
-<p>To provide customized representations for such inputs, override <code>display_value()</code> of a <code>RelatedField</code> subclass. This method will receive a model object, and should return a string suitable for representing it. For example:</p>
+<h1 id="further-notes"><a class="toclink" href="#further-notes">추가 메모 (Further notes)</a></h1>
+<h2 id="queryset"><a class="toclink" href="#queryset"><code>queryset</code> 인자</a></h2>
+<p><code>queryset</code> 인자는 <em>쓰기 가능한(writable)</em> 관계 필드에서만 필요하다.<br />
+이때 사용자 입력(원시 값)을 모델 인스턴스로 매핑하기 위한 조회에 사용된다.</p>
+<p>2.x에서는 <code>ModelSerializer</code> 사용 시 일부 상황에서 자동으로 <code>queryset</code>을 추정할 수 있었다.<br />
+지금은 쓰기 가능한 관계 필드에서는 <strong>항상 명시적인 <code>queryset</code></strong> 을 사용하도록 바뀌었다.</p>
+<p>이렇게 하면 <code>ModelSerializer</code>의 숨은 “마법”이 줄어들고, 필드 동작이 명확해지며,<br />
+<code>ModelSerializer</code>와 완전한 <code>Serializer</code> 사이를 옮기기도 쉬워진다.</p>
+<h2 id="html"><a class="toclink" href="#html">HTML 표시 커스터마이즈</a></h2>
+<p>Browsable API의 <code>&lt;select&gt;</code> 입력에서 사용할 <code>choices</code>의 문자열 표현은 모델의 <code>__str__</code>을 사용한다.</p>
+<p>표시 문자열을 커스터마이즈하려면 <code>RelatedField</code> 서브클래스의 <code>display_value()</code>를 override 한다:</p>
 <pre><code>class TrackPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
     def display_value(self, instance):
         return 'Track: %s' % (instance.title)
 </code></pre>
-<h2 id="select-field-cutoffs"><a class="toclink" href="#select-field-cutoffs">Select field cutoffs</a></h2>
-<p>When rendered in the browsable API relational fields will default to only displaying a maximum of 1000 selectable items. If more items are present then a disabled option with "More than 1000 items…" will be displayed.</p>
-<p>This behavior is intended to prevent a template from being unable to render in an acceptable timespan due to a very large number of relationships being displayed.</p>
-<p>There are two keyword arguments you can use to control this behavior:</p>
+<h2 id="select-field-cutoffs"><a class="toclink" href="#select-field-cutoffs">선택 필드 컷오프 (Select field cutoffs)</a></h2>
+<p>Browsable API에서 관계 필드는 기본적으로 최대 1000개까지만 선택 항목을 표시한다.<br />
+더 많으면 비활성 옵션으로 <code>"More than 1000 items…"</code>가 표시된다.</p>
+<p>이 동작은 너무 많은 관계 항목이 렌더링되어 템플릿이 느려지는 것을 방지하기 위한 것이다.</p>
+<p>제어 가능한 인자:</p>
 <ul>
-<li><code>html_cutoff</code> - If set this will be the maximum number of choices that will be displayed by a HTML select drop down. Set to <code>None</code> to disable any limiting. Defaults to <code>1000</code>.</li>
-<li><code>html_cutoff_text</code> - If set this will display a textual indicator if the maximum number of items have been cutoff in an HTML select drop down. Defaults to <code>"More than {count} items…"</code></li>
+<li><code>html_cutoff</code> - 표시할 최대 choice 개수. 제한 비활성화는 <code>None</code>. 기본 <code>1000</code>.</li>
+<li><code>html_cutoff_text</code> - 컷오프 발생 시 표시할 문구. 기본 <code>"More than {count} items…"</code></li>
 </ul>
-<p>You can also control these globally using the settings <code>HTML_SELECT_CUTOFF</code> and <code>HTML_SELECT_CUTOFF_TEXT</code>.</p>
-<p>In cases where the cutoff is being enforced you may want to instead use a plain input field in the HTML form. You can do so using the <code>style</code> keyword argument. For example:</p>
+<p>전역 설정 <code>HTML_SELECT_CUTOFF</code>, <code>HTML_SELECT_CUTOFF_TEXT</code>로도 제어 가능하다.</p>
+<p>컷오프가 걸리는 경우, <code>style</code>로 select 대신 일반 input을 쓰도록 할 수도 있다:</p>
 <pre><code>assigned_to = serializers.SlugRelatedField(
    queryset=User.objects.all(),
    slug_field='username',
    style={'base_template': 'input.html'}
 )
 </code></pre>
-<h2 id="reverse-relations"><a class="toclink" href="#reverse-relations">Reverse relations</a></h2>
-<p>Note that reverse relationships are not automatically included by the <code>ModelSerializer</code> and <code>HyperlinkedModelSerializer</code> classes.  To include a reverse relationship, you must explicitly add it to the fields list.  For example:</p>
+<h2 id="reverse-relations"><a class="toclink" href="#reverse-relations">역방향 관계 (Reverse relations)</a></h2>
+<p>역방향 관계는 <code>ModelSerializer</code>와 <code>HyperlinkedModelSerializer</code>에 의해 자동 포함되지 않는다.<br />
+포함하려면 <code>fields</code>에 명시적으로 추가해야 한다.</p>
+<p>예:</p>
 <pre><code>class AlbumSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ['tracks', ...]
 </code></pre>
-<p>You'll normally want to ensure that you've set an appropriate <code>related_name</code> argument on the relationship, that you can use as the field name.  For example:</p>
+<p>보통 관계에 <code>related_name</code>을 지정해 해당 이름을 필드명으로 쓰는 것이 좋다:</p>
 <pre><code>class Track(models.Model):
     album = models.ForeignKey(Album, related_name='tracks', on_delete=models.CASCADE)
     ...
 </code></pre>
-<p>If you have not set a related name for the reverse relationship, you'll need to use the automatically generated related name in the <code>fields</code> argument.  For example:</p>
+<p><code>related_name</code>이 없다면 자동 생성된 이름을 써야 한다(예: <code>track_set</code>):</p>
 <pre><code>class AlbumSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ['track_set', ...]
 </code></pre>
-<p>See the Django documentation on <a href="https://docs.djangoproject.com/en/stable/topics/db/queries/#following-relationships-backward">reverse relationships</a> for more details.</p>
-<h2 id="generic-relationships"><a class="toclink" href="#generic-relationships">Generic relationships</a></h2>
-<p>If you want to serialize a generic foreign key, you need to define a custom field, to determine explicitly how you want to serialize the targets of the relationship.</p>
-<p>For example, given the following model for a tag, which has a generic relationship with other arbitrary models:</p>
+<p>자세한 내용은 <a href="https://docs.djangoproject.com/en/stable/topics/db/queries/#following-relationships-backward">reverse relationships</a> Django 문서를 참고하자.</p>
+<h2 id="generic-relationships"><a class="toclink" href="#generic-relationships">제네릭 관계 (Generic relationships)</a></h2>
+<p>GenericForeignKey를 직렬화하려면, 대상 표현 방식을 명확히 정하기 위해 커스텀 필드를 정의해야 한다.</p>
+<p>예시 모델:</p>
 <pre><code>class TaggedItem(models.Model):
     """
-    Tags arbitrary model instances using a generic relation.
+    제네릭 관계로 임의의 모델 인스턴스를 태깅한다.
 
     See: https://docs.djangoproject.com/en/stable/ref/contrib/contenttypes/
     """
@@ -987,10 +996,10 @@ class CustomerHyperlink(serializers.HyperlinkedRelatedField):
     def __str__(self):
         return self.tag_name
 </code></pre>
-<p>And the following two models, which may have associated tags:</p>
+<p>태그가 달릴 수 있는 두 모델:</p>
 <pre><code>class Bookmark(models.Model):
     """
-    A bookmark consists of a URL, and 0 or more descriptive tags.
+    Bookmark는 URL과 0개 이상의 태그로 구성된다.
     """
     url = models.URLField()
     tags = GenericRelation(TaggedItem)
@@ -998,20 +1007,20 @@ class CustomerHyperlink(serializers.HyperlinkedRelatedField):
 
 class Note(models.Model):
     """
-    A note consists of some text, and 0 or more descriptive tags.
+    Note는 텍스트와 0개 이상의 태그로 구성된다.
     """
     text = models.CharField(max_length=1000)
     tags = GenericRelation(TaggedItem)
 </code></pre>
-<p>We could define a custom field that could be used to serialize tagged instances, using the type of each instance to determine how it should be serialized:</p>
+<p>대상 타입에 따라 다르게 직렬화하는 커스텀 필드 예:</p>
 <pre><code>class TaggedObjectRelatedField(serializers.RelatedField):
     """
-    A custom field to use for the `tagged_object` generic relationship.
+    `tagged_object` 제네릭 관계를 위한 커스텀 필드.
     """
 
     def to_representation(self, value):
         """
-        Serialize tagged objects to a simple textual representation.
+        태그 대상 객체를 간단한 텍스트로 직렬화.
         """
         if isinstance(value, Bookmark):
             return 'Bookmark: ' + value.url
@@ -1019,11 +1028,11 @@ class Note(models.Model):
             return 'Note: ' + value.text
         raise Exception('Unexpected type of tagged object')
 </code></pre>
-<p>If you need the target of the relationship to have a nested representation, you can use the required serializers inside the <code>.to_representation()</code> method:</p>
+<p>중첩 표현이 필요하면 <code>.to_representation()</code> 안에서 적절한 시리얼라이저를 사용할 수도 있다:</p>
 <pre><code>    def to_representation(self, value):
         """
-        Serialize bookmark instances using a bookmark serializer,
-        and note instances using a note serializer.
+        Bookmark는 BookmarkSerializer로,
+        Note는 NoteSerializer로 직렬화.
         """
         if isinstance(value, Bookmark):
             serializer = BookmarkSerializer(value)
@@ -1034,23 +1043,21 @@ class Note(models.Model):
 
         return serializer.data
 </code></pre>
-<p>Note that reverse generic keys, expressed using the <code>GenericRelation</code> field, can be serialized using the regular relational field types, since the type of the target in the relationship is always known.</p>
-<p>For more information see <a href="https://docs.djangoproject.com/en/stable/ref/contrib/contenttypes/#id1">the Django documentation on generic relations</a>.</p>
-<h2 id="manytomanyfields-with-a-through-model"><a class="toclink" href="#manytomanyfields-with-a-through-model">ManyToManyFields with a Through Model</a></h2>
-<p>By default, relational fields that target a <code>ManyToManyField</code> with a
-<code>through</code> model specified are set to read-only.</p>
-<p>If you explicitly specify a relational field pointing to a
-<code>ManyToManyField</code> with a through model, be sure to set <code>read_only</code>
-to <code>True</code>.</p>
-<p>If you wish to represent <a href="https://docs.djangoproject.com/en/stable/topics/db/models/#intermediary-manytomany">extra fields on a through model</a> then you may serialize the through model as <a href="https://www.django-rest-framework.org/api-guide/serializers/#dealing-with-nested-objects">a nested object</a>.</p>
+<p>역방향 제네릭 키(<code>GenericRelation</code>)는 대상 타입이 항상 정해져 있으므로 일반 관계 필드를 사용할 수 있다.</p>
+<p>자세한 내용은 <a href="https://docs.djangoproject.com/en/stable/ref/contrib/contenttypes/#id1">generic relations</a> Django 문서를 참고하자.</p>
+<h2 id="through-manytomanyfield"><a class="toclink" href="#through-manytomanyfield">Through 모델이 있는 ManyToManyField</a></h2>
+<p><code>through</code> 모델이 지정된 <code>ManyToManyField</code>를 대상으로 하는 관계 필드는 기본적으로 읽기 전용으로 설정된다.</p>
+<p>through 모델을 가진 <code>ManyToManyField</code>를 가리키는 관계 필드를 명시적으로 쓴다면,<br />
+반드시 <code>read_only=True</code>로 설정하자.</p>
+<p>through 모델의 <a href="https://docs.djangoproject.com/en/stable/topics/db/models/#intermediary-manytomany">추가 필드</a>를 표현하려면,<br />
+through 모델을 <a href="https://www.django-rest-framework.org/api-guide/serializers/#dealing-with-nested-objects">중첩 객체</a>로 직렬화하는 방식을 고려할 수 있다.</p>
 <hr />
-<h1 id="third-party-packages"><a class="toclink" href="#third-party-packages">Third Party Packages</a></h1>
-<p>The following third party packages are also available.</p>
+<h1 id="third-party-packages"><a class="toclink" href="#third-party-packages">서드파티 패키지 (Third Party Packages)</a></h1>
 <h2 id="drf-nested-routers"><a class="toclink" href="#drf-nested-routers">DRF Nested Routers</a></h2>
-<p>The <a href="https://github.com/alanjds/drf-nested-routers">drf-nested-routers package</a> provides routers and relationship fields for working with nested resources.</p>
+<p><a href="https://github.com/alanjds/drf-nested-routers">drf-nested-routers 패키지</a>는 중첩 리소스(nested resources)를 다루기 위한 router 및 관계 필드를 제공한다.</p>
 <h2 id="rest-framework-generic-relations"><a class="toclink" href="#rest-framework-generic-relations">Rest Framework Generic Relations</a></h2>
-<p>The <a href="https://github.com/Ian-Foote/rest-framework-generic-relations">rest-framework-generic-relations</a> library provides read/write serialization for generic foreign keys.</p>
-<p>The <a href="https://github.com/mojtabaakbari221b/rest-framework-gm2m-relations">rest-framework-gm2m-relations</a> library provides read/write serialization for <a href="https://github.com/tkhyn/django-gm2m">django-gm2m</a>.</p>
+<p><a href="https://github.com/Ian-Foote/rest-framework-generic-relations">rest-framework-generic-relations</a> 라이브러리는 GenericForeignKey에 대해 읽기/쓰기 직렬화를 제공한다.</p>
+<p><a href="https://github.com/mojtabaakbari221b/rest-framework-gm2m-relations">rest-framework-gm2m-relations</a> 라이브러리는 <a href="https://github.com/tkhyn/django-gm2m">django-gm2m</a>에 대해 읽기/쓰기 직렬화를 제공한다.</p>
             
 
           </div> <!--/span-->

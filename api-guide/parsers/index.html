@@ -413,21 +413,21 @@
 
                 
                   <li class="main">
-                    <a href="#parsers">Parsers</a>
+                    <a href="#parsers">파서 (Parsers)</a>
                   </li>
 
                   
                     <li>
-                      <a href="#how-the-parser-is-determined">How the parser is determined</a>
+                      <a href="#_1">파서가 결정되는 방식</a>
                     </li>
                   
                     <li>
-                      <a href="#setting-the-parsers">Setting the parsers</a>
+                      <a href="#_2">파서 설정하기</a>
                     </li>
                   
                 
                   <li class="main">
-                    <a href="#api-reference">API Reference</a>
+                    <a href="#api">API 레퍼런스</a>
                   </li>
 
                   
@@ -449,7 +449,7 @@
                   
                 
                   <li class="main">
-                    <a href="#custom-parsers">Custom parsers</a>
+                    <a href="#_5">커스텀 파서</a>
                   </li>
 
                   
@@ -466,12 +466,12 @@
                     </li>
                   
                     <li>
-                      <a href="#example">Example</a>
+                      <a href="#_6">예시</a>
                     </li>
                   
                 
                   <li class="main">
-                    <a href="#third-party-packages">Third party packages</a>
+                    <a href="#_7">서드파티 패키지</a>
                   </li>
 
                   
@@ -512,45 +512,49 @@
                 
               
 
-              <h1 id="parsers"><a class="toclink" href="#parsers">Parsers</a></h1>
+              <h1 id="parsers"><a class="toclink" href="#parsers">파서 (Parsers)</a></h1>
 <blockquote>
-<p>Machine interacting web services tend to use more
-structured formats for sending data than form-encoded, since they're
-sending more complex data than simple forms</p>
+<p>머신과 상호작용하는 웹 서비스는 단순한 폼보다 훨씬 복잡한 데이터를 주고받기 때문에,
+form-encoded 방식보다는 더 구조화된 포맷을 사용하는 경향이 있다.</p>
 <p>&mdash; Malcom Tredinnick, <a href="https://groups.google.com/d/topic/django-developers/dxI4qVzrBY4/discussion">Django developers group</a></p>
 </blockquote>
-<p>REST framework includes a number of built-in Parser classes, that allow you to accept requests with various media types.  There is also support for defining your own custom parsers, which gives you the flexibility to design the media types that your API accepts.</p>
-<h2 id="how-the-parser-is-determined"><a class="toclink" href="#how-the-parser-is-determined">How the parser is determined</a></h2>
-<p>The set of valid parsers for a view is always defined as a list of classes.  When <code>request.data</code> is accessed, REST framework will examine the <code>Content-Type</code> header on the incoming request, and determine which parser to use to parse the request content.</p>
+<p>REST framework는 다양한 미디어 타입의 요청을 받을 수 있도록 여러 <strong>내장 Parser 클래스</strong>를 제공한다.<br />
+또한 <strong>커스텀 파서</strong>를 직접 정의할 수도 있어, API가 허용하는 미디어 타입을 자유롭게 설계할 수 있다.</p>
+<h2 id="_1"><a class="toclink" href="#_1">파서가 결정되는 방식</a></h2>
+<p>각 뷰에서 사용할 수 있는 파서 집합은 항상 <strong>클래스 리스트</strong>로 정의된다.<br />
+<code>request.data</code>에 접근하면, REST framework는 들어온 요청의 <code>Content-Type</code> 헤더를 확인한 뒤, 해당 콘텐츠를 파싱할 파서를 결정한다.</p>
 <hr />
-<p><strong>Note</strong>: When developing client applications always remember to make sure you're setting the <code>Content-Type</code> header when sending data in an HTTP request.</p>
-<p>If you don't set the content type, most clients will default to using <code>'application/x-www-form-urlencoded'</code>, which may not be what you wanted.</p>
-<p>As an example, if you are sending <code>json</code> encoded data using jQuery with the <a href="https://api.jquery.com/jQuery.ajax/">.ajax() method</a>, you should make sure to include the <code>contentType: 'application/json'</code> setting.</p>
+<p><strong>참고</strong>: 클라이언트 애플리케이션을 개발할 때는 HTTP 요청을 보낼 때 반드시 <code>Content-Type</code> 헤더를 설정해야 한다.</p>
+<p>Content-Type을 설정하지 않으면, 대부분의 클라이언트는 기본값으로<br />
+<code>'application/x-www-form-urlencoded'</code>를 사용하게 되며, 이는 의도와 다를 수 있다.</p>
+<p>예를 들어, jQuery의 <a href="https://api.jquery.com/jQuery.ajax/">.ajax() 메서드</a>를 사용해 <code>json</code> 데이터를 전송한다면,<br />
+<code>contentType: 'application/json'</code> 설정을 꼭 포함해야 한다.</p>
 <hr />
-<h2 id="setting-the-parsers"><a class="toclink" href="#setting-the-parsers">Setting the parsers</a></h2>
-<p>The default set of parsers may be set globally, using the <code>DEFAULT_PARSER_CLASSES</code> setting. For example, the following settings would allow only requests with <code>JSON</code> content, instead of the default of JSON or form data.</p>
+<h2 id="_2"><a class="toclink" href="#_2">파서 설정하기</a></h2>
+<p>기본 파서 목록은 전역 설정인 <code>DEFAULT_PARSER_CLASSES</code>를 통해 지정할 수 있다.<br />
+예를 들어, 아래 설정은 기본값(JSON + form 데이터) 대신 <strong>JSON 요청만 허용</strong>하도록 한다.</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
     ]
 }
 </code></pre>
-<p>You can also set the parsers used for an individual view, or viewset,
-using the <code>APIView</code> class-based views.</p>
+<p>또는 개별 뷰나 뷰셋 단위로 파서를 지정할 수도 있다.<br />
+<code>APIView</code> 기반 클래스 뷰를 사용하는 예시는 다음과 같다.</p>
 <pre><code>from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 class ExampleView(APIView):
     """
-    A view that can accept POST requests with JSON content.
+    JSON 콘텐츠를 포함한 POST 요청을 받을 수 있는 뷰
     """
     parser_classes = [JSONParser]
 
     def post(self, request, format=None):
         return Response({'received data': request.data})
 </code></pre>
-<p>Or, if you're using the <code>@api_view</code> decorator with function based views.</p>
+<p>함수 기반 뷰에서 <code>@api_view</code> 데코레이터를 사용하는 경우에는 다음과 같이 설정할 수 있다.</p>
 <pre><code>from rest_framework.decorators import api_view
 from rest_framework.decorators import parser_classes
 from rest_framework.parsers import JSONParser
@@ -559,35 +563,42 @@ from rest_framework.parsers import JSONParser
 @parser_classes([JSONParser])
 def example_view(request, format=None):
     """
-    A view that can accept POST requests with JSON content.
+    JSON 콘텐츠를 포함한 POST 요청을 받을 수 있는 뷰
     """
     return Response({'received data': request.data})
 </code></pre>
 <hr />
-<h1 id="api-reference"><a class="toclink" href="#api-reference">API Reference</a></h1>
+<h1 id="api"><a class="toclink" href="#api">API 레퍼런스</a></h1>
 <h2 id="jsonparser"><a class="toclink" href="#jsonparser">JSONParser</a></h2>
-<p>Parses <code>JSON</code> request content. <code>request.data</code> will be populated with a dictionary of data.</p>
+<p><code>JSON</code> 요청 콘텐츠를 파싱한다.<br />
+<code>request.data</code>는 딕셔너리 형태로 채워진다.</p>
 <p><strong>.media_type</strong>: <code>application/json</code></p>
 <h2 id="formparser"><a class="toclink" href="#formparser">FormParser</a></h2>
-<p>Parses HTML form content.  <code>request.data</code> will be populated with a <code>QueryDict</code> of data.</p>
-<p>You will typically want to use both <code>FormParser</code> and <code>MultiPartParser</code> together in order to fully support HTML form data.</p>
+<p>HTML 폼 콘텐츠를 파싱한다.<br />
+<code>request.data</code>는 <code>QueryDict</code> 형태로 채워진다.</p>
+<p>일반적으로 HTML 폼 데이터를 완전히 지원하려면 <code>FormParser</code>와 <code>MultiPartParser</code>를 함께 사용하는 것이 좋다.</p>
 <p><strong>.media_type</strong>: <code>application/x-www-form-urlencoded</code></p>
 <h2 id="multipartparser"><a class="toclink" href="#multipartparser">MultiPartParser</a></h2>
-<p>Parses multipart HTML form content, which supports file uploads. <code>request.data</code> and <code>request.FILES</code> will be populated with a <code>QueryDict</code> and <code>MultiValueDict</code> respectively.</p>
-<p>You will typically want to use both <code>FormParser</code> and <code>MultiPartParser</code> together in order to fully support HTML form data.</p>
+<p>파일 업로드를 지원하는 multipart HTML 폼 콘텐츠를 파싱한다.<br />
+<code>request.data</code>는 <code>QueryDict</code>, <code>request.FILES</code>는 <code>MultiValueDict</code>로 채워진다.</p>
+<p>HTML 폼 데이터를 완전히 지원하려면 <code>FormParser</code>와 <code>MultiPartParser</code>를 함께 사용하는 것이 일반적이다.</p>
 <p><strong>.media_type</strong>: <code>multipart/form-data</code></p>
 <h2 id="fileuploadparser"><a class="toclink" href="#fileuploadparser">FileUploadParser</a></h2>
-<p>Parses raw file upload content.  The <code>request.data</code> property will be a dictionary with a single key <code>'file'</code> containing the uploaded file.</p>
-<p>If the view used with <code>FileUploadParser</code> is called with a <code>filename</code> URL keyword argument, then that argument will be used as the filename.</p>
-<p>If it is called without a <code>filename</code> URL keyword argument, then the client must set the filename in the <code>Content-Disposition</code> HTTP header.  For example <code>Content-Disposition: attachment; filename=upload.jpg</code>.</p>
+<p>원시(raw) 파일 업로드 요청을 파싱한다.<br />
+<code>request.data</code>는 <code>'file'</code> 키 하나만 가진 딕셔너리가 되며, 업로드된 파일이 그 값으로 들어간다.</p>
+<p>뷰가 <code>filename</code> URL 키워드 인자와 함께 호출되면, 해당 값이 파일명으로 사용된다.</p>
+<p><code>filename</code> 인자가 없다면, 클라이언트가 반드시 <code>Content-Disposition</code> HTTP 헤더에 파일명을 설정해야 한다.<br />
+예: <code>Content-Disposition: attachment; filename=upload.jpg</code></p>
 <p><strong>.media_type</strong>: <code>*/*</code></p>
-<h5 id="notes"><a class="toclink" href="#notes">Notes:</a></h5>
+<h5 id="_3"><a class="toclink" href="#_3">참고 사항</a></h5>
 <ul>
-<li>The <code>FileUploadParser</code> is for usage with native clients that can upload the file as a raw data request.  For web-based uploads, or for native clients with multipart upload support, you should use the <code>MultiPartParser</code> instead.</li>
-<li>Since this parser's <code>media_type</code> matches any content type, <code>FileUploadParser</code> should generally be the only parser set on an API view.</li>
-<li><code>FileUploadParser</code> respects Django's standard <code>FILE_UPLOAD_HANDLERS</code> setting, and the <code>request.upload_handlers</code> attribute.  See the <a href="https://docs.djangoproject.com/en/stable/topics/http/file-uploads/#upload-handlers">Django documentation</a> for more details.</li>
+<li><code>FileUploadParser</code>는 원시 데이터 형태로 파일을 업로드할 수 있는 <strong>네이티브 클라이언트</strong>를 위한 것이다.<br />
+  웹 기반 업로드나 multipart 업로드를 지원하는 클라이언트라면 <code>MultiPartParser</code>를 사용하는 것이 적절하다.</li>
+<li>이 파서는 모든 콘텐츠 타입과 매칭되므로, 일반적으로 API 뷰에 <strong>단독으로</strong> 설정해야 한다.</li>
+<li><code>FileUploadParser</code>는 Django의 표준 <code>FILE_UPLOAD_HANDLERS</code> 설정과 <code>request.upload_handlers</code> 속성을 따른다.<br />
+  자세한 내용은 <a href="https://docs.djangoproject.com/en/stable/topics/http/file-uploads/#upload-handlers">Django 문서</a>를 참고하자.</li>
 </ul>
-<h5 id="basic-usage-example"><a class="toclink" href="#basic-usage-example">Basic usage example:</a></h5>
+<h5 id="_4"><a class="toclink" href="#_4">기본 사용 예시</a></h5>
 <pre><code># views.py
 class FileUploadView(views.APIView):
     parser_classes = [FileUploadParser]
@@ -595,7 +606,7 @@ class FileUploadView(views.APIView):
     def put(self, request, filename, format=None):
         file_obj = request.data['file']
         # ...
-        # do some stuff with uploaded file
+        # 업로드된 파일 처리
         # ...
         return Response(status=204)
 
@@ -606,42 +617,47 @@ urlpatterns = [
 ]
 </code></pre>
 <hr />
-<h1 id="custom-parsers"><a class="toclink" href="#custom-parsers">Custom parsers</a></h1>
-<p>To implement a custom parser, you should override <code>BaseParser</code>, set the <code>.media_type</code> property, and implement the <code>.parse(self, stream, media_type, parser_context)</code> method.</p>
-<p>The method should return the data that will be used to populate the <code>request.data</code> property.</p>
-<p>The arguments passed to <code>.parse()</code> are:</p>
+<h1 id="_5"><a class="toclink" href="#_5">커스텀 파서</a></h1>
+<p>커스텀 파서를 구현하려면 <code>BaseParser</code>를 상속하고,<br />
+<code>.media_type</code> 속성을 설정한 뒤 <code>.parse(self, stream, media_type, parser_context)</code> 메서드를 구현하면 된다.</p>
+<p>이 메서드는 <code>request.data</code>를 채우는 데 사용될 데이터를 반환해야 한다.</p>
+<p><code>.parse()</code> 메서드에 전달되는 인자는 다음과 같다.</p>
 <h3 id="stream"><a class="toclink" href="#stream">stream</a></h3>
-<p>A stream-like object representing the body of the request.</p>
+<p>요청 본문(body)을 나타내는 stream-like 객체.</p>
 <h3 id="media_type"><a class="toclink" href="#media_type">media_type</a></h3>
-<p>Optional.  If provided, this is the media type of the incoming request content.</p>
-<p>Depending on the request's <code>Content-Type:</code> header, this may be more specific than the renderer's <code>media_type</code> attribute, and may include media type parameters.  For example <code>"text/plain; charset=utf-8"</code>.</p>
+<p>선택 사항.<br />
+요청 콘텐츠의 미디어 타입이다.</p>
+<p>요청의 <code>Content-Type</code> 헤더에 따라 파서의 <code>media_type</code>보다 더 구체적일 수 있으며,<br />
+예를 들어 <code>"text/plain; charset=utf-8"</code> 같은 파라미터를 포함할 수도 있다.</p>
 <h3 id="parser_context"><a class="toclink" href="#parser_context">parser_context</a></h3>
-<p>Optional.  If supplied, this argument will be a dictionary containing any additional context that may be required to parse the request content.</p>
-<p>By default this will include the following keys: <code>view</code>, <code>request</code>, <code>args</code>, <code>kwargs</code>.</p>
-<h2 id="example"><a class="toclink" href="#example">Example</a></h2>
-<p>The following is an example plaintext parser that will populate the <code>request.data</code> property with a string representing the body of the request.</p>
+<p>선택 사항.<br />
+요청 콘텐츠를 파싱하는 데 필요한 추가 컨텍스트 정보를 담은 딕셔너리다.</p>
+<p>기본적으로 다음 키들을 포함한다: <code>view</code>, <code>request</code>, <code>args</code>, <code>kwargs</code>.</p>
+<h2 id="_6"><a class="toclink" href="#_6">예시</a></h2>
+<p>아래는 요청 본문을 문자열로 읽어 <code>request.data</code>에 그대로 담는 <strong>플레인 텍스트 파서</strong> 예시이다.</p>
 <pre><code>class PlainTextParser(BaseParser):
     """
-    Plain text parser.
+    플레인 텍스트 파서
     """
     media_type = 'text/plain'
 
     def parse(self, stream, media_type=None, parser_context=None):
         """
-        Simply return a string representing the body of the request.
+        요청 본문을 문자열로 반환
         """
         return stream.read()
 </code></pre>
 <hr />
-<h1 id="third-party-packages"><a class="toclink" href="#third-party-packages">Third party packages</a></h1>
-<p>The following third party packages are also available.</p>
+<h1 id="_7"><a class="toclink" href="#_7">서드파티 패키지</a></h1>
+<p>다음과 같은 서드파티 패키지들도 사용할 수 있다.</p>
 <h2 id="yaml"><a class="toclink" href="#yaml">YAML</a></h2>
-<p><a href="https://jpadilla.github.io/django-rest-framework-yaml/">REST framework YAML</a> provides <a href="http://www.yaml.org/">YAML</a> parsing and rendering support. It was previously included directly in the REST framework package, and is now instead supported as a third-party package.</p>
-<h4 id="installation-configuration"><a class="toclink" href="#installation-configuration">Installation &amp; configuration</a></h4>
-<p>Install using pip.</p>
-<pre><code>$ pip install djangorestframework-yaml
+<p><a href="https://jpadilla.github.io/django-rest-framework-yaml/">REST framework YAML</a>은 <a href="http://www.yaml.org/">YAML</a> 파싱 및 렌더링을 지원한다.<br />
+과거에는 REST framework에 포함되어 있었지만, 현재는 서드파티 패키지로 분리되었다.</p>
+<h4 id="_8"><a class="toclink" href="#_8">설치 및 설정</a></h4>
+<p>pip로 설치한다.</p>
+<pre><code>pip install djangorestframework-yaml
 </code></pre>
-<p>Modify your REST framework settings.</p>
+<p>REST framework 설정을 수정한다.</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework_yaml.parsers.YAMLParser',
@@ -652,12 +668,13 @@ urlpatterns = [
 }
 </code></pre>
 <h2 id="xml"><a class="toclink" href="#xml">XML</a></h2>
-<p><a href="https://jpadilla.github.io/django-rest-framework-xml/">REST Framework XML</a> provides a simple informal XML format. It was previously included directly in the REST framework package, and is now instead supported as a third-party package.</p>
-<h4 id="installation-configuration_1"><a class="toclink" href="#installation-configuration_1">Installation &amp; configuration</a></h4>
-<p>Install using pip.</p>
-<pre><code>$ pip install djangorestframework-xml
+<p><a href="https://jpadilla.github.io/django-rest-framework-xml/">REST Framework XML</a>은 간단한 비공식 XML 포맷을 제공한다.<br />
+이 역시 과거에는 REST framework에 포함되어 있었으나, 현재는 서드파티 패키지로 제공된다.</p>
+<h4 id="_9"><a class="toclink" href="#_9">설치 및 설정</a></h4>
+<p>pip로 설치한다.</p>
+<pre><code>pip install djangorestframework-xml
 </code></pre>
-<p>Modify your REST framework settings.</p>
+<p>REST framework 설정을 수정한다.</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework_xml.parsers.XMLParser',
@@ -668,9 +685,14 @@ urlpatterns = [
 }
 </code></pre>
 <h2 id="messagepack"><a class="toclink" href="#messagepack">MessagePack</a></h2>
-<p><a href="https://github.com/juanriaza/django-rest-framework-msgpack">MessagePack</a> is a fast, efficient binary serialization format.  <a href="https://github.com/juanriaza">Juan Riaza</a> maintains the <a href="https://github.com/juanriaza/django-rest-framework-msgpack">djangorestframework-msgpack</a> package which provides MessagePack renderer and parser support for REST framework.</p>
+<p><a href="https://github.com/juanriaza/django-rest-framework-msgpack">MessagePack</a>은 빠르고 효율적인 바이너리 직렬화 포맷이다.<br />
+<a href="https://github.com/juanriaza">Juan Riaza</a>가 관리하는 <a href="https://github.com/juanriaza/django-rest-framework-msgpack">djangorestframework-msgpack</a> 패키지를 통해<br />
+REST framework에서 MessagePack 파서와 렌더러를 사용할 수 있다.</p>
 <h2 id="camelcase-json"><a class="toclink" href="#camelcase-json">CamelCase JSON</a></h2>
-<p><a href="https://github.com/vbabiy/djangorestframework-camel-case">djangorestframework-camel-case</a> provides camel case JSON renderers and parsers for REST framework.  This allows serializers to use Python-style underscored field names, but be exposed in the API as Javascript-style camel case field names.  It is maintained by <a href="https://github.com/vbabiy">Vitaly Babiy</a>.</p>
+<p><a href="https://github.com/vbabiy/djangorestframework-camel-case">djangorestframework-camel-case</a>는 REST framework용 camelCase JSON 파서 및 렌더러를 제공한다.<br />
+이를 통해 serializer에서는 Python 스타일의 snake_case 필드명을 사용하면서,<br />
+API 응답에서는 JavaScript 스타일의 camelCase 필드명을 노출할 수 있다.<br />
+이 패키지는 <a href="https://github.com/vbabiy">Vitaly Babiy</a>가 관리한다.</p>
             
 
           </div> <!--/span-->
