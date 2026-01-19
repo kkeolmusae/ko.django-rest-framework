@@ -5,15 +5,16 @@ source:
 
 # Metadata
 
-> [The `OPTIONS`] method allows a client to determine the options and/or requirements associated with a resource, or the capabilities of a server, without implying a resource action or initiating a resource retrieval.
+> [`OPTIONS`] 메서드는 리소스에 대한 동작을 암시하거나 리소스 조회를 시작하지 않고도,  
+> 클라이언트가 해당 리소스와 연관된 옵션이나 요구사항, 또는 서버의 기능을 파악할 수 있게 해줍니다.
 >
 > &mdash; [RFC7231, Section 4.3.7.][cite]
 
-REST framework includes a configurable mechanism for determining how your API should respond to `OPTIONS` requests. This allows you to return API schema or other resource information.
+REST framework는 `OPTIONS` 요청에 대해 API가 어떻게 응답할지를 결정할 수 있는 **구성 가능한 메커니즘**을 제공합니다. 이를 통해 API 스키마나 기타 리소스 정보를 반환할 수 있습니다.
 
-There are not currently any widely adopted conventions for exactly what style of response should be returned for HTTP `OPTIONS` requests, so we provide an ad-hoc style that returns some useful information.
+현재 HTTP `OPTIONS` 요청에 대해 **어떤 형태의 응답을 반환해야 하는지에 대한 널리 채택된 표준은 존재하지 않기 때문에**, REST framework에서는 유용한 정보를 반환하는 **임의(ad-hoc) 스타일**을 제공합니다.
 
-Here's an example response that demonstrates the information that is returned by default.
+다음은 기본적으로 반환되는 정보의 예시 응답입니다.
 
     HTTP 200 OK
     Allow: GET, POST, HEAD, OPTIONS
@@ -46,13 +47,13 @@ Here's an example response that demonstrates the information that is returned by
 
 ## Setting the metadata scheme
 
-You can set the metadata class globally using the `'DEFAULT_METADATA_CLASS'` settings key:
+메타데이터 클래스는 `'DEFAULT_METADATA_CLASS'` 설정 키를 사용해 전역으로 지정할 수 있습니다.
 
     REST_FRAMEWORK = {
         'DEFAULT_METADATA_CLASS': 'rest_framework.metadata.SimpleMetadata'
     }
 
-Or you can set the metadata class individually for a view:
+또는 개별 뷰 단위로 메타데이터 클래스를 지정할 수도 있습니다.
 
     class APIRoot(APIView):
         metadata_class = APIRootMetadata
@@ -62,13 +63,14 @@ Or you can set the metadata class individually for a view:
                 ...
             })
 
-The REST framework package only includes a single metadata class implementation, named `SimpleMetadata`. If you want to use an alternative style you'll need to implement a custom metadata class.
+REST framework 패키지에는 `SimpleMetadata` 라는 **단 하나의 메타데이터 클래스 구현**만 포함되어 있습니다.  
+다른 스타일을 사용하고 싶다면, **커스텀 메타데이터 클래스**를 직접 구현해야 합니다.
 
 ## Creating schema endpoints
 
-If you have specific requirements for creating schema endpoints that are accessed with regular `GET` requests, you might consider reusing the metadata API for doing so.
+일반적인 `GET` 요청으로 접근 가능한 **스키마 엔드포인트**를 만들고 싶다면, 메타데이터 API를 재사용하는 방법을 고려할 수 있습니다.
 
-For example, the following additional route could be used on a viewset to provide a linkable schema endpoint.
+예를 들어, 다음과 같은 추가 라우트를 viewset에 정의하여 링크 가능한 스키마 엔드포인트를 제공할 수 있습니다.
 
     @action(methods=['GET'], detail=False)
     def api_schema(self, request):
@@ -76,24 +78,28 @@ For example, the following additional route could be used on a viewset to provid
         data = meta.determine_metadata(request, self)
         return Response(data)
 
-There are a couple of reasons that you might choose to take this approach, including that `OPTIONS` responses [are not cacheable][no-options].
+이 방식을 선택할 수 있는 이유는 여러 가지가 있는데, 그중 하나는 `OPTIONS` 응답이 [캐시되지 않기 때문][no-options]입니다.
 
 ---
 
 # Custom metadata classes
 
-If you want to provide a custom metadata class you should override `BaseMetadata` and implement the `determine_metadata(self, request, view)` method.
+커스텀 메타데이터 클래스를 제공하고 싶다면 `BaseMetadata` 를 상속하고  
+`determine_metadata(self, request, view)` 메서드를 구현해야 합니다.
 
-Useful things that you might want to do could include returning schema information, using a format such as [JSON schema][json-schema], or returning debug information to admin users.
+이를 통해 다음과 같은 작업을 할 수 있습니다.
+
+- [JSON Schema][json-schema] 와 같은 포맷으로 스키마 정보를 반환
+- 관리자(admin) 사용자에게만 디버그 정보 반환
 
 ## Example
 
-The following class could be used to limit the information that is returned to `OPTIONS` requests.
+다음 클래스는 `OPTIONS` 요청에 대해 반환되는 정보를 제한하는 예시입니다.
 
     class MinimalMetadata(BaseMetadata):
         """
-        Don't include field and other information for `OPTIONS` requests.
-        Just return the name and description.
+        `OPTIONS` 요청에 대해 필드 및 기타 정보는 포함하지 않고,
+        name과 description만 반환한다.
         """
         def determine_metadata(self, request, view):
             return {
@@ -101,7 +107,7 @@ The following class could be used to limit the information that is returned to `
                 'description': view.get_view_description()
             }
 
-Then configure your settings to use this custom class:
+이후 설정에서 해당 커스텀 클래스를 사용하도록 구성합니다.
 
     REST_FRAMEWORK = {
         'DEFAULT_METADATA_CLASS': 'myproject.apps.core.MinimalMetadata'
@@ -109,14 +115,15 @@ Then configure your settings to use this custom class:
 
 # Third party packages
 
-The following third party packages provide additional metadata implementations.
+다음은 추가적인 메타데이터 구현을 제공하는 서드파티 패키지들입니다.
 
 ## DRF-schema-adapter
 
-[drf-schema-adapter][drf-schema-adapter] is a set of tools that makes it easier to provide schema information to frontend frameworks and libraries. It provides a metadata mixin as well as 2 metadata classes and several adapters suitable to generate [json-schema][json-schema] as well as schema information readable by various libraries.
+[drf-schema-adapter][drf-schema-adapter] 는 프론트엔드 프레임워크나 라이브러리에 스키마 정보를 제공하는 작업을 쉽게 만들어주는 도구 모음입니다.  
+메타데이터 믹인(mixin), 두 개의 메타데이터 클래스, 그리고 [json-schema][json-schema] 및 다양한 라이브러리에서 읽을 수 있는 스키마 정보를 생성하기 위한 여러 어댑터를 제공합니다.
 
-You can also write your own adapter to work with your specific frontend.
-If you wish to do so, it also provides an exporter that can export those schema information to json files.
+또한 특정 프론트엔드에 맞게 **자체 어댑터를 작성**할 수도 있으며,  
+스키마 정보를 JSON 파일로 내보낼 수 있는 exporter도 제공합니다.
 
 [cite]: https://tools.ietf.org/html/rfc7231#section-4.3.7
 [no-options]: https://www.mnot.net/blog/2012/10/29/NO_OPTIONS

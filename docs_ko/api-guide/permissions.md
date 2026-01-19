@@ -3,48 +3,49 @@ source:
     - permissions.py
 ---
 
-# Permissions
+# 권한 (Permissions)
 
-> Authentication or identification by itself is not usually sufficient to gain access to information or code.  For that, the entity requesting access must have authorization.
+> 인증(authentication)이나 식별(identification)만으로는 일반적으로 정보나 코드에 접근하기에 충분하지 않습니다. 이를 위해서는 접근을 요청하는 주체가 권한 부여(authorization)를 받아야 합니다.
 >
 > &mdash; [Apple Developer Documentation][cite]
 
-Together with [authentication] and [throttling], permissions determine whether a request should be granted or denied access.
+[authentication] 및 [throttling]과 함께, permissions는 요청에 대해 접근을 허용할지 거부할지를 결정합니다.
 
-Permission checks are always run at the very start of the view, before any other code is allowed to proceed.  Permission checks will typically use the authentication information in the `request.user` and `request.auth` properties to determine if the incoming request should be permitted.
+권한 체크는 항상 뷰의 가장 시작 지점에서 실행되며, 다른 어떤 코드도 진행되기 전에 수행됩니다. 권한 체크는 일반적으로 `request.user` 및 `request.auth` 속성에 있는 인증 정보를 사용하여 들어오는 요청을 허용할지 판단합니다.
 
-Permissions are used to grant or deny access for different classes of users to different parts of the API.
+Permissions는 서로 다른 유형의 사용자에게 API의 서로 다른 부분에 대한 접근을 허용하거나 거부하기 위해 사용됩니다.
 
-The simplest style of permission would be to allow access to any authenticated user, and deny access to any unauthenticated user. This corresponds to the `IsAuthenticated` class in REST framework.
+가장 단순한 permission 스타일은 인증된 사용자에게는 접근을 허용하고, 인증되지 않은 사용자에게는 접근을 거부하는 것입니다. 이는 REST framework의 `IsAuthenticated` 클래스에 해당합니다.
 
-A slightly less strict style of permission would be to allow full access to authenticated users, but allow read-only access to unauthenticated users. This corresponds to the `IsAuthenticatedOrReadOnly` class in REST framework.
+조금 덜 엄격한 스타일로는, 인증된 사용자에게는 전체 접근을 허용하되 인증되지 않은 사용자에게는 읽기 전용 접근만 허용하는 방식이 있습니다. 이는 REST framework의 `IsAuthenticatedOrReadOnly` 클래스에 해당합니다.
 
-## How permissions are determined
+## 권한이 결정되는 방식 (How permissions are determined)
 
-Permissions in REST framework are always defined as a list of permission classes.
+REST framework의 permission은 항상 permission 클래스들의 리스트로 정의됩니다.
 
-Before running the main body of the view each permission in the list is checked.
-If any permission check fails, an `exceptions.PermissionDenied` or `exceptions.NotAuthenticated` exception will be raised, and the main body of the view will not run.
+뷰의 본문이 실행되기 전에 리스트의 각 permission이 검사됩니다.
+어떤 permission 검사라도 실패하면 `exceptions.PermissionDenied` 또는 `exceptions.NotAuthenticated` 예외가 발생하고, 뷰 본문은 실행되지 않습니다.
 
-When the permission checks fail, either a "403 Forbidden" or a "401 Unauthorized" response will be returned, according to the following rules:
+권한 체크가 실패했을 때는 다음 규칙에 따라 "403 Forbidden" 또는 "401 Unauthorized" 응답이 반환됩니다.
 
-* The request was successfully authenticated, but permission was denied. *&mdash; An HTTP 403 Forbidden response will be returned.*
-* The request was not successfully authenticated, and the highest priority authentication class *does not* use `WWW-Authenticate` headers. *&mdash; An HTTP 403 Forbidden response will be returned.*
-* The request was not successfully authenticated, and the highest priority authentication class *does* use `WWW-Authenticate` headers. *&mdash; An HTTP 401 Unauthorized response, with an appropriate `WWW-Authenticate` header will be returned.*
+* 요청은 성공적으로 인증되었지만, 권한이 거부된 경우. *&mdash; HTTP 403 Forbidden 응답이 반환됩니다.*
+* 요청이 성공적으로 인증되지 않았고, 우선순위가 가장 높은 인증 클래스가 `WWW-Authenticate` 헤더를 **사용하지 않는** 경우. *&mdash; HTTP 403 Forbidden 응답이 반환됩니다.*
+* 요청이 성공적으로 인증되지 않았고, 우선순위가 가장 높은 인증 클래스가 `WWW-Authenticate` 헤더를 **사용하는** 경우. *&mdash; 적절한 `WWW-Authenticate` 헤더가 포함된 HTTP 401 Unauthorized 응답이 반환됩니다.*
 
-## Object level permissions
+## 객체 수준 권한 (Object level permissions)
 
-REST framework permissions also support object-level permissioning.  Object level permissions are used to determine if a user should be allowed to act on a particular object, which will typically be a model instance.
+REST framework permission은 객체 수준(object-level) 권한도 지원합니다. 객체 수준 권한은 사용자가 특정 객체(보통 모델 인스턴스)에 대해 동작할 수 있는지 여부를 결정하는 데 사용됩니다.
 
-Object level permissions are run by REST framework's generic views when `.get_object()` is called.
-As with view level permissions, an `exceptions.PermissionDenied` exception will be raised if the user is not allowed to act on the given object.
+객체 수준 권한은 `.get_object()`가 호출될 때 REST framework의 generic view에 의해 실행됩니다.
+뷰 수준 권한과 마찬가지로, 사용자가 주어진 객체에 대해 동작할 수 없다면 `exceptions.PermissionDenied` 예외가 발생합니다.
 
-If you're writing your own views and want to enforce object level permissions,
-or if you override the `get_object` method on a generic view, then you'll need to explicitly call the `.check_object_permissions(request, obj)` method on the view at the point at which you've retrieved the object.
+직접 뷰를 작성하면서 객체 수준 권한을 강제하고 싶거나,
+generic view의 `get_object` 메서드를 오버라이드하는 경우에는,
+객체를 가져온 시점에 뷰에서 `.check_object_permissions(request, obj)`를 명시적으로 호출해야 합니다.
 
-This will either raise a `PermissionDenied` or `NotAuthenticated` exception, or simply return if the view has the appropriate permissions.
+이 호출은 `PermissionDenied` 또는 `NotAuthenticated` 예외를 발생시키거나, 권한이 적절하다면 아무 일 없이 반환합니다.
 
-For example:
+예:
 
     def get_object(self):
         obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
@@ -53,28 +54,26 @@ For example:
 
 ---
 
-**Note**: With the exception of `DjangoObjectPermissions`, the provided
-permission classes in `rest_framework.permissions` **do not** implement the
-methods necessary to check object permissions.
+**참고**: `DjangoObjectPermissions`를 제외하면,
+`rest_framework.permissions`에 제공되는 permission 클래스들은 객체 권한을 체크하는 데 필요한 메서드들을 **구현하지 않습니다**.
 
-If you wish to use the provided permission classes in order to check object
-permissions, **you must** subclass them and implement the
-`has_object_permission()` method described in the [_Custom
-permissions_](#custom-permissions) section (below).
+제공되는 permission 클래스를 사용해서 객체 권한을 체크하려면,
+아래 [*Custom permissions*](#custom-permissions) 섹션에서 설명하는
+`has_object_permission()` 메서드를 구현하도록 해당 클래스를 서브클래싱해야 **합니다**.
 
 ---
 
-#### Limitations of object level permissions
+#### 객체 수준 권한의 한계 (Limitations of object level permissions)
 
-For performance reasons the generic views will not automatically apply object level permissions to each instance in a queryset when returning a list of objects.
+성능상의 이유로 generic view는 객체 목록을 반환할 때 queryset의 각 인스턴스에 대해 객체 수준 권한을 자동으로 적용하지 않습니다.
 
-Often when you're using object level permissions you'll also want to [filter the queryset][filtering] appropriately, to ensure that users only have visibility onto instances that they are permitted to view.
+객체 수준 권한을 사용하는 경우, 종종 사용자가 볼 수 있어야 하는 인스턴스만 노출되도록 queryset을 적절히 [필터링][filtering]하는 것도 함께 필요합니다.
 
-Because the `get_object()` method is not called, object level permissions from the `has_object_permission()` method **are not applied** when creating objects. In order to restrict object creation you need to implement the permission check either in your Serializer class or override the `perform_create()` method of your ViewSet class.
+또한 `get_object()` 메서드가 호출되지 않기 때문에, 객체 생성 시에는 `has_object_permission()` 메서드의 객체 수준 권한이 **적용되지 않습니다**. 객체 생성을 제한하려면 Serializer 클래스에서 권한 체크를 구현하거나, ViewSet의 `perform_create()` 메서드를 오버라이드하여 구현해야 합니다.
 
-## Setting the permission policy
+## 권한 정책 설정 (Setting the permission policy)
 
-The default permission policy may be set globally, using the `DEFAULT_PERMISSION_CLASSES` setting.  For example.
+기본 permission 정책은 `DEFAULT_PERMISSION_CLASSES` 설정으로 전역 지정할 수 있습니다. 예:
 
     REST_FRAMEWORK = {
         'DEFAULT_PERMISSION_CLASSES': [
@@ -82,14 +81,13 @@ The default permission policy may be set globally, using the `DEFAULT_PERMISSION
         ]
     }
 
-If not specified, this setting defaults to allowing unrestricted access:
+이 설정을 지정하지 않으면, 기본값은 제한 없는 접근을 허용합니다.
 
     'DEFAULT_PERMISSION_CLASSES': [
        'rest_framework.permissions.AllowAny',
     ]
 
-You can also set the authentication policy on a per-view, or per-viewset basis,
-using the `APIView` class-based views.
+또한 `APIView` 기반 클래스 기반 뷰를 사용해 뷰(또는 뷰셋) 단위로 permission 정책을 설정할 수도 있습니다.
 
     from rest_framework.permissions import IsAuthenticated
     from rest_framework.response import Response
@@ -104,7 +102,7 @@ using the `APIView` class-based views.
             }
             return Response(content)
 
-Or, if you're using the `@api_view` decorator with function based views.
+또는 함수 기반 뷰에서 `@api_view` 데코레이터를 사용하는 경우:
 
     from rest_framework.decorators import api_view, permission_classes
     from rest_framework.permissions import IsAuthenticated
@@ -118,9 +116,9 @@ Or, if you're using the `@api_view` decorator with function based views.
         }
         return Response(content)
 
-__Note:__ when you set new permission classes via the class attribute or decorators you're telling the view to ignore the default list set in the __settings.py__ file.
+**참고:** 클래스 속성이나 데코레이터로 새 permission 클래스를 설정하면, 뷰는 __settings.py__에 설정된 기본 리스트를 무시하게 됩니다.
 
-Provided they inherit from `rest_framework.permissions.BasePermission`, permissions can be composed using standard Python bitwise operators. For example, `IsAuthenticatedOrReadOnly` could be written:
+`rest_framework.permissions.BasePermission`을 상속하는 한, permissions는 표준 Python 비트 연산자를 사용해 조합할 수 있습니다. 예를 들어, `IsAuthenticatedOrReadOnly`는 다음처럼 작성할 수도 있습니다:
 
     from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
     from rest_framework.response import Response
@@ -139,95 +137,95 @@ Provided they inherit from `rest_framework.permissions.BasePermission`, permissi
             }
             return Response(content)
 
-__Note:__ it supports & (and), | (or) and ~ (not).
+**참고:** `&`(and), `|`(or), `~`(not)을 지원합니다.
 
 ---
 
-# API Reference
+# API 레퍼런스 (API Reference)
 
 ## AllowAny
 
-The `AllowAny` permission class will allow unrestricted access, **regardless of if the request was authenticated or unauthenticated**.
+`AllowAny` permission 클래스는 요청이 인증되었는지 여부와 **상관없이** 제한 없는 접근을 허용합니다.
 
-This permission is not strictly required, since you can achieve the same result by using an empty list or tuple for the permissions setting, but you may find it useful to specify this class because it makes the intention explicit.
+이 permission은 반드시 필요하진 않습니다. permissions 설정을 빈 리스트나 튜플로 두는 것만으로도 같은 결과를 얻을 수 있습니다. 하지만 의도를 명확히 드러내기 위해 이 클래스를 지정하는 것이 유용할 수 있습니다.
 
 ## IsAuthenticated
 
-The `IsAuthenticated` permission class will deny permission to any unauthenticated user, and allow permission otherwise.
+`IsAuthenticated` permission 클래스는 인증되지 않은 사용자에 대해서는 접근을 거부하고, 그 외에는 접근을 허용합니다.
 
-This permission is suitable if you want your API to only be accessible to registered users.
+API를 등록된 사용자만 접근 가능하도록 만들고 싶을 때 적합합니다.
 
 ## IsAdminUser
 
-The `IsAdminUser` permission class will deny permission to any user, unless `user.is_staff` is `True` in which case permission will be allowed.
+`IsAdminUser` permission 클래스는 `user.is_staff`가 `True`인 경우에만 접근을 허용하고, 그렇지 않으면 접근을 거부합니다.
 
-This permission is suitable if you want your API to only be accessible to a subset of trusted administrators.
+신뢰할 수 있는 관리자 일부에게만 API 접근을 허용하려는 경우에 적합합니다.
 
 ## IsAuthenticatedOrReadOnly
 
-The `IsAuthenticatedOrReadOnly` will allow authenticated users to perform any request.  Requests for unauthenticated users will only be permitted if the request method is one of the "safe" methods; `GET`, `HEAD` or `OPTIONS`.
+`IsAuthenticatedOrReadOnly`는 인증된 사용자가 어떤 요청이든 수행할 수 있도록 허용합니다. 인증되지 않은 사용자는 요청 메서드가 “safe” 메서드(`GET`, `HEAD`, `OPTIONS`) 중 하나인 경우에만 허용됩니다.
 
-This permission is suitable if you want to your API to allow read permissions to anonymous users, and only allow write permissions to authenticated users.
+익명 사용자에게는 읽기 권한만 허용하고, 쓰기 권한은 인증된 사용자에게만 허용하려는 경우에 적합합니다.
 
 ## DjangoModelPermissions
 
-This permission class ties into Django's standard `django.contrib.auth` [model permissions][contribauth].  This permission must only be applied to views that have a `.queryset` property or `get_queryset()` method. Authorization will only be granted if the user *is authenticated* and has the *relevant model permissions* assigned. The appropriate model is determined by checking `get_queryset().model` or `queryset.model`.
+이 permission 클래스는 Django의 표준 `django.contrib.auth` [모델 권한][contribauth]과 연동됩니다. 이 permission은 `.queryset` 속성 또는 `get_queryset()` 메서드를 가진 뷰에만 적용해야 합니다. 사용자가 *인증되어 있고* 해당 모델에 대해 *관련 모델 권한*이 부여된 경우에만 접근이 허용됩니다. 적절한 모델은 `get_queryset().model` 또는 `queryset.model`을 확인하여 결정됩니다.
 
-* `POST` requests require the user to have the `add` permission on the model.
-* `PUT` and `PATCH` requests require the user to have the `change` permission on the model.
-* `DELETE` requests require the user to have the `delete` permission on the model.
+* `POST` 요청은 모델에 대한 `add` 권한이 필요합니다.
+* `PUT` 및 `PATCH` 요청은 모델에 대한 `change` 권한이 필요합니다.
+* `DELETE` 요청은 모델에 대한 `delete` 권한이 필요합니다.
 
-The default behavior can also be overridden to support custom model permissions.  For example, you might want to include a `view` model permission for `GET` requests.
+기본 동작은 커스텀 모델 권한을 지원하도록 오버라이드할 수도 있습니다. 예를 들어 `GET` 요청에 대해 `view` 모델 권한을 포함하고 싶을 수 있습니다.
 
-To use custom model permissions, override `DjangoModelPermissions` and set the `.perms_map` property.  Refer to the source code for details.
+커스텀 모델 권한을 사용하려면 `DjangoModelPermissions`를 오버라이드하고 `.perms_map` 속성을 설정하세요. 자세한 내용은 소스 코드를 참고하세요.
 
 ## DjangoModelPermissionsOrAnonReadOnly
 
-Similar to `DjangoModelPermissions`, but also allows unauthenticated users to have read-only access to the API.
+`DjangoModelPermissions`와 유사하지만, 인증되지 않은 사용자에게도 읽기 전용 접근을 허용합니다.
 
-## DjangoObjectPermissions
+## DjangoObjectPermissions
 
-This permission class ties into Django's standard [object permissions framework][objectpermissions] that allows per-object permissions on models.  In order to use this permission class, you'll also need to add a permission backend that supports object-level permissions, such as [django-guardian][guardian].
+이 permission 클래스는 모델에 대해 객체별(per-object) 권한을 허용하는 Django의 표준 [객체 권한 프레임워크][objectpermissions]와 연동됩니다. 이를 사용하려면 [django-guardian][guardian] 같은 객체 수준 권한을 지원하는 permission backend를 추가로 설정해야 합니다.
 
-As with `DjangoModelPermissions`, this permission must only be applied to views that have a `.queryset` property or `.get_queryset()` method. Authorization will only be granted if the user *is authenticated* and has the *relevant per-object permissions* and *relevant model permissions* assigned.
+`DjangoModelPermissions`와 마찬가지로, 이 permission도 `.queryset` 속성 또는 `.get_queryset()` 메서드가 있는 뷰에만 적용해야 합니다. 사용자가 *인증되어 있고* *관련 객체별 권한*과 *관련 모델 권한*이 부여된 경우에만 접근이 허용됩니다.
 
-* `POST` requests require the user to have the `add` permission on the model instance.
-* `PUT` and `PATCH` requests require the user to have the `change` permission on the model instance.
-* `DELETE` requests require the user to have the `delete` permission on the model instance.
+* `POST` 요청은 해당 모델 인스턴스에 대한 `add` 권한이 필요합니다.
+* `PUT` 및 `PATCH` 요청은 해당 모델 인스턴스에 대한 `change` 권한이 필요합니다.
+* `DELETE` 요청은 해당 모델 인스턴스에 대한 `delete` 권한이 필요합니다.
 
-Note that `DjangoObjectPermissions` **does not** require the `django-guardian` package, and should support other object-level backends equally well.
+`DjangoObjectPermissions`는 `django-guardian` 패키지를 **필수로 요구하지 않으며**, 다른 객체 수준 백엔드도 동일하게 지원해야 합니다.
 
-As with `DjangoModelPermissions` you can use custom model permissions by overriding `DjangoObjectPermissions` and setting the `.perms_map` property.  Refer to the source code for details.
-
----
-
-**Note**: If you need object level `view` permissions for `GET`, `HEAD` and `OPTIONS` requests and are using django-guardian for your object-level permissions backend, you'll want to consider using the `DjangoObjectPermissionsFilter` class provided by the [`djangorestframework-guardian` package][django-rest-framework-guardian]. It ensures that list endpoints only return results including objects for which the user has appropriate view permissions.
+`DjangoModelPermissions`와 마찬가지로, `DjangoObjectPermissions`를 오버라이드하고 `.perms_map` 속성을 설정하여 커스텀 모델 권한을 사용할 수 있습니다. 자세한 내용은 소스 코드를 참고하세요.
 
 ---
 
-# Custom permissions
+**참고**: `GET`, `HEAD`, `OPTIONS` 요청에 대해 객체 수준 `view` 권한이 필요하고, 객체 수준 권한 백엔드로 django-guardian을 사용 중이라면 [`djangorestframework-guardian` 패키지][django-rest-framework-guardian]가 제공하는 `DjangoObjectPermissionsFilter` 클래스를 고려해보세요. 이 클래스는 list 엔드포인트가 “사용자가 적절한 view 권한을 가진 객체”만 포함해 반환하도록 보장합니다.
 
-To implement a custom permission, override `BasePermission` and implement either, or both, of the following methods:
+---
+
+# 커스텀 권한 (Custom permissions)
+
+커스텀 permission을 구현하려면 `BasePermission`을 오버라이드하고 다음 메서드 중 하나 또는 둘 다를 구현합니다.
 
 * `.has_permission(self, request, view)`
 * `.has_object_permission(self, request, view, obj)`
 
-The methods should return `True` if the request should be granted access, and `False` otherwise.
+이 메서드들은 요청에 접근을 허용해야 하면 `True`, 그렇지 않으면 `False`를 반환해야 합니다.
 
-If you need to test if a request is a read operation or a write operation, you should check the request method against the constant `SAFE_METHODS`, which is a tuple containing `'GET'`, `'OPTIONS'` and `'HEAD'`.  For example:
+요청이 읽기인지 쓰기인지 테스트해야 한다면, 요청 메서드를 `SAFE_METHODS` 상수와 비교하세요. `SAFE_METHODS`는 `'GET'`, `'OPTIONS'`, `'HEAD'`를 포함한 튜플입니다. 예:
 
     if request.method in permissions.SAFE_METHODS:
-        # Check permissions for read-only request
+        # 읽기 전용 요청에 대한 권한 체크
     else:
-        # Check permissions for write request
+        # 쓰기 요청에 대한 권한 체크
 
 ---
 
-**Note**: The instance-level `has_object_permission` method will only be called if the view-level `has_permission` checks have already passed. Also note that in order for the instance-level checks to run, the view code should explicitly call `.check_object_permissions(request, obj)`. If you are using the generic views then this will be handled for you by default. (Function-based views will need to check object permissions explicitly, raising `PermissionDenied` on failure.)
+**참고**: 인스턴스 수준의 `has_object_permission` 메서드는 뷰 수준의 `has_permission` 체크가 이미 통과한 경우에만 호출됩니다. 또한 인스턴스 수준 체크가 실행되려면, 뷰 코드에서 명시적으로 `.check_object_permissions(request, obj)`를 호출해야 합니다. generic view를 사용한다면 기본적으로 처리됩니다. (함수 기반 뷰는 객체 권한을 명시적으로 체크하고, 실패 시 `PermissionDenied`를 발생시켜야 합니다.)
 
 ---
 
-Custom permissions will raise a `PermissionDenied` exception if the test fails. To change the error message associated with the exception, implement a `message` attribute directly on your custom permission. Otherwise the `default_detail` attribute from `PermissionDenied` will be used. Similarly, to change the code identifier associated with the exception, implement a `code` attribute directly on your custom permission - otherwise the `default_code` attribute from `PermissionDenied` will be used.
+커스텀 permission은 테스트가 실패하면 `PermissionDenied` 예외를 발생시킵니다. 예외에 연결되는 에러 메시지를 변경하려면, 커스텀 permission에 `message` 속성을 직접 구현하세요. 그렇지 않으면 `PermissionDenied`의 `default_detail` 속성이 사용됩니다. 마찬가지로 코드 식별자를 변경하려면 `code` 속성을 직접 구현하세요. 그렇지 않으면 `PermissionDenied`의 `default_code`가 사용됩니다.
 
     from rest_framework import permissions
 
@@ -239,13 +237,13 @@ Custom permissions will raise a `PermissionDenied` exception if the test fails. 
 
 ## Examples
 
-The following is an example of a permission class that checks the incoming request's IP address against a blocklist, and denies the request if the IP has been blocked.
+다음은 들어오는 요청의 IP 주소를 차단 목록(blocklist)과 비교하여, 차단된 IP라면 요청을 거부하는 permission 클래스 예시입니다.
 
     from rest_framework import permissions
 
     class BlocklistPermission(permissions.BasePermission):
         """
-        Global permission check for blocked IPs.
+        차단된 IP에 대한 전역 permission 체크.
         """
 
         def has_permission(self, request, view):
@@ -253,36 +251,36 @@ The following is an example of a permission class that checks the incoming reque
             blocked = Blocklist.objects.filter(ip_addr=ip_addr).exists()
             return not blocked
 
-As well as global permissions, that are run against all incoming requests, you can also create object-level permissions, that are only run against operations that affect a particular object instance.  For example:
+전역 권한(모든 요청에 대해 실행되는 권한) 외에도, 특정 객체 인스턴스에 영향을 주는 동작에만 적용되는 객체 수준 권한도 만들 수 있습니다. 예:
 
     class IsOwnerOrReadOnly(permissions.BasePermission):
         """
-        Object-level permission to only allow owners of an object to edit it.
-        Assumes the model instance has an `owner` attribute.
+        객체의 소유자만 수정할 수 있도록 하는 객체 수준 권한.
+        모델 인스턴스에 `owner` 속성이 있다고 가정.
         """
 
         def has_object_permission(self, request, view, obj):
-            # Read permissions are allowed to any request,
-            # so we'll always allow GET, HEAD or OPTIONS requests.
+            # 읽기 권한은 모든 요청에 대해 허용하므로
+            # GET, HEAD, OPTIONS 요청은 항상 허용합니다.
             if request.method in permissions.SAFE_METHODS:
                 return True
 
-            # Instance must have an attribute named `owner`.
+            # 인스턴스에 `owner`라는 속성이 있어야 합니다.
             return obj.owner == request.user
 
-Note that the generic views will check the appropriate object level permissions, but if you're writing your own custom views, you'll need to make sure you check the object level permission checks yourself.  You can do so by calling `self.check_object_permissions(request, obj)` from the view once you have the object instance.  This call will raise an appropriate `APIException` if any object-level permission checks fail, and will otherwise simply return.
+generic view는 적절한 객체 수준 권한을 체크하지만, 커스텀 뷰를 작성한다면 객체 수준 권한 체크를 직접 수행해야 합니다. 객체 인스턴스를 얻은 뒤 `self.check_object_permissions(request, obj)`를 호출하면 됩니다. 이 호출은 객체 수준 권한 체크가 실패하면 적절한 `APIException`을 발생시키고, 성공하면 그냥 반환합니다.
 
-Also note that the generic views will only check the object-level permissions for views that retrieve a single model instance.  If you require object-level filtering of list views, you'll need to filter the queryset separately.  See the [filtering documentation][filtering] for more details.
+또한 generic view는 단일 모델 인스턴스를 조회(retrieve)하는 뷰에 대해서만 객체 수준 권한을 체크합니다. list 뷰에서 객체 수준 필터링이 필요하다면 queryset을 별도로 필터링해야 합니다. 자세한 내용은 [filtering 문서][filtering]를 참고하세요.
 
-# Overview of access restriction methods
+# 접근 제한 방법 개요 (Overview of access restriction methods)
 
-REST framework offers three different methods to customize access restrictions on a case-by-case basis. These apply in different scenarios and have different effects and limitations.
+REST framework는 케이스별로 접근 제한을 커스터마이징할 수 있는 세 가지 방법을 제공합니다. 이들은 서로 다른 시나리오에 적용되며, 효과와 한계도 다릅니다.
 
- * `queryset`/`get_queryset()`: Limits the general visibility of existing objects from the database. The queryset limits which objects will be listed and which objects can be modified or deleted. The `get_queryset()` method can apply different querysets based on the current action.
- * `permission_classes`/`get_permissions()`: General permission checks based on the current action, request and targeted object. Object level permissions can only be applied to retrieve, modify and deletion actions. Permission checks for list and create will be applied to the entire object type. (In case of list: subject to restrictions in the queryset.)
- * `serializer_class`/`get_serializer()`: Instance level restrictions that apply to all objects on input and output. The serializer may have access to the request context. The `get_serializer()` method can apply different serializers based on the current action.
+* `queryset`/`get_queryset()`: 데이터베이스의 기존 객체에 대한 “가시성”을 제한합니다. queryset은 어떤 객체가 리스트에 노출되는지, 어떤 객체를 수정/삭제할 수 있는지를 제한합니다. `get_queryset()`은 현재 액션에 따라 다른 queryset을 적용할 수 있습니다.
+* `permission_classes`/`get_permissions()`: 현재 액션, 요청, 대상 객체를 기반으로 하는 일반적인 permission 체크입니다. 객체 수준 권한은 retrieve/modify/deletion 액션에만 적용할 수 있습니다. list 및 create에 대한 permission 체크는 전체 객체 타입에 대해 적용됩니다. (list의 경우: queryset의 제한을 따릅니다.)
+* `serializer_class`/`get_serializer()`: 입력/출력에서 모든 객체에 적용되는 인스턴스 수준 제한입니다. serializer는 request context에 접근할 수 있습니다. `get_serializer()`는 현재 액션에 따라 다른 serializer를 적용할 수 있습니다.
 
-The following table lists the access restriction methods and the level of control they offer over which actions.
+다음 표는 접근 제한 방법과, 액션별로 어떤 수준의 제어가 가능한지를 보여줍니다.
 
 |                                    | `queryset` | `permission_classes` | `serializer_class` |
 |------------------------------------|------------|----------------------|--------------------|
@@ -295,55 +293,54 @@ The following table lists the access restriction methods and the level of contro
 | Can reference action in decision   | no**       | yes                  | no**               |
 | Can reference request in decision  | no**       | yes                  | yes                |
 
- \* A Serializer class should not raise PermissionDenied in a list action, or the entire list would not be returned. <br>
- \** The `get_*()` methods have access to the current view and can return different Serializer or QuerySet instances based on the request or action.
+ \* Serializer 클래스가 list 액션에서 PermissionDenied를 발생시키면 전체 리스트가 반환되지 않게 되므로, list에서 PermissionDenied를 발생시키면 안 됩니다. <br>
+ \** `get_*()` 메서드들은 현재 뷰에 접근할 수 있으며, 요청 또는 액션에 따라 다른 Serializer 또는 QuerySet 인스턴스를 반환할 수 있습니다.
 
 ---
 
-# Third party packages
+# 서드파티 패키지 (Third party packages)
 
-The following third party packages are also available.
+다음과 같은 서드파티 패키지도 사용할 수 있습니다.
 
 ## DRF - Access Policy
 
-The [Django REST - Access Policy][drf-access-policy] package provides a way to define complex access rules in declarative policy classes that are attached to view sets or function-based views. The policies are defined in JSON in a format similar to AWS' Identity & Access Management policies. 
+[Django REST - Access Policy][drf-access-policy] 패키지는 뷰셋 또는 함수 기반 뷰에 부착하는 선언적 정책 클래스에서 복잡한 접근 규칙을 정의할 수 있는 방법을 제공합니다. 정책은 AWS IAM 정책과 유사한 형식의 JSON으로 정의됩니다.
 
 ## Composed Permissions
 
-The [Composed Permissions][composed-permissions] package provides a simple way to define complex and multi-depth (with logic operators) permission objects, using small and reusable components.
+[Composed Permissions][composed-permissions] 패키지는 작고 재사용 가능한 컴포넌트를 사용해(논리 연산자로) 복잡하고 다단계의 permission 객체를 정의하는 간단한 방법을 제공합니다.
 
 ## REST Condition
 
-The [REST Condition][rest-condition] package is another extension for building complex permissions in a simple and convenient way. The extension allows you to combine permissions with logical operators.
+[REST Condition][rest-condition] 패키지는 복잡한 permissions를 간단하고 편리하게 구성하기 위한 또 다른 확장입니다. 논리 연산자로 permissions를 결합할 수 있습니다.
 
 ## DRY Rest Permissions
 
-The [DRY Rest Permissions][dry-rest-permissions] package provides the ability to define different permissions for individual default and custom actions. This package is made for apps with permissions that are derived from relationships defined in the app's data model. It also supports permission checks being returned to a client app through the API's serializer. Additionally it supports adding permissions to the default and custom list actions to restrict the data they retrieve per user.
+[DRY Rest Permissions][dry-rest-permissions] 패키지는 기본 및 커스텀 액션 각각에 대해 다른 permissions를 정의할 수 있게 해줍니다. 이 패키지는 앱 데이터 모델에 정의된 관계에서 파생되는 permissions에 적합합니다. 또한 serializer를 통해 클라이언트 앱에 permission 체크 결과를 반환하는 것도 지원합니다. 더불어 사용자별로 조회 데이터를 제한하기 위해 기본/커스텀 list 액션에 permissions를 추가하는 것도 지원합니다.
 
 ## Django Rest Framework Roles
 
-The [Django Rest Framework Roles][django-rest-framework-roles] package makes it easier to parameterize your API over multiple types of users.
+[Django Rest Framework Roles][django-rest-framework-roles] 패키지는 여러 유형의 사용자에 대해 API를 파라미터화하기 쉽게 만들어줍니다.
 
 ## Rest Framework Roles
 
-The [Rest Framework Roles][rest-framework-roles] makes it super easy to protect views based on roles. Most importantly allows you to decouple accessibility logic from models and views in a clean human-readable way.
+[Rest Framework Roles][rest-framework-roles]는 role 기반으로 뷰를 보호하는 것을 매우 쉽게 해줍니다. 특히 접근 로직을 모델과 뷰에서 깔끔하고 사람이 읽기 쉬운 방식으로 분리할 수 있게 해줍니다.
 
 ## Django REST Framework API Key
 
-The [Django REST Framework API Key][djangorestframework-api-key] package provides permissions classes, models and helpers to add API key authorization to your API. It can be used to authorize internal or third-party backends and services (i.e. _machines_) which do not have a user account. API keys are stored securely using Django's password hashing infrastructure, and they can be viewed, edited and revoked at anytime in the Django admin.
+[Django REST Framework API Key][djangorestframework-api-key] 패키지는 API key 기반 권한 부여를 추가하기 위한 permission 클래스, 모델, 헬퍼를 제공합니다. 사용자 계정이 없는 내부/외부 백엔드 및 서비스(즉, *machines*)를 인증하는 데 사용할 수 있습니다. API 키는 Django의 비밀번호 해싱 인프라를 사용해 안전하게 저장되며, Django admin에서 언제든 조회/편집/폐기가 가능합니다.
 
 ## Django Rest Framework Role Filters
 
-The [Django Rest Framework Role Filters][django-rest-framework-role-filters] package provides simple filtering over multiple types of roles.
+[Django Rest Framework Role Filters][django-rest-framework-role-filters] 패키지는 여러 역할 타입에 대한 간단한 필터링을 제공합니다.
 
 ## Django Rest Framework PSQ
 
-The [Django Rest Framework PSQ][drf-psq] package is an extension that gives support for having action-based **permission_classes**, **serializer_class**, and **queryset** dependent on permission-based rules.
+[Django Rest Framework PSQ][drf-psq] 패키지는 permission 기반 규칙에 따라 액션 기반 **permission_classes**, **serializer_class**, **queryset**을 지원하도록 확장해줍니다.
 
 ## Axioms DRF PY
 
-The [Axioms DRF PY][axioms-drf-py] package is an extension that provides support for authentication and claim-based fine-grained authorization (**scopes**, **roles**, **groups**, **permissions**, etc. including object-level checks) using JWT tokens issued by an OAuth2/OIDC Authorization Server including AWS Cognito, Auth0, Okta, Microsoft Entra, etc.
-
+[Axioms DRF PY][axioms-drf-py] 패키지는 OAuth2/OIDC Authorization Server(AWS Cognito, Auth0, Okta, Microsoft Entra 등)가 발급한 JWT 토큰을 사용하여 인증과 클레임 기반의 세밀한 권한 부여(**scopes**, **roles**, **groups**, **permissions** 등 객체 수준 체크 포함)를 지원합니다.
 
 [cite]: https://developer.apple.com/library/mac/#documentation/security/Conceptual/AuthenticationAndAuthorizationGuide/Authorization/Authorization.html
 [authentication]: authentication.md
@@ -352,7 +349,6 @@ The [Axioms DRF PY][axioms-drf-py] package is an extension that provides support
 [contribauth]: https://docs.djangoproject.com/en/stable/topics/auth/customizing/#custom-permissions
 [objectpermissions]: https://docs.djangoproject.com/en/stable/topics/auth/customizing/#handling-object-permissions
 [guardian]: https://github.com/lukaszb/django-guardian
-[filtering]: filtering.md
 [composed-permissions]: https://github.com/niwibe/djangorestframework-composed-permissions
 [rest-condition]: https://github.com/caxap/rest_condition
 [dry-rest-permissions]: https://github.com/FJNR-inc/dry-rest-permissions

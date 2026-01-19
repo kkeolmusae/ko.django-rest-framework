@@ -1,20 +1,23 @@
-# Caching
+# 캐싱 (Caching)
 
-> A certain woman had a very sharp consciousness but almost no
-> memory ... She remembered enough to work, and she worked hard.
-> - Lydia Davis
+> 어떤 여자는 매우 날카로운 의식을 가지고 있었지만
+> 기억력은 거의 없었다 …
+> 그녀는 일할 만큼은 기억했고, 열심히 일했다.
+> – Lydia Davis
 
-Caching in REST Framework works well with the cache utilities
-provided in Django.
+REST Framework에서의 캐싱은  
+Django가 제공하는 캐시 유틸리티와 함께 사용할 때 잘 동작한다.
 
 ---
 
-## Using cache with apiview and viewsets
+## APIView 및 ViewSet에서 캐시 사용하기
 
-Django provides a [`method_decorator`][decorator] to use
-decorators with class based views. This can be used with
-other cache decorators such as [`cache_page`][page],
-[`vary_on_cookie`][cookie] and [`vary_on_headers`][headers].
+Django는 클래스 기반 뷰에서 데코레이터를 사용할 수 있도록  
+[`method_decorator`][decorator]를 제공한다.  
+
+이를 활용해 [`cache_page`][page], [`vary_on_cookie`][cookie],
+[`vary_on_headers`][headers] 와 같은 캐시 관련 데코레이터를
+클래스 기반 뷰에 적용할 수 있다.
 
 ```python
 from django.utils.decorators import method_decorator
@@ -27,7 +30,7 @@ from rest_framework import viewsets
 
 
 class UserViewSet(viewsets.ViewSet):
-    # With cookie: cache requested url for each user for 2 hours
+    # 쿠키 기준: 사용자별로 요청 URL을 2시간 동안 캐시
     @method_decorator(cache_page(60 * 60 * 2))
     @method_decorator(vary_on_cookie)
     def list(self, request, format=None):
@@ -38,7 +41,7 @@ class UserViewSet(viewsets.ViewSet):
 
 
 class ProfileView(APIView):
-    # With auth: cache requested url for each user for 2 hours
+    # 인증 헤더 기준: 사용자별로 요청 URL을 2시간 동안 캐시
     @method_decorator(cache_page(60 * 60 * 2))
     @method_decorator(vary_on_headers("Authorization"))
     def get(self, request, format=None):
@@ -49,7 +52,7 @@ class ProfileView(APIView):
 
 
 class PostView(APIView):
-    # Cache page for the requested url
+    # 요청된 URL 자체를 2시간 동안 캐시
     @method_decorator(cache_page(60 * 60 * 2))
     def get(self, request, format=None):
         content = {
@@ -59,11 +62,12 @@ class PostView(APIView):
         return Response(content)
 ```
 
+## @api_view 데코레이터와 함께 캐시 사용하기
 
-## Using cache with @api_view decorator
-
-When using @api_view decorator, the Django-provided method-based cache decorators such as [`cache_page`][page],
-[`vary_on_cookie`][cookie] and [`vary_on_headers`][headers] can be called directly.
+`@api_view` 데코레이터를 사용하는 경우에는  
+Django에서 제공하는 메서드 기반 캐시 데코레이터인  
+[`cache_page`][page], [`vary_on_cookie`][cookie],
+[`vary_on_headers`][headers] 를 직접 사용할 수 있다.
 
 ```python
 from django.views.decorators.cache import cache_page
@@ -81,9 +85,7 @@ def get_user_list(request):
     return Response(content)
 ```
 
-
-**NOTE:** The [`cache_page`][page] decorator only caches the
-`GET` and `HEAD` responses with status 200.
+**NOTE:**  [`cache_page`][page] 데코레이터는 상태 코드가 **200인 `GET` 및 `HEAD` 요청만 캐시**한다.
 
 [page]: https://docs.djangoproject.com/en/stable/topics/cache/#the-per-view-cache
 [cookie]: https://docs.djangoproject.com/en/stable/topics/http/decorators/#django.views.decorators.vary.vary_on_cookie
