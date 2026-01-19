@@ -413,16 +413,16 @@
 
                 
                   <li class="main">
-                    <a href="#caching">Caching</a>
+                    <a href="#caching">캐싱 (Caching)</a>
                   </li>
 
                   
                     <li>
-                      <a href="#using-cache-with-apiview-and-viewsets">Using cache with apiview and viewsets</a>
+                      <a href="#apiview-viewset">APIView 및 ViewSet에서 캐시 사용하기</a>
                     </li>
                   
                     <li>
-                      <a href="#using-cache-with-api_view-decorator">Using cache with @api_view decorator</a>
+                      <a href="#api_view">@api_view 데코레이터와 함께 캐시 사용하기</a>
                     </li>
                   
                 
@@ -440,20 +440,22 @@
             
               
 
-              <h1 id="caching"><a class="toclink" href="#caching">Caching</a></h1>
+              <h1 id="caching"><a class="toclink" href="#caching">캐싱 (Caching)</a></h1>
 <blockquote>
-<p>A certain woman had a very sharp consciousness but almost no
-memory ... She remembered enough to work, and she worked hard.
-- Lydia Davis</p>
+<p>어떤 여자는 매우 날카로운 의식을 가지고 있었지만
+기억력은 거의 없었다 …
+그녀는 일할 만큼은 기억했고, 열심히 일했다.
+– Lydia Davis</p>
 </blockquote>
-<p>Caching in REST Framework works well with the cache utilities
-provided in Django.</p>
+<p>REST Framework에서의 캐싱은<br />
+Django가 제공하는 캐시 유틸리티와 함께 사용할 때 잘 동작한다.</p>
 <hr />
-<h2 id="using-cache-with-apiview-and-viewsets"><a class="toclink" href="#using-cache-with-apiview-and-viewsets">Using cache with apiview and viewsets</a></h2>
-<p>Django provides a <a href="https://docs.djangoproject.com/en/stable/topics/class-based-views/intro/#decorating-the-class"><code>method_decorator</code></a> to use
-decorators with class based views. This can be used with
-other cache decorators such as <a href="https://docs.djangoproject.com/en/stable/topics/cache/#the-per-view-cache"><code>cache_page</code></a>,
-<a href="https://docs.djangoproject.com/en/stable/topics/http/decorators/#django.views.decorators.vary.vary_on_cookie"><code>vary_on_cookie</code></a> and <a href="https://docs.djangoproject.com/en/stable/topics/http/decorators/#django.views.decorators.vary.vary_on_headers"><code>vary_on_headers</code></a>.</p>
+<h2 id="apiview-viewset"><a class="toclink" href="#apiview-viewset">APIView 및 ViewSet에서 캐시 사용하기</a></h2>
+<p>Django는 클래스 기반 뷰에서 데코레이터를 사용할 수 있도록<br />
+<a href="https://docs.djangoproject.com/en/stable/topics/class-based-views/intro/#decorating-the-class"><code>method_decorator</code></a>를 제공한다.  </p>
+<p>이를 활용해 <a href="https://docs.djangoproject.com/en/stable/topics/cache/#the-per-view-cache"><code>cache_page</code></a>, <a href="https://docs.djangoproject.com/en/stable/topics/http/decorators/#django.views.decorators.vary.vary_on_cookie"><code>vary_on_cookie</code></a>,
+<a href="https://docs.djangoproject.com/en/stable/topics/http/decorators/#django.views.decorators.vary.vary_on_headers"><code>vary_on_headers</code></a> 와 같은 캐시 관련 데코레이터를
+클래스 기반 뷰에 적용할 수 있다.</p>
 <pre><code class="language-python">from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie, vary_on_headers
@@ -464,7 +466,7 @@ from rest_framework import viewsets
 
 
 class UserViewSet(viewsets.ViewSet):
-    # With cookie: cache requested url for each user for 2 hours
+    # 쿠키 기준: 사용자별로 요청 URL을 2시간 동안 캐시
     @method_decorator(cache_page(60 * 60 * 2))
     @method_decorator(vary_on_cookie)
     def list(self, request, format=None):
@@ -475,7 +477,7 @@ class UserViewSet(viewsets.ViewSet):
 
 
 class ProfileView(APIView):
-    # With auth: cache requested url for each user for 2 hours
+    # 인증 헤더 기준: 사용자별로 요청 URL을 2시간 동안 캐시
     @method_decorator(cache_page(60 * 60 * 2))
     @method_decorator(vary_on_headers(&quot;Authorization&quot;))
     def get(self, request, format=None):
@@ -486,7 +488,7 @@ class ProfileView(APIView):
 
 
 class PostView(APIView):
-    # Cache page for the requested url
+    # 요청된 URL 자체를 2시간 동안 캐시
     @method_decorator(cache_page(60 * 60 * 2))
     def get(self, request, format=None):
         content = {
@@ -495,9 +497,11 @@ class PostView(APIView):
         }
         return Response(content)
 </code></pre>
-<h2 id="using-cache-with-api_view-decorator"><a class="toclink" href="#using-cache-with-api_view-decorator">Using cache with @api_view decorator</a></h2>
-<p>When using @api_view decorator, the Django-provided method-based cache decorators such as <a href="https://docs.djangoproject.com/en/stable/topics/cache/#the-per-view-cache"><code>cache_page</code></a>,
-<a href="https://docs.djangoproject.com/en/stable/topics/http/decorators/#django.views.decorators.vary.vary_on_cookie"><code>vary_on_cookie</code></a> and <a href="https://docs.djangoproject.com/en/stable/topics/http/decorators/#django.views.decorators.vary.vary_on_headers"><code>vary_on_headers</code></a> can be called directly.</p>
+<h2 id="api_view"><a class="toclink" href="#api_view">@api_view 데코레이터와 함께 캐시 사용하기</a></h2>
+<p><code>@api_view</code> 데코레이터를 사용하는 경우에는<br />
+Django에서 제공하는 메서드 기반 캐시 데코레이터인<br />
+<a href="https://docs.djangoproject.com/en/stable/topics/cache/#the-per-view-cache"><code>cache_page</code></a>, <a href="https://docs.djangoproject.com/en/stable/topics/http/decorators/#django.views.decorators.vary.vary_on_cookie"><code>vary_on_cookie</code></a>,
+<a href="https://docs.djangoproject.com/en/stable/topics/http/decorators/#django.views.decorators.vary.vary_on_headers"><code>vary_on_headers</code></a> 를 직접 사용할 수 있다.</p>
 <pre><code class="language-python">from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
@@ -512,8 +516,7 @@ def get_user_list(request):
     content = {&quot;user_feed&quot;: request.user.get_user_feed()}
     return Response(content)
 </code></pre>
-<p><strong>NOTE:</strong> The <a href="https://docs.djangoproject.com/en/stable/topics/cache/#the-per-view-cache"><code>cache_page</code></a> decorator only caches the
-<code>GET</code> and <code>HEAD</code> responses with status 200.</p>
+<p><strong>NOTE:</strong>  <a href="https://docs.djangoproject.com/en/stable/topics/cache/#the-per-view-cache"><code>cache_page</code></a> 데코레이터는 상태 코드가 <strong>200인 <code>GET</code> 및 <code>HEAD</code> 요청만 캐시</strong>한다.</p>
             
 
           </div> <!--/span-->

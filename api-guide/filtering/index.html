@@ -524,16 +524,18 @@
 
               <h1 id="filtering"><a class="toclink" href="#filtering">Filtering</a></h1>
 <blockquote>
-<p>The root QuerySet provided by the Manager describes all objects in the database table.  Usually, though, you'll need to select only a subset of the complete set of objects.</p>
+<p>Manager가 제공하는 루트 QuerySet은 데이터베이스 테이블에 존재하는 <strong>모든 객체</strong>를 나타냅니다. 하지만 대부분의 경우, 전체 객체 집합이 아닌 <strong>일부만 선택</strong>해야 합니다.</p>
 <p>&mdash; <a href="https://docs.djangoproject.com/en/stable/topics/db/queries/#retrieving-specific-objects-with-filters">Django documentation</a></p>
 </blockquote>
-<p>The default behavior of REST framework's generic list views is to return the entire queryset for a model manager.  Often you will want your API to restrict the items that are returned by the queryset.</p>
-<p>The simplest way to filter the queryset of any view that subclasses <code>GenericAPIView</code> is to override the <code>.get_queryset()</code> method.</p>
-<p>Overriding this method allows you to customize the queryset returned by the view in a number of different ways.</p>
+<p>REST framework의 generic list view의 기본 동작은 모델 매니저가 제공하는 <strong>전체 queryset</strong>을 반환하는 것입니다.<br />
+하지만 실제로는 API가 반환하는 항목을 <strong>특정 조건에 따라 제한</strong>하고 싶은 경우가 많습니다.</p>
+<p><code>GenericAPIView</code> 를 상속하는 모든 뷰에서 queryset을 필터링하는 가장 간단한 방법은<br />
+<code>.get_queryset()</code> 메서드를 오버라이드하는 것입니다.</p>
+<p>이 메서드를 오버라이드하면, 뷰가 반환하는 queryset을 다양한 방식으로 커스터마이징할 수 있습니다.</p>
 <h2 id="filtering-against-the-current-user"><a class="toclink" href="#filtering-against-the-current-user">Filtering against the current user</a></h2>
-<p>You might want to filter the queryset to ensure that only results relevant to the currently authenticated user making the request are returned.</p>
-<p>You can do so by filtering based on the value of <code>request.user</code>.</p>
-<p>For example:</p>
+<p>현재 요청을 보낸 <strong>인증된 사용자와 관련된 결과만 반환</strong>하고 싶을 수 있습니다.</p>
+<p>이 경우 <code>request.user</code> 값을 기준으로 queryset을 필터링할 수 있습니다.</p>
+<p>예를 들어:</p>
 <pre><code>from myapp.models import Purchase
 from myapp.serializers import PurchaseSerializer
 from rest_framework import generics
@@ -543,39 +545,41 @@ class PurchaseList(generics.ListAPIView):
 
     def get_queryset(self):
         """
-        This view should return a list of all the purchases
-        for the currently authenticated user.
+        이 뷰는 현재 인증된 사용자의
+        모든 구매 내역을 반환해야 한다.
         """
         user = self.request.user
         return Purchase.objects.filter(purchaser=user)
 </code></pre>
 <h2 id="filtering-against-the-url"><a class="toclink" href="#filtering-against-the-url">Filtering against the URL</a></h2>
-<p>Another style of filtering might involve restricting the queryset based on some part of the URL.</p>
-<p>For example if your URL config contained an entry like this:</p>
+<p>URL의 일부 값을 기준으로 queryset을 제한하는 방식도 사용할 수 있습니다.</p>
+<p>예를 들어 URL 설정에 다음과 같은 항목이 있다면:</p>
 <pre><code>re_path('^purchases/(?P&lt;username&gt;.+)/$', PurchaseList.as_view()),
 </code></pre>
-<p>You could then write a view that returned a purchase queryset filtered by the username portion of the URL:</p>
+<p>URL에 포함된 <code>username</code> 값을 기준으로 queryset을 필터링하는 뷰를 작성할 수 있습니다.</p>
 <pre><code>class PurchaseList(generics.ListAPIView):
     serializer_class = PurchaseSerializer
 
     def get_queryset(self):
         """
-        This view should return a list of all the purchases for
-        the user as determined by the username portion of the URL.
+        이 뷰는 URL의 username 값으로 결정된
+        사용자의 모든 구매 내역을 반환해야 한다.
         """
         username = self.kwargs['username']
         return Purchase.objects.filter(purchaser__username=username)
 </code></pre>
 <h2 id="filtering-against-query-parameters"><a class="toclink" href="#filtering-against-query-parameters">Filtering against query parameters</a></h2>
-<p>A final example of filtering the initial queryset would be to determine the initial queryset based on query parameters in the url.</p>
-<p>We can override <code>.get_queryset()</code> to deal with URLs such as <code>http://example.com/api/purchases?username=denvercoder9</code>, and filter the queryset only if the <code>username</code> parameter is included in the URL:</p>
+<p>마지막 예시는 URL의 <strong>query parameter</strong>를 기준으로 초기 queryset을 결정하는 방식입니다.</p>
+<p><code>.get_queryset()</code> 을 오버라이드하여<br />
+<code>http://example.com/api/purchases?username=denvercoder9</code> 와 같은 URL을 처리할 수 있습니다.</p>
+<p><code>username</code> 파라미터가 존재하는 경우에만 queryset을 필터링합니다.</p>
 <pre><code>class PurchaseList(generics.ListAPIView):
     serializer_class = PurchaseSerializer
 
     def get_queryset(self):
         """
-        Optionally restricts the returned purchases to a given user,
-        by filtering against a `username` query parameter in the URL.
+        URL의 `username` query parameter를 기준으로
+        특정 사용자의 구매 내역만 반환하도록 제한한다.
         """
         queryset = Purchase.objects.all()
         username = self.request.query_params.get('username')
@@ -585,17 +589,20 @@ class PurchaseList(generics.ListAPIView):
 </code></pre>
 <hr />
 <h1 id="generic-filtering"><a class="toclink" href="#generic-filtering">Generic Filtering</a></h1>
-<p>As well as being able to override the default queryset, REST framework also includes support for generic filtering backends that allow you to easily construct complex searches and filters.</p>
-<p>Generic filters can also present themselves as HTML controls in the browsable API and admin API.</p>
+<p>기본 queryset을 오버라이드하는 것 외에도,<br />
+REST framework는 <strong>generic filtering backend</strong> 를 지원하여<br />
+복잡한 검색 및 필터링을 쉽게 구성할 수 있도록 합니다.</p>
+<p>Generic filter는 <strong>Browsable API</strong> 및 <strong>Admin API</strong> 에서<br />
+HTML 컨트롤 형태로 표시될 수도 있습니다.</p>
 <p><img alt="Filter Example" src="../../img/filter-controls.png" /></p>
 <h2 id="setting-filter-backends"><a class="toclink" href="#setting-filter-backends">Setting filter backends</a></h2>
-<p>The default filter backends may be set globally, using the <code>DEFAULT_FILTER_BACKENDS</code> setting. For example.</p>
+<p>기본 filter backend는 <code>DEFAULT_FILTER_BACKENDS</code> 설정을 통해 전역으로 지정할 수 있습니다.</p>
+<p>예를 들어:</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
 </code></pre>
-<p>You can also set the filter backends on a per-view, or per-viewset basis,
-using the <code>GenericAPIView</code> class-based views.</p>
+<p>또는 <code>GenericAPIView</code> 기반의 뷰나 뷰셋 단위로 filter backend를 지정할 수도 있습니다.</p>
 <pre><code>import django_filters.rest_framework
 from django.contrib.auth.models import User
 from myapp.serializers import UserSerializer
@@ -607,16 +614,22 @@ class UserListView(generics.ListAPIView):
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
 </code></pre>
 <h2 id="filtering-and-object-lookups"><a class="toclink" href="#filtering-and-object-lookups">Filtering and object lookups</a></h2>
-<p>Note that if a filter backend is configured for a view, then as well as being used to filter list views, it will also be used to filter the querysets used for returning a single object.</p>
-<p>For instance, given the previous example, and a product with an id of <code>4675</code>, the following URL would either return the corresponding object, or return a 404 response, depending on if the filtering conditions were met by the given product instance:</p>
+<p>뷰에 filter backend가 설정되어 있으면,<br />
+리스트 뷰뿐만 아니라 <strong>단일 객체 조회 시에도 동일한 필터링 조건이 적용</strong>됩니다.</p>
+<p>예를 들어, 이전 예제에서 ID가 <code>4675</code> 인 상품이 있을 때,<br />
+다음 URL은 필터 조건을 만족하면 객체를 반환하고,<br />
+만족하지 않으면 404 응답을 반환합니다.</p>
 <pre><code>http://example.com/api/products/4675/?category=clothing&amp;max_price=10.00
 </code></pre>
 <h2 id="overriding-the-initial-queryset"><a class="toclink" href="#overriding-the-initial-queryset">Overriding the initial queryset</a></h2>
-<p>Note that you can use both an overridden <code>.get_queryset()</code> and generic filtering together, and everything will work as expected.  For example, if <code>Product</code> had a many-to-many relationship with <code>User</code>, named <code>purchase</code>, you might want to write a view like this:</p>
+<p><code>.get_queryset()</code> 오버라이드와 generic filtering은 <strong>함께 사용 가능</strong>하며,<br />
+예상한 대로 정상 동작합니다.</p>
+<p>예를 들어 <code>Product</code> 가 <code>User</code> 와 <code>purchase</code> 라는 many-to-many 관계를 가지고 있다면,<br />
+다음과 같은 뷰를 작성할 수 있습니다.</p>
 <pre><code>class PurchasedProductsList(generics.ListAPIView):
     """
-    Return a list of all the products that the authenticated
-    user has ever purchased, with optional filtering.
+    인증된 사용자가 지금까지 구매한
+    모든 상품 목록을 (선택적 필터링과 함께) 반환한다.
     """
     model = Product
     serializer_class = ProductSerializer
@@ -629,48 +642,55 @@ class UserListView(generics.ListAPIView):
 <hr />
 <h1 id="api-guide"><a class="toclink" href="#api-guide">API Guide</a></h1>
 <h2 id="djangofilterbackend"><a class="toclink" href="#djangofilterbackend">DjangoFilterBackend</a></h2>
-<p>The <a href="https://django-filter.readthedocs.io/en/latest/index.html"><code>django-filter</code></a> library includes a <code>DjangoFilterBackend</code> class which
-supports highly customizable field filtering for REST framework.</p>
-<p>To use <code>DjangoFilterBackend</code>, first install <code>django-filter</code>.</p>
+<p><a href="https://django-filter.readthedocs.io/en/latest/index.html"><code>django-filter</code></a> 라이브러리는<br />
+REST framework에서 <strong>고도로 커스터마이징 가능한 필드 기반 필터링</strong>을 지원하는<br />
+<code>DjangoFilterBackend</code> 클래스를 제공합니다.</p>
+<p><code>DjangoFilterBackend</code> 를 사용하려면 먼저 <code>django-filter</code> 를 설치해야 합니다.</p>
 <pre><code>pip install django-filter
 </code></pre>
-<p>Then add <code>'django_filters'</code> to Django's <code>INSTALLED_APPS</code>:</p>
+<p>그 다음 Django의 <code>INSTALLED_APPS</code> 에 <code>'django_filters'</code> 를 추가합니다.</p>
 <pre><code>INSTALLED_APPS = [
     ...
     'django_filters',
     ...
 ]
 </code></pre>
-<p>You should now either add the filter backend to your settings:</p>
+<p>이제 filter backend를 전역 설정에 추가하거나,</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
 </code></pre>
-<p>Or add the filter backend to an individual View or ViewSet.</p>
+<p>개별 View 또는 ViewSet에 직접 추가할 수 있습니다.</p>
 <pre><code>from django_filters.rest_framework import DjangoFilterBackend
 
 class UserListView(generics.ListAPIView):
     ...
     filter_backends = [DjangoFilterBackend]
 </code></pre>
-<p>If all you need is simple equality-based filtering, you can set a <code>filterset_fields</code> attribute on the view, or viewset, listing the set of fields you wish to filter against.</p>
+<p>단순한 <strong>동등 비교(equality-based)</strong> 필터링만 필요하다면,<br />
+뷰 또는 뷰셋에 <code>filterset_fields</code> 속성을 지정하면 됩니다.</p>
 <pre><code>class ProductList(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['category', 'in_stock']
 </code></pre>
-<p>This will automatically create a <code>FilterSet</code> class for the given fields, and will allow you to make requests such as:</p>
+<p>이렇게 하면 지정된 필드를 기준으로 자동으로 <code>FilterSet</code> 클래스가 생성되며,<br />
+다음과 같은 요청이 가능해집니다.</p>
 <pre><code>http://example.com/api/products?category=clothing&amp;in_stock=True
 </code></pre>
-<p>For more advanced filtering requirements you can specify a <code>FilterSet</code> class that should be used by the view.
-You can read more about <code>FilterSet</code>s in the <a href="https://django-filter.readthedocs.io/en/latest/index.html">django-filter documentation</a>.
-It's also recommended that you read the section on <a href="https://django-filter.readthedocs.io/en/latest/guide/rest_framework.html">DRF integration</a>.</p>
+<p>더 복잡한 필터링이 필요하다면,<br />
+뷰에서 사용할 <code>FilterSet</code> 클래스를 직접 지정할 수 있습니다.</p>
+<p>자세한 내용은 <a href="https://django-filter.readthedocs.io/en/latest/index.html">django-filter 문서</a>와<br />
+<a href="https://django-filter.readthedocs.io/en/latest/guide/rest_framework.html">DRF 통합 가이드</a>를 참고하세요.</p>
 <h2 id="searchfilter"><a class="toclink" href="#searchfilter">SearchFilter</a></h2>
-<p>The <code>SearchFilter</code> class supports simple single query parameter based searching, and is based on the <a href="https://docs.djangoproject.com/en/stable/ref/contrib/admin/#django.contrib.admin.ModelAdmin.search_fields">Django admin's search functionality</a>.</p>
-<p>When in use, the browsable API will include a <code>SearchFilter</code> control:</p>
+<p><code>SearchFilter</code> 클래스는 <strong>단일 query parameter 기반 검색</strong>을 지원하며,<br />
+<a href="https://docs.djangoproject.com/en/stable/ref/contrib/admin/#django.contrib.admin.ModelAdmin.search_fields">Django admin의 검색 기능</a>을 기반으로 합니다.</p>
+<p>사용 시, Browsable API에 <code>SearchFilter</code> 컨트롤이 표시됩니다.</p>
 <p><img alt="Search Filter" src="../../img/search-filter.png" /></p>
-<p>The <code>SearchFilter</code> class will only be applied if the view has a <code>search_fields</code> attribute set.  The <code>search_fields</code> attribute should be a list of names of text type fields on the model, such as <code>CharField</code> or <code>TextField</code>.</p>
+<p><code>SearchFilter</code> 는 뷰에 <code>search_fields</code> 속성이 설정된 경우에만 적용됩니다.<br />
+<code>search_fields</code> 는 모델의 <code>CharField</code>, <code>TextField</code> 와 같은<br />
+텍스트 필드 이름들의 리스트여야 합니다.</p>
 <pre><code>from rest_framework import filters
 
 class UserListView(generics.ListAPIView):
@@ -679,58 +699,68 @@ class UserListView(generics.ListAPIView):
     filter_backends = [filters.SearchFilter]
     search_fields = ['username', 'email']
 </code></pre>
-<p>This will allow the client to filter the items in the list by making queries such as:</p>
+<p>이렇게 하면 다음과 같은 요청으로 필터링할 수 있습니다.</p>
 <pre><code>http://example.com/api/users?search=russell
 </code></pre>
-<p>You can also perform a related lookup on a ForeignKey or ManyToManyField with the lookup API double-underscore notation:</p>
+<p>ForeignKey 또는 ManyToManyField에 대해서도<br />
+double-underscore(<code>__</code>) 표기법을 사용한 관련 조회가 가능합니다.</p>
 <pre><code>search_fields = ['username', 'email', 'profile__profession']
 </code></pre>
-<p>For <a href="https://docs.djangoproject.com/en/stable/ref/models/fields/#django.db.models.JSONField">JSONField</a> and <a href="https://docs.djangoproject.com/en/stable/ref/contrib/postgres/fields/#hstorefield">HStoreField</a> fields you can filter based on nested values within the data structure using the same double-underscore notation:</p>
+<p><a href="https://docs.djangoproject.com/en/stable/ref/models/fields/#django.db.models.JSONField">JSONField</a> 및 <a href="https://docs.djangoproject.com/en/stable/ref/contrib/postgres/fields/#hstorefield">HStoreField</a> 의 경우에도<br />
+동일한 표기법을 사용하여 중첩된 값으로 필터링할 수 있습니다.</p>
 <pre><code>search_fields = ['data__breed', 'data__owner__other_pets__0__name']
 </code></pre>
-<p>By default, searches will use case-insensitive partial matches. The search parameter may contain multiple search terms, which should be whitespace and/or comma separated. If multiple search terms are used then objects will be returned in the list only if all the provided terms are matched. Searches may contain <em>quoted phrases</em> with spaces, each phrase is considered as a single search term.</p>
-<p>The search behavior may be specified by prefixing field names in <code>search_fields</code> with one of the following characters (which is equivalent to adding <code>__&lt;lookup&gt;</code> to the field):</p>
+<p>기본적으로 검색은 <strong>대소문자를 구분하지 않는 부분 일치</strong>를 사용합니다.<br />
+검색 파라미터는 공백 또는 쉼표로 구분된 여러 검색어를 포함할 수 있으며,<br />
+모든 검색어가 일치하는 객체만 결과에 포함됩니다.</p>
+<p>공백이 포함된 <em>인용 구문(quoted phrase)</em> 도 지원되며,<br />
+각 구문은 하나의 검색어로 취급됩니다.</p>
+<p>검색 동작은 <code>search_fields</code> 에 접두어를 붙여 제어할 수 있습니다<br />
+(이는 필드에 <code>__&lt;lookup&gt;</code> 을 추가하는 것과 동일합니다).</p>
 <table>
 <thead>
 <tr>
 <th>Prefix</th>
 <th>Lookup</th>
-<th></th>
+<th>설명</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>^</code></td>
 <td><code>istartswith</code></td>
-<td>Starts-with search.</td>
+<td>시작 문자열 검색</td>
 </tr>
 <tr>
 <td><code>=</code></td>
 <td><code>iexact</code></td>
-<td>Exact matches.</td>
+<td>정확히 일치</td>
 </tr>
 <tr>
 <td><code>$</code></td>
 <td><code>iregex</code></td>
-<td>Regex search.</td>
+<td>정규식 검색</td>
 </tr>
 <tr>
 <td><code>@</code></td>
 <td><code>search</code></td>
-<td>Full-text search (Currently only supported Django's <a href="https://docs.djangoproject.com/en/stable/ref/contrib/postgres/search/">PostgreSQL backend</a>).</td>
+<td>전문 검색 (현재 Django <a href="https://docs.djangoproject.com/en/stable/ref/contrib/postgres/search/">PostgreSQL backend</a>만 지원)</td>
 </tr>
 <tr>
-<td>None</td>
+<td>없음</td>
 <td><code>icontains</code></td>
-<td>Contains search (Default).</td>
+<td>부분 포함 검색 (기본값)</td>
 </tr>
 </tbody>
 </table>
-<p>For example:</p>
+<p>예시:</p>
 <pre><code>search_fields = ['=username', '=email']
 </code></pre>
-<p>By default, the search parameter is named <code>'search'</code>, but this may be overridden with the <code>SEARCH_PARAM</code> setting in the <code>REST_FRAMEWORK</code> configuration.</p>
-<p>To dynamically change search fields based on request content, it's possible to subclass the <code>SearchFilter</code> and override the <code>get_search_fields()</code> function. For example, the following subclass will only search on <code>title</code> if the query parameter <code>title_only</code> is in the request:</p>
+<p>기본 검색 파라미터 이름은 <code>'search'</code> 이지만,<br />
+<code>REST_FRAMEWORK</code> 설정의 <code>SEARCH_PARAM</code> 으로 변경할 수 있습니다.</p>
+<p>요청 내용에 따라 동적으로 검색 필드를 변경하려면,<br />
+<code>SearchFilter</code> 를 상속하고 <code>get_search_fields()</code> 메서드를 오버라이드하면 됩니다.</p>
+<p>다음 예제는 <code>title_only</code> 파라미터가 있을 경우에만 <code>title</code> 필드로 검색합니다.</p>
 <pre><code>from rest_framework import filters
 
 class CustomSearchFilter(filters.SearchFilter):
@@ -739,32 +769,36 @@ class CustomSearchFilter(filters.SearchFilter):
             return ['title']
         return super().get_search_fields(view, request)
 </code></pre>
-<p>For more details, see the <a href="https://docs.djangoproject.com/en/stable/ref/contrib/admin/#django.contrib.admin.ModelAdmin.search_fields">Django documentation</a>.</p>
+<p>자세한 내용은 <a href="https://docs.djangoproject.com/en/stable/ref/contrib/admin/#django.contrib.admin.ModelAdmin.search_fields">Django 문서</a>를 참고하세요.</p>
 <hr />
 <h2 id="orderingfilter"><a class="toclink" href="#orderingfilter">OrderingFilter</a></h2>
-<p>The <code>OrderingFilter</code> class supports simple query parameter controlled ordering of results.</p>
+<p><code>OrderingFilter</code> 클래스는 query parameter를 통해<br />
+결과 정렬을 제어할 수 있도록 지원합니다.</p>
 <p><img alt="Ordering Filter" src="../../img/ordering-filter.png" /></p>
-<p>By default, the query parameter is named <code>'ordering'</code>, but this may be overridden with the <code>ORDERING_PARAM</code> setting in the <code>REST_FRAMEWORK</code> configuration.</p>
-<p>For example, to order users by username:</p>
+<p>기본 query parameter 이름은 <code>'ordering'</code> 이며,<br />
+<code>REST_FRAMEWORK</code> 설정의 <code>ORDERING_PARAM</code> 으로 변경할 수 있습니다.</p>
+<p>예를 들어 username 기준 정렬:</p>
 <pre><code>http://example.com/api/users?ordering=username
 </code></pre>
-<p>The client may also specify reverse orderings by prefixing the field name with '-', like so:</p>
+<p>역순 정렬은 필드 이름 앞에 <code>-</code> 를 붙입니다.</p>
 <pre><code>http://example.com/api/users?ordering=-username
 </code></pre>
-<p>Multiple orderings may also be specified:</p>
+<p>여러 필드를 동시에 지정할 수도 있습니다.</p>
 <pre><code>http://example.com/api/users?ordering=account,username
 </code></pre>
 <h3 id="specifying-which-fields-may-be-ordered-against"><a class="toclink" href="#specifying-which-fields-may-be-ordered-against">Specifying which fields may be ordered against</a></h3>
-<p>It's recommended that you explicitly specify which fields the API should allow in the ordering filter.  You can do this by setting an <code>ordering_fields</code> attribute on the view, like so:</p>
+<p>정렬 가능한 필드는 <strong>명시적으로 지정하는 것을 권장</strong>합니다.</p>
 <pre><code>class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['username', 'email']
 </code></pre>
-<p>This helps prevent unexpected data leakage, such as allowing users to order against a password hash field or other sensitive data.</p>
-<p>If you <em>don't</em> specify an <code>ordering_fields</code> attribute on the view, the filter class will default to allowing the user to filter on any readable fields on the serializer specified by the <code>serializer_class</code> attribute.</p>
-<p>If you are confident that the queryset being used by the view doesn't contain any sensitive data, you can also explicitly specify that a view should allow ordering on <em>any</em> model field or queryset aggregate, by using the special value <code>'__all__'</code>.</p>
+<p>이는 비밀번호 해시 등 <strong>민감한 필드로 정렬되는 것을 방지</strong>하는 데 도움이 됩니다.</p>
+<p><code>ordering_fields</code> 를 지정하지 않으면,<br />
+serializer에서 읽기 가능한 모든 필드가 정렬 대상으로 허용됩니다.</p>
+<p>쿼리셋에 민감한 데이터가 없다고 확신할 수 있다면,<br />
+특수 값 <code>'__all__'</code> 을 사용해 모든 필드 정렬을 허용할 수도 있습니다.</p>
 <pre><code>class BookingsListView(generics.ListAPIView):
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
@@ -772,8 +806,7 @@ class CustomSearchFilter(filters.SearchFilter):
     ordering_fields = '__all__'
 </code></pre>
 <h3 id="specifying-a-default-ordering"><a class="toclink" href="#specifying-a-default-ordering">Specifying a default ordering</a></h3>
-<p>If an <code>ordering</code> attribute is set on the view, this will be used as the default ordering.</p>
-<p>Typically you'd instead control this by setting <code>order_by</code> on the initial queryset, but using the <code>ordering</code> parameter on the view allows you to specify the ordering in a way that it can then be passed automatically as context to a rendered template.  This makes it possible to automatically render column headers differently if they are being used to order the results.</p>
+<p>뷰에 <code>ordering</code> 속성이 설정되어 있으면 기본 정렬로 사용됩니다.</p>
 <pre><code>class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -781,36 +814,59 @@ class CustomSearchFilter(filters.SearchFilter):
     ordering_fields = ['username', 'email']
     ordering = ['username']
 </code></pre>
-<p>The <code>ordering</code> attribute may be either a string or a list/tuple of strings.</p>
+<p><code>ordering</code> 은 문자열 또는 문자열 리스트/튜플이 될 수 있습니다.</p>
 <hr />
 <h1 id="custom-generic-filtering"><a class="toclink" href="#custom-generic-filtering">Custom generic filtering</a></h1>
-<p>You can also provide your own generic filtering backend, or write an installable app for other developers to use.</p>
-<p>To do so override <code>BaseFilterBackend</code>, and override the <code>.filter_queryset(self, request, queryset, view)</code> method.  The method should return a new, filtered queryset.</p>
-<p>As well as allowing clients to perform searches and filtering, generic filter backends can be useful for restricting which objects should be visible to any given request or user.</p>
+<p>직접 generic filtering backend를 구현하거나,<br />
+다른 개발자가 사용할 수 있는 설치형 앱으로 제공할 수도 있습니다.</p>
+<p>이를 위해 <code>BaseFilterBackend</code> 를 상속하고<br />
+<code>.filter_queryset(self, request, queryset, view)</code> 메서드를 구현합니다.</p>
+<p>이 메서드는 <strong>새로운 필터링된 queryset</strong> 을 반환해야 합니다.</p>
+<p>Generic filter backend는 검색/필터링뿐 아니라,<br />
+<strong>요청이나 사용자별로 노출 가능한 객체를 제한</strong>하는 데에도 유용합니다.</p>
 <h2 id="example"><a class="toclink" href="#example">Example</a></h2>
-<p>For example, you might need to restrict users to only being able to see objects they created.</p>
+<p>예를 들어, 사용자가 자신이 생성한 객체만 볼 수 있도록 제한할 수 있습니다.</p>
 <pre><code>class IsOwnerFilterBackend(filters.BaseFilterBackend):
     """
-    Filter that only allows users to see their own objects.
+    사용자가 자신의 객체만 볼 수 있도록 제한하는 필터
     """
     def filter_queryset(self, request, queryset, view):
         return queryset.filter(owner=request.user)
 </code></pre>
-<p>We could achieve the same behavior by overriding <code>get_queryset()</code> on the views, but using a filter backend allows you to more easily add this restriction to multiple views, or to apply it across the entire API.</p>
+<p>같은 동작을 <code>get_queryset()</code> 오버라이드로도 구현할 수 있지만,<br />
+filter backend를 사용하면 여러 뷰에 쉽게 재사용하거나<br />
+API 전체에 일괄 적용할 수 있습니다.</p>
 <h2 id="customizing-the-interface"><a class="toclink" href="#customizing-the-interface">Customizing the interface</a></h2>
-<p>Generic filters may also present an interface in the browsable API. To do so you should implement a <code>to_html()</code> method which returns a rendered HTML representation of the filter. This method should have the following signature:</p>
+<p>Generic filter는 Browsable API에서 인터페이스를 제공할 수도 있습니다.<br />
+이를 위해 <code>to_html()</code> 메서드를 구현해야 합니다.</p>
+<p>메서드 시그니처는 다음과 같습니다.</p>
 <p><code>to_html(self, request, queryset, view)</code></p>
-<p>The method should return a rendered HTML string.</p>
+<p>이 메서드는 렌더링된 HTML 문자열을 반환해야 합니다.</p>
 <h1 id="third-party-packages"><a class="toclink" href="#third-party-packages">Third party packages</a></h1>
-<p>The following third party packages provide additional filter implementations.</p>
+<p>다음은 추가적인 필터 구현을 제공하는 서드파티 패키지들입니다.</p>
 <h2 id="django-rest-framework-filters-package"><a class="toclink" href="#django-rest-framework-filters-package">Django REST framework filters package</a></h2>
-<p>The <a href="https://github.com/philipn/django-rest-framework-filters">django-rest-framework-filters package</a> works together with the <code>DjangoFilterBackend</code> class, and allows you to easily create filters across relationships, or create multiple filter lookup types for a given field.</p>
+<p><a href="https://github.com/philipn/django-rest-framework-filters">django-rest-framework-filters</a> 패키지는<br />
+<code>DjangoFilterBackend</code> 와 함께 동작하며,<br />
+관계 필터링이나 하나의 필드에 대해 여러 lookup 타입을 쉽게 정의할 수 있게 해줍니다.</p>
 <h2 id="django-rest-framework-full-word-search-filter"><a class="toclink" href="#django-rest-framework-full-word-search-filter">Django REST framework full word search filter</a></h2>
-<p>The <a href="https://github.com/trollknurr/django-rest-framework-word-search-filter">djangorestframework-word-filter</a> developed as alternative to <code>filters.SearchFilter</code> which will search full word in text, or exact match.</p>
+<p><a href="https://github.com/trollknurr/django-rest-framework-word-search-filter">django-rest-framework-word-filter</a> 는<br />
+<code>filters.SearchFilter</code> 의 대안으로 개발되었으며,<br />
+텍스트에 대한 <strong>전체 단어 검색</strong> 또는 <strong>정확한 일치 검색</strong>을 지원합니다.</p>
 <h2 id="django-url-filter"><a class="toclink" href="#django-url-filter">Django URL Filter</a></h2>
-<p><a href="https://github.com/miki725/django-url-filter">django-url-filter</a> provides a safe way to filter data via human-friendly URLs. It works very similar to DRF serializers and fields in a sense that they can be nested except they are called filtersets and filters. That provides easy way to filter related data. Also this library is generic-purpose so it can be used to filter other sources of data and not only Django <code>QuerySet</code>s.</p>
+<p><a href="https://github.com/miki725/django-url-filter">django-url-filter</a> 는 사람이 읽기 쉬운 URL을 통해<br />
+안전하게 데이터를 필터링할 수 있는 방법을 제공합니다.<br />
+DRF serializer와 유사한 개념으로 filterset과 filter를 사용하며,<br />
+중첩 필터링도 지원합니다.<br />
+또한 Django <code>QuerySet</code> 뿐만 아니라 다른 데이터 소스에도 사용할 수 있는<br />
+범용 라이브러리입니다.</p>
 <h2 id="drf-url-filters"><a class="toclink" href="#drf-url-filters">drf-url-filters</a></h2>
-<p><a href="https://github.com/manjitkumar/drf-url-filters">drf-url-filter</a> is a simple Django app to apply filters on drf <code>ModelViewSet</code>'s <code>Queryset</code> in a clean, simple and configurable way. It also supports validations on incoming query params and their values. A beautiful python package <code>Voluptuous</code> is being used for validations on the incoming query parameters. The best part about voluptuous is you can define your own validations as per your query params requirements.</p>
+<p><a href="https://github.com/manjitkumar/drf-url-filters">drf-url-filter</a> 는<br />
+DRF <code>ModelViewSet</code> 의 <code>Queryset</code> 에 필터를 적용하기 위한<br />
+간단하고 깔끔하며 설정 가능한 Django 앱입니다.</p>
+<p>요청 query parameter 및 값에 대한 validation도 지원하며,<br />
+검증에는 <code>Voluptuous</code> 파이썬 패키지를 사용합니다.<br />
+Voluptuous의 가장 큰 장점은<br />
+query parameter 요구사항에 맞는 <strong>커스텀 검증 로직을 직접 정의할 수 있다는 점</strong>입니다.</p>
             
 
           </div> <!--/span-->

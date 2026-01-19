@@ -508,29 +508,29 @@
 
               <h1 id="pagination"><a class="toclink" href="#pagination">Pagination</a></h1>
 <blockquote>
-<p>Django provides a few classes that help you manage paginated data – that is, data that’s split across several pages, with “Previous/Next” links.</p>
+<p>Django는 페이지네이션된 데이터를 관리하는 데 도움이 되는 몇 가지 클래스를 제공합니다. 즉, 데이터를 여러 페이지로 나누고 “이전/다음(Previous/Next)” 링크를 제공하는 방식입니다.</p>
 <p>&mdash; <a href="https://docs.djangoproject.com/en/stable/topics/pagination/">Django documentation</a></p>
 </blockquote>
-<p>REST framework includes support for customizable pagination styles. This allows you to modify how large result sets are split into individual pages of data.</p>
-<p>The pagination API can support either:</p>
+<p>REST framework는 커스터마이징 가능한 페이지네이션 스타일을 지원합니다. 이를 통해 큰 결과 집합을 개별 데이터 페이지로 어떻게 나눌지 조정할 수 있습니다.</p>
+<p>페이지네이션 API는 다음 중 하나를 지원할 수 있습니다.</p>
 <ul>
-<li>Pagination links that are provided as part of the content of the response.</li>
-<li>Pagination links that are included in response headers, such as <code>Content-Range</code> or <code>Link</code>.</li>
+<li>응답 본문(content)의 일부로 제공되는 페이지네이션 링크</li>
+<li><code>Content-Range</code> 또는 <code>Link</code> 같은 응답 헤더에 포함되는 페이지네이션 링크</li>
 </ul>
-<p>The built-in styles currently all use links included as part of the content of the response. This style is more accessible when using the browsable API.</p>
-<p>Pagination is only performed automatically if you're using the generic views or viewsets. If you're using a regular <code>APIView</code>, you'll need to call into the pagination API yourself to ensure you return a paginated response. See the source code for the <code>mixins.ListModelMixin</code> and <code>generics.GenericAPIView</code> classes for an example.</p>
-<p>Pagination can be turned off by setting the pagination class to <code>None</code>.</p>
+<p>현재 내장된 스타일들은 모두 <strong>응답 본문에 링크를 포함하는 방식</strong>을 사용합니다. 이 방식은 browsable API에서 사용할 때 더 접근성이 좋습니다.</p>
+<p>페이지네이션은 generic view 또는 viewset을 사용할 때만 자동으로 수행됩니다. 일반 <code>APIView</code> 를 사용한다면, 페이지네이션 API를 직접 호출해서 페이지네이션된 응답을 반환해야 합니다. 예시는 <code>mixins.ListModelMixin</code> 및 <code>generics.GenericAPIView</code> 클래스의 소스 코드를 참고하세요.</p>
+<p>페이지네이션은 pagination class를 <code>None</code> 으로 설정하면 비활성화할 수 있습니다.</p>
 <h2 id="setting-the-pagination-style"><a class="toclink" href="#setting-the-pagination-style">Setting the pagination style</a></h2>
-<p>The pagination style may be set globally, using the <code>DEFAULT_PAGINATION_CLASS</code> and <code>PAGE_SIZE</code> setting keys. For example, to use the built-in limit/offset pagination, you would do something like this:</p>
+<p>페이지네이션 스타일은 전역으로 <code>DEFAULT_PAGINATION_CLASS</code> 와 <code>PAGE_SIZE</code> 설정 키를 사용해 지정할 수 있습니다. 예를 들어 내장 limit/offset 페이지네이션을 사용하려면 다음처럼 설정합니다.</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 100
 }
 </code></pre>
-<p>Note that you need to set both the pagination class, and the page size that should be used.  Both <code>DEFAULT_PAGINATION_CLASS</code> and <code>PAGE_SIZE</code> are <code>None</code> by default.</p>
-<p>You can also set the pagination class on an individual view by using the <code>pagination_class</code> attribute. Typically you'll want to use the same pagination style throughout your API, although you might want to vary individual aspects of the pagination, such as default or maximum page size, on a per-view basis.</p>
+<p>pagination class와 page size를 <strong>둘 다</strong> 설정해야 한다는 점에 유의하세요. <code>DEFAULT_PAGINATION_CLASS</code> 와 <code>PAGE_SIZE</code> 는 기본값이 모두 <code>None</code> 입니다.</p>
+<p>또한 개별 뷰에서는 <code>pagination_class</code> 속성을 사용해 페이지네이션 클래스를 지정할 수도 있습니다. 일반적으로는 API 전체에서 동일한 페이지네이션 스타일을 사용하는 편이 좋지만, 기본/최대 page size 같은 일부 요소는 뷰 단위로 다르게 주고 싶을 수도 있습니다.</p>
 <h2 id="modifying-the-pagination-style"><a class="toclink" href="#modifying-the-pagination-style">Modifying the pagination style</a></h2>
-<p>If you want to modify particular aspects of the pagination style, you'll want to override one of the pagination classes, and set the attributes that you want to change.</p>
+<p>페이지네이션 스타일의 특정 요소를 바꾸고 싶다면, 페이지네이션 클래스를 상속하여 수정하고 싶은 속성을 오버라이드하면 됩니다.</p>
 <pre><code>class LargeResultsSetPagination(PageNumberPagination):
     page_size = 1000
     page_size_query_param = 'page_size'
@@ -541,13 +541,13 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 1000
 </code></pre>
-<p>You can then apply your new style to a view using the <code>pagination_class</code> attribute:</p>
+<p>이후 뷰에 <code>pagination_class</code> 속성으로 적용할 수 있습니다.</p>
 <pre><code>class BillingRecordsView(generics.ListAPIView):
     queryset = Billing.objects.all()
     serializer_class = BillingRecordsSerializer
     pagination_class = LargeResultsSetPagination
 </code></pre>
-<p>Or apply the style globally, using the <code>DEFAULT_PAGINATION_CLASS</code> settings key. For example:</p>
+<p>또는 <code>DEFAULT_PAGINATION_CLASS</code> 설정 키로 전역 적용할 수도 있습니다. 예:</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'apps.core.pagination.StandardResultsSetPagination'
 }
@@ -555,7 +555,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 <hr />
 <h1 id="api-reference"><a class="toclink" href="#api-reference">API Reference</a></h1>
 <h2 id="pagenumberpagination"><a class="toclink" href="#pagenumberpagination">PageNumberPagination</a></h2>
-<p>This pagination style accepts a single number page number in the request query parameters.</p>
+<p>이 페이지네이션 스타일은 요청 query parameter에서 <strong>단일 페이지 번호</strong>를 받습니다.</p>
 <p><strong>Request</strong>:</p>
 <pre><code>GET https://api.example.org/accounts/?page=4
 </code></pre>
@@ -571,29 +571,30 @@ class StandardResultsSetPagination(PageNumberPagination):
 }
 </code></pre>
 <h4 id="setup"><a class="toclink" href="#setup">Setup</a></h4>
-<p>To enable the <code>PageNumberPagination</code> style globally, use the following configuration, and set the <code>PAGE_SIZE</code> as desired:</p>
+<p><code>PageNumberPagination</code> 스타일을 전역으로 활성화하려면 아래 설정을 사용하고, <code>PAGE_SIZE</code> 를 원하는 값으로 지정하세요.</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100
 }
 </code></pre>
-<p>On <code>GenericAPIView</code> subclasses you may also set the <code>pagination_class</code> attribute to select <code>PageNumberPagination</code> on a per-view basis.</p>
+<p><code>GenericAPIView</code> 를 상속한 뷰에서는 뷰 단위로 <code>pagination_class</code> 속성을 설정해 <code>PageNumberPagination</code> 을 선택할 수도 있습니다.</p>
 <h4 id="configuration"><a class="toclink" href="#configuration">Configuration</a></h4>
-<p>The <code>PageNumberPagination</code> class includes a number of attributes that may be overridden to modify the pagination style.</p>
-<p>To set these attributes you should override the <code>PageNumberPagination</code> class, and then enable your custom pagination class as above.</p>
+<p><code>PageNumberPagination</code> 은 페이지네이션 스타일을 수정하기 위해 오버라이드할 수 있는 여러 속성을 제공합니다.</p>
+<p>이 속성들을 설정하려면 <code>PageNumberPagination</code> 을 상속한 커스텀 클래스를 만들고, 위에서처럼 커스텀 pagination 클래스를 활성화하면 됩니다.</p>
 <ul>
-<li><code>django_paginator_class</code> - The Django Paginator class to use. Default is <code>django.core.paginator.Paginator</code>, which should be fine for most use cases.</li>
-<li><code>page_size</code> - A numeric value indicating the page size. If set, this overrides the <code>PAGE_SIZE</code> setting. Defaults to the same value as the <code>PAGE_SIZE</code> settings key.</li>
-<li><code>page_query_param</code> - A string value indicating the name of the query parameter to use for the pagination control.</li>
-<li><code>page_size_query_param</code> - If set, this is a string value indicating the name of a query parameter that allows the client to set the page size on a per-request basis. Defaults to <code>None</code>, indicating that the client may not control the requested page size.</li>
-<li><code>max_page_size</code> - If set, this is a numeric value indicating the maximum allowable requested page size. This attribute is only valid if <code>page_size_query_param</code> is also set.</li>
-<li><code>last_page_strings</code> - A list or tuple of string values indicating values that may be used with the <code>page_query_param</code> to request the final page in the set. Defaults to <code>('last',)</code>. For example, use <code>?page=last</code> to go directly to the last page.</li>
-<li><code>template</code> - The name of a template to use when rendering pagination controls in the browsable API. May be overridden to modify the rendering style, or set to <code>None</code> to disable HTML pagination controls completely. Defaults to <code>"rest_framework/pagination/numbers.html"</code>.</li>
+<li><code>django_paginator_class</code> - 사용할 Django Paginator 클래스. 기본값은 <code>django.core.paginator.Paginator</code> 이며 대부분의 경우 충분합니다.</li>
+<li><code>page_size</code> - 페이지 크기를 나타내는 숫자 값. 설정하면 <code>PAGE_SIZE</code> 설정을 덮어씁니다. 기본값은 <code>PAGE_SIZE</code> 와 동일합니다.</li>
+<li><code>page_query_param</code> - 페이지 번호를 지정할 query parameter 이름을 나타내는 문자열 값.</li>
+<li><code>page_size_query_param</code> - 설정하면, 클라이언트가 요청 단위로 page size를 지정할 수 있게 해주는 query parameter 이름(문자열 값)입니다. 기본값은 <code>None</code> 이며, 이 경우 클라이언트가 page size를 제어할 수 없습니다.</li>
+<li><code>max_page_size</code> - 설정하면, 클라이언트가 요청할 수 있는 최대 page size를 나타내는 숫자 값입니다. 이 속성은 <code>page_size_query_param</code> 도 함께 설정된 경우에만 유효합니다.</li>
+<li><code>last_page_strings</code> - <code>page_query_param</code> 과 함께 사용하여 마지막 페이지를 요청할 수 있는 문자열 값들의 리스트/튜플입니다. 기본값은 <code>('last',)</code> 입니다. 예: <code>?page=last</code> 로 마지막 페이지로 바로 이동.</li>
+<li><code>template</code> - browsable API에서 페이지네이션 컨트롤을 렌더링할 때 사용할 템플릿 이름입니다. 렌더링 스타일을 바꾸기 위해 오버라이드할 수 있고, <code>None</code> 으로 설정하면 HTML 페이지네이션 컨트롤을 완전히 비활성화할 수 있습니다. 기본값은 <code>"rest_framework/pagination/numbers.html"</code> 입니다.</li>
 </ul>
 <hr />
 <h2 id="limitoffsetpagination"><a class="toclink" href="#limitoffsetpagination">LimitOffsetPagination</a></h2>
-<p>This pagination style mirrors the syntax used when looking up multiple database records. The client includes both a "limit" and an
-"offset" query parameter. The limit indicates the maximum number of items to return, and is equivalent to the <code>page_size</code> in other styles. The offset indicates the starting position of the query in relation to the complete set of unpaginated items.</p>
+<p>이 페이지네이션 스타일은 여러 DB 레코드를 조회할 때 흔히 쓰는 문법을 반영합니다. 클라이언트는 <code>"limit"</code> 과 <code>"offset"</code> query parameter를 함께 전달합니다.<br />
+<code>limit</code> 는 반환할 최대 아이템 수를 의미하며, 다른 스타일의 <code>page_size</code> 와 동일한 개념입니다.<br />
+<code>offset</code> 은 전체(페이지네이션되지 않은) 아이템 집합에서 조회가 시작될 위치를 의미합니다.</p>
 <p><strong>Request</strong>:</p>
 <pre><code>GET https://api.example.org/accounts/?limit=100&amp;offset=400
 </code></pre>
@@ -609,75 +610,74 @@ class StandardResultsSetPagination(PageNumberPagination):
 }
 </code></pre>
 <h4 id="setup_1"><a class="toclink" href="#setup_1">Setup</a></h4>
-<p>To enable the <code>LimitOffsetPagination</code> style globally, use the following configuration:</p>
+<p><code>LimitOffsetPagination</code> 스타일을 전역으로 활성화하려면 다음 설정을 사용합니다.</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination'
 }
 </code></pre>
-<p>Optionally, you may also set a <code>PAGE_SIZE</code> key. If the <code>PAGE_SIZE</code> parameter is also used then the <code>limit</code> query parameter will be optional, and may be omitted by the client.</p>
-<p>On <code>GenericAPIView</code> subclasses you may also set the <code>pagination_class</code> attribute to select <code>LimitOffsetPagination</code> on a per-view basis.</p>
+<p>선택적으로 <code>PAGE_SIZE</code> 키를 설정할 수도 있습니다. <code>PAGE_SIZE</code> 를 함께 사용하면, <code>limit</code> query parameter는 선택 사항이 되며 클라이언트가 생략할 수 있습니다.</p>
+<p><code>GenericAPIView</code> 를 상속한 뷰에서는 뷰 단위로 <code>pagination_class</code> 속성을 설정해 <code>LimitOffsetPagination</code> 을 선택할 수도 있습니다.</p>
 <h4 id="configuration_1"><a class="toclink" href="#configuration_1">Configuration</a></h4>
-<p>The <code>LimitOffsetPagination</code> class includes a number of attributes that may be overridden to modify the pagination style.</p>
-<p>To set these attributes you should override the <code>LimitOffsetPagination</code> class, and then enable your custom pagination class as above.</p>
+<p><code>LimitOffsetPagination</code> 은 페이지네이션 스타일을 수정하기 위해 오버라이드할 수 있는 여러 속성을 제공합니다.</p>
+<p>이 속성들을 설정하려면 <code>LimitOffsetPagination</code> 을 상속한 커스텀 클래스를 만들고, 위에서처럼 커스텀 pagination 클래스를 활성화하면 됩니다.</p>
 <ul>
-<li><code>default_limit</code> - A numeric value indicating the limit to use if one is not provided by the client in a query parameter. Defaults to the same value as the <code>PAGE_SIZE</code> settings key.</li>
-<li><code>limit_query_param</code> - A string value indicating the name of the "limit" query parameter. Defaults to <code>'limit'</code>.</li>
-<li><code>offset_query_param</code> - A string value indicating the name of the "offset" query parameter. Defaults to <code>'offset'</code>.</li>
-<li><code>max_limit</code> - If set this is a numeric value indicating the maximum allowable limit that may be requested by the client. Defaults to <code>None</code>.</li>
-<li><code>template</code> - The name of a template to use when rendering pagination controls in the browsable API. May be overridden to modify the rendering style, or set to <code>None</code> to disable HTML pagination controls completely. Defaults to <code>"rest_framework/pagination/numbers.html"</code>.</li>
+<li><code>default_limit</code> - 클라이언트가 query parameter로 limit을 제공하지 않을 때 사용할 limit(숫자 값)입니다. 기본값은 <code>PAGE_SIZE</code> 와 동일합니다.</li>
+<li><code>limit_query_param</code> - <code>"limit"</code> query parameter 이름을 나타내는 문자열 값. 기본값은 <code>'limit'</code>.</li>
+<li><code>offset_query_param</code> - <code>"offset"</code> query parameter 이름을 나타내는 문자열 값. 기본값은 <code>'offset'</code>.</li>
+<li><code>max_limit</code> - 설정하면, 클라이언트가 요청할 수 있는 최대 limit(숫자 값)입니다. 기본값은 <code>None</code>.</li>
+<li><code>template</code> - browsable API에서 페이지네이션 컨트롤을 렌더링할 때 사용할 템플릿 이름입니다. 렌더링 스타일을 바꾸기 위해 오버라이드할 수 있고, <code>None</code> 으로 설정하면 HTML 페이지네이션 컨트롤을 완전히 비활성화할 수 있습니다. 기본값은 <code>"rest_framework/pagination/numbers.html"</code> 입니다.</li>
 </ul>
 <hr />
 <h2 id="cursorpagination"><a class="toclink" href="#cursorpagination">CursorPagination</a></h2>
-<p>The cursor-based pagination presents an opaque "cursor" indicator that the client may use to page through the result set. This pagination style only presents forward and reverse controls, and does not allow the client to navigate to arbitrary positions.</p>
-<p>Cursor based pagination requires that there is a unique, unchanging ordering of items in the result set. This ordering might typically be a creation timestamp on the records, as this presents a consistent ordering to paginate against.</p>
-<p>Cursor based pagination is more complex than other schemes. It also requires that the result set presents a fixed ordering, and does not allow the client to arbitrarily index into the result set. However it does provide the following benefits:</p>
+<p>커서 기반 페이지네이션은 클라이언트가 결과 집합을 넘겨볼 때 사용할 수 있는, 불투명한(opaque) <code>"cursor"</code> 표시자를 제공합니다. 이 방식은 <strong>앞/뒤 이동만</strong> 제공하며, 임의의 위치로 점프하는 것을 허용하지 않습니다.</p>
+<p>커서 기반 페이지네이션을 사용하려면 결과 집합에 대해 <strong>유일하고 변하지 않는 정렬</strong>이 필요합니다. 보통 레코드의 생성 시각(timestamp)처럼, 일관된 정렬 기준을 사용하는 것이 일반적입니다.</p>
+<p>커서 기반 페이지네이션은 다른 방식보다 복잡합니다. 결과 집합이 고정된 순서로 제공되어야 하고, 클라이언트가 임의로 인덱싱할 수 없습니다. 대신 다음과 같은 장점이 있습니다.</p>
 <ul>
-<li>Provides a consistent pagination view. When used properly <code>CursorPagination</code> ensures that the client will never see the same item twice when paging through records, even when new items are being inserted by other clients during the pagination process.</li>
-<li>Supports usage with very large datasets. With extremely large datasets pagination using offset-based pagination styles may become inefficient or unusable. Cursor based pagination schemes instead have fixed-time properties, and do not slow down as the dataset size increases.</li>
+<li>일관된 페이지네이션 뷰 제공: 올바르게 사용하면 <code>CursorPagination</code> 은 페이지를 넘기는 동안 다른 클라이언트가 새 아이템을 삽입하더라도, 같은 아이템을 두 번 보지 않도록 보장합니다.</li>
+<li>매우 큰 데이터셋에 적합: 데이터가 매우 큰 경우 offset 기반 페이지네이션은 비효율적이거나 사용 불가능해질 수 있습니다. 커서 기반은 대신 고정 시간 성질을 가지며, 데이터셋이 커져도 느려지지 않습니다.</li>
 </ul>
 <h4 id="details-and-limitations"><a class="toclink" href="#details-and-limitations">Details and limitations</a></h4>
-<p>Proper use of cursor based pagination requires a little attention to detail. You'll need to think about what ordering you want the scheme to be applied against. The default is to order by <code>"-created"</code>. This assumes that <strong>there must be a 'created' timestamp field</strong> on the model instances, and will present a "timeline" style paginated view, with the most recently added items first.</p>
-<p>You can modify the ordering by overriding the <code>'ordering'</code> attribute on the pagination class, or by using the <code>OrderingFilter</code> filter class together with <code>CursorPagination</code>. When used with <code>OrderingFilter</code> you should strongly consider restricting the fields that the user may order by.</p>
-<p>Proper usage of cursor pagination should have an ordering field that satisfies the following:</p>
+<p>커서 기반 페이지네이션을 올바르게 사용하려면 세부 사항에 주의를 기울여야 합니다. 어떤 정렬 기준을 적용할지 생각해야 합니다. 기본값은 <code>"-created"</code> 로 정렬합니다. 이는 모델 인스턴스에 <strong><code>created</code> 타임스탬프 필드가 반드시 존재</strong>해야 하며, 가장 최근에 추가된 항목이 먼저 오는 “타임라인” 스타일 뷰를 제공합니다.</p>
+<p>정렬 기준은 pagination class의 <code>'ordering'</code> 속성을 오버라이드하거나, <code>CursorPagination</code> 과 함께 <code>OrderingFilter</code> 를 사용하여 변경할 수 있습니다. <code>OrderingFilter</code> 를 함께 사용할 때는 사용자가 정렬할 수 있는 필드를 제한하는 것을 강력히 권장합니다.</p>
+<p>커서 페이지네이션에 적합한 ordering 필드는 다음 조건을 만족해야 합니다.</p>
 <ul>
-<li>Should be an unchanging value, such as a timestamp, slug, or other field that is only set once, on creation.</li>
-<li>Should be unique, or nearly unique. Millisecond precision timestamps are a good example. This implementation of cursor pagination uses a smart "position plus offset" style that allows it to properly support not-strictly-unique values as the ordering.</li>
-<li>Should be a non-nullable value that can be coerced to a string.</li>
-<li>Should not be a float. Precision errors easily lead to incorrect results.
-  Hint: use decimals instead.
-  (If you already have a float field and must paginate on that, an
-  <a href="https://gist.github.com/keturn/8bc88525a183fd41c73ffb729b8865be#file-fpcursorpagination-py">example <code>CursorPagination</code> subclass that uses decimals to limit precision is available here</a>.)</li>
-<li>The field should have a database index.</li>
+<li>생성 시 한 번만 설정되는 값(타임스탬프, 슬러그 등)처럼 <strong>변하지 않는 값</strong>이어야 합니다.</li>
+<li><strong>유일하거나 거의 유일</strong>해야 합니다. 밀리초 단위 타임스탬프가 좋은 예입니다. 이 커서 페이지네이션 구현은 “position + offset” 방식으로, 완전히 유일하지 않은 값도 적절히 지원하도록 설계되어 있습니다.</li>
+<li>문자열로 강제 변환(coerce)할 수 있는 <strong>non-nullable 값</strong>이어야 합니다.</li>
+<li>float 타입이면 안 됩니다. 정밀도 오류로 인해 잘못된 결과가 쉽게 발생합니다.<br />
+  힌트: 대신 decimal을 사용하세요.<br />
+  (이미 float 필드가 있고 반드시 그 필드로 페이지네이션해야 한다면, 정밀도를 제한하기 위해 decimal을 사용하는 <code>CursorPagination</code> 서브클래스 예제가 <a href="https://gist.github.com/keturn/8bc88525a183fd41c73ffb729b8865be#file-fpcursorpagination-py">여기</a>에 있습니다.)</li>
+<li>해당 필드에는 DB 인덱스가 있어야 합니다.</li>
 </ul>
-<p>Using an ordering field that does not satisfy these constraints will generally still work, but you'll be losing some of the benefits of cursor pagination.</p>
-<p>For more technical details on the implementation we use for cursor pagination, the <a href="https://cra.mr/2011/03/08/building-cursors-for-the-disqus-api">"Building cursors for the Disqus API"</a> blog post gives a good overview of the basic approach.</p>
+<p>이 제약을 만족하지 않는 ordering 필드를 사용해도 대체로 동작은 하지만, 커서 페이지네이션의 장점 일부를 잃게 됩니다.</p>
+<p>커서 페이지네이션 구현에 대한 더 기술적인 설명은, Disqus API의 커서를 만드는 방법을 다룬 <a href="https://cra.mr/2011/03/08/building-cursors-for-the-disqus-api">"Building cursors for the Disqus API"</a> 글이 기본 접근 방식을 잘 설명합니다.</p>
 <h4 id="setup_2"><a class="toclink" href="#setup_2">Setup</a></h4>
-<p>To enable the <code>CursorPagination</code> style globally, use the following configuration, modifying the <code>PAGE_SIZE</code> as desired:</p>
+<p><code>CursorPagination</code> 스타일을 전역으로 활성화하려면 다음 설정을 사용하고, <code>PAGE_SIZE</code> 는 필요에 맞게 변경하세요.</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.CursorPagination',
     'PAGE_SIZE': 100
 }
 </code></pre>
-<p>On <code>GenericAPIView</code> subclasses you may also set the <code>pagination_class</code> attribute to select <code>CursorPagination</code> on a per-view basis.</p>
+<p><code>GenericAPIView</code> 를 상속한 뷰에서는 뷰 단위로 <code>pagination_class</code> 속성을 설정해 <code>CursorPagination</code> 을 선택할 수도 있습니다.</p>
 <h4 id="configuration_2"><a class="toclink" href="#configuration_2">Configuration</a></h4>
-<p>The <code>CursorPagination</code> class includes a number of attributes that may be overridden to modify the pagination style.</p>
-<p>To set these attributes you should override the <code>CursorPagination</code> class, and then enable your custom pagination class as above.</p>
+<p><code>CursorPagination</code> 은 페이지네이션 스타일을 수정하기 위해 오버라이드할 수 있는 여러 속성을 제공합니다.</p>
+<p>이 속성들을 설정하려면 <code>CursorPagination</code> 을 상속한 커스텀 클래스를 만들고, 위에서처럼 커스텀 pagination 클래스를 활성화하면 됩니다.</p>
 <ul>
-<li><code>page_size</code> = A numeric value indicating the page size. If set, this overrides the <code>PAGE_SIZE</code> setting. Defaults to the same value as the <code>PAGE_SIZE</code> settings key.</li>
-<li><code>cursor_query_param</code> = A string value indicating the name of the "cursor" query parameter. Defaults to <code>'cursor'</code>.</li>
-<li><code>ordering</code> = This should be a string, or list of strings, indicating the field against which the cursor based pagination will be applied. For example: <code>ordering = 'slug'</code>. Defaults to <code>-created</code>. This value may also be overridden by using <code>OrderingFilter</code> on the view.</li>
-<li><code>template</code> = The name of a template to use when rendering pagination controls in the browsable API. May be overridden to modify the rendering style, or set to <code>None</code> to disable HTML pagination controls completely. Defaults to <code>"rest_framework/pagination/previous_and_next.html"</code>.</li>
+<li><code>page_size</code> = 페이지 크기를 나타내는 숫자 값입니다. 설정하면 <code>PAGE_SIZE</code> 설정을 덮어씁니다. 기본값은 <code>PAGE_SIZE</code> 와 동일합니다.</li>
+<li><code>cursor_query_param</code> = <code>"cursor"</code> query parameter 이름을 나타내는 문자열 값입니다. 기본값은 <code>'cursor'</code>.</li>
+<li><code>ordering</code> = 커서 기반 페이지네이션이 적용될 필드를 나타내는 문자열 또는 문자열 리스트입니다. 예: <code>ordering = 'slug'</code>. 기본값은 <code>-created</code> 입니다. 이 값은 뷰에서 <code>OrderingFilter</code> 를 사용하면 오버라이드될 수도 있습니다.</li>
+<li><code>template</code> = browsable API에서 페이지네이션 컨트롤을 렌더링할 때 사용할 템플릿 이름입니다. 렌더링 스타일을 바꾸기 위해 오버라이드할 수 있고, <code>None</code> 으로 설정하면 HTML 페이지네이션 컨트롤을 완전히 비활성화할 수 있습니다. 기본값은 <code>"rest_framework/pagination/previous_and_next.html"</code> 입니다.</li>
 </ul>
 <hr />
 <h1 id="custom-pagination-styles"><a class="toclink" href="#custom-pagination-styles">Custom pagination styles</a></h1>
-<p>To create a custom pagination serializer class, you should inherit the subclass <code>pagination.BasePagination</code>, override the <code>paginate_queryset(self, queryset, request, view=None)</code>, and <code>get_paginated_response(self, data)</code> methods:</p>
+<p>커스텀 페이지네이션 serializer 클래스를 만들려면 <code>pagination.BasePagination</code> 을 상속하고, <code>paginate_queryset(self, queryset, request, view=None)</code> 및 <code>get_paginated_response(self, data)</code> 메서드를 오버라이드해야 합니다.</p>
 <ul>
-<li>The <code>paginate_queryset</code> method is passed to the initial queryset and should return an iterable object. That object contains only the data in the requested page.</li>
-<li>The <code>get_paginated_response</code> method is passed to the serialized page data and should return a <code>Response</code> instance.</li>
+<li><code>paginate_queryset</code> 메서드는 초기 queryset을 입력으로 받아, 요청된 페이지에 해당하는 데이터만 포함하는 iterable 객체를 반환해야 합니다.</li>
+<li><code>get_paginated_response</code> 메서드는 직렬화된 페이지 데이터(serialize된 data)를 입력으로 받아 <code>Response</code> 인스턴스를 반환해야 합니다.</li>
 </ul>
-<p>Note that the <code>paginate_queryset</code> method may set state on the pagination instance, that may later be used by the <code>get_paginated_response</code> method.</p>
+<p><code>paginate_queryset</code> 메서드는 pagination 인스턴스에 상태(state)를 설정할 수 있으며, 이 상태는 나중에 <code>get_paginated_response</code> 메서드에서 사용할 수 있습니다.</p>
 <h2 id="example"><a class="toclink" href="#example">Example</a></h2>
-<p>Suppose we want to replace the default pagination output style with a modified format that includes the next and previous links under in a nested 'links' key. We could specify a custom pagination class like so:</p>
+<p>기본 페이지네이션 출력 스타일을 바꾸어, <code>next</code> 와 <code>previous</code> 링크를 중첩된 <code>'links'</code> 키 아래에 포함하는 포맷으로 바꾸고 싶다고 가정해봅시다. 다음과 같이 커스텀 pagination 클래스를 지정할 수 있습니다.</p>
 <pre><code>class CustomPagination(pagination.PageNumberPagination):
     def get_paginated_response(self, data):
         return Response({
@@ -689,46 +689,48 @@ class StandardResultsSetPagination(PageNumberPagination):
             'results': data
         })
 </code></pre>
-<p>We'd then need to set up the custom class in our configuration:</p>
+<p>그 다음 설정에서 커스텀 클래스를 등록해야 합니다.</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'my_project.apps.core.pagination.CustomPagination',
     'PAGE_SIZE': 100
 }
 </code></pre>
-<p>Note that if you care about how the ordering of keys is displayed in responses in the browsable API you might choose to use an <code>OrderedDict</code> when constructing the body of paginated responses, but this is optional.</p>
+<p>Browsable API에서 응답 키의 표시 순서가 중요하다면, 페이지네이션 응답 본문을 구성할 때 <code>OrderedDict</code> 를 사용할 수도 있습니다. 다만 이는 선택 사항입니다.</p>
 <h2 id="using-your-custom-pagination-class"><a class="toclink" href="#using-your-custom-pagination-class">Using your custom pagination class</a></h2>
-<p>To have your custom pagination class be used by default, use the <code>DEFAULT_PAGINATION_CLASS</code> setting:</p>
+<p>커스텀 페이지네이션 클래스를 기본값으로 사용하려면 <code>DEFAULT_PAGINATION_CLASS</code> 를 설정합니다.</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'my_project.apps.core.pagination.LinkHeaderPagination',
     'PAGE_SIZE': 100
 }
 </code></pre>
-<p>API responses for list endpoints will now include a <code>Link</code> header, instead of including the pagination links as part of the body of the response, for example:</p>
+<p>이제 리스트 엔드포인트의 API 응답은, 본문에 링크를 포함하는 대신 <code>Link</code> 헤더를 포함하게 됩니다. 예:</p>
 <p><img alt="Link Header" src="../../img/link-header-pagination.png" /></p>
-<p><em>A custom pagination style, using the 'Link' header</em></p>
+<p><em>'Link' 헤더를 사용하는 커스텀 페이지네이션 스타일</em></p>
 <hr />
 <h1 id="html-pagination-controls"><a class="toclink" href="#html-pagination-controls">HTML pagination controls</a></h1>
-<p>By default using the pagination classes will cause HTML pagination controls to be displayed in the browsable API. There are two built-in display styles. The <code>PageNumberPagination</code> and <code>LimitOffsetPagination</code> classes display a list of page numbers with previous and next controls. The <code>CursorPagination</code> class displays a simpler style that only displays a previous and next control.</p>
+<p>기본적으로 페이지네이션 클래스를 사용하면 browsable API에서 HTML 페이지네이션 컨트롤이 표시됩니다. 내장된 표시 스타일은 두 가지입니다.<br />
+<code>PageNumberPagination</code> 과 <code>LimitOffsetPagination</code> 은 이전/다음 컨트롤과 함께 페이지 번호 목록을 표시합니다.<br />
+<code>CursorPagination</code> 은 이전/다음 컨트롤만 표시하는 더 단순한 스타일을 사용합니다.</p>
 <h2 id="customizing-the-controls"><a class="toclink" href="#customizing-the-controls">Customizing the controls</a></h2>
-<p>You can override the templates that render the HTML pagination controls. The two built-in styles are:</p>
+<p>HTML 페이지네이션 컨트롤을 렌더링하는 템플릿을 오버라이드할 수 있습니다. 내장된 두 템플릿 경로는 다음과 같습니다.</p>
 <ul>
 <li><code>rest_framework/pagination/numbers.html</code></li>
 <li><code>rest_framework/pagination/previous_and_next.html</code></li>
 </ul>
-<p>Providing a template with either of these paths in a global template directory will override the default rendering for the relevant pagination classes.</p>
-<p>Alternatively you can disable HTML pagination controls completely by subclassing on of the existing classes, setting <code>template = None</code> as an attribute on the class. You'll then need to configure your <code>DEFAULT_PAGINATION_CLASS</code> settings key to use your custom class as the default pagination style.</p>
+<p>전역 템플릿 디렉터리(global template directory)에 위 경로 중 하나로 템플릿을 제공하면, 해당 pagination 클래스의 기본 렌더링을 오버라이드할 수 있습니다.</p>
+<p>또는 기존 클래스 중 하나를 상속하여 클래스 속성으로 <code>template = None</code> 을 설정함으로써 HTML 페이지네이션 컨트롤을 완전히 비활성화할 수도 있습니다. 이 경우, 커스텀 클래스를 기본 페이지네이션 스타일로 사용하도록 <code>DEFAULT_PAGINATION_CLASS</code> 설정 키를 구성해야 합니다.</p>
 <h4 id="low-level-api"><a class="toclink" href="#low-level-api">Low-level API</a></h4>
-<p>The low-level API for determining if a pagination class should display the controls or not is exposed as a <code>display_page_controls</code> attribute on the pagination instance. Custom pagination classes should be set to <code>True</code> in the <code>paginate_queryset</code> method if they require the HTML pagination controls to be displayed.</p>
-<p>The <code>.to_html()</code> and <code>.get_html_context()</code> methods may also be overridden in a custom pagination class in order to further customize how the controls are rendered.</p>
+<p>페이지네이션 클래스가 컨트롤을 표시해야 하는지 여부를 판단하는 low-level API는 pagination 인스턴스의 <code>display_page_controls</code> 속성으로 노출됩니다. 커스텀 페이지네이션 클래스가 HTML 페이지네이션 컨트롤 표시가 필요하다면, <code>paginate_queryset</code> 메서드에서 <code>display_page_controls</code> 를 <code>True</code> 로 설정해야 합니다.</p>
+<p><code>.to_html()</code> 및 <code>.get_html_context()</code> 메서드도 커스텀 페이지네이션 클래스에서 오버라이드하여 컨트롤 렌더링을 추가로 커스터마이즈할 수 있습니다.</p>
 <hr />
 <h1 id="third-party-packages"><a class="toclink" href="#third-party-packages">Third party packages</a></h1>
-<p>The following third party packages are also available.</p>
+<p>사용 가능한 서드파티 패키지도 있습니다.</p>
 <h2 id="drf-extensions"><a class="toclink" href="#drf-extensions">DRF-extensions</a></h2>
-<p>The <a href="https://chibisov.github.io/drf-extensions/docs/"><code>DRF-extensions</code> package</a> includes a <a href="https://chibisov.github.io/drf-extensions/docs/#paginatebymaxmixin"><code>PaginateByMaxMixin</code> mixin class</a> that allows your API clients to specify <code>?page_size=max</code> to obtain the maximum allowed page size.</p>
+<p><a href="https://chibisov.github.io/drf-extensions/docs/"><code>DRF-extensions</code> 패키지</a>에는 <a href="https://chibisov.github.io/drf-extensions/docs/#paginatebymaxmixin"><code>PaginateByMaxMixin</code> 믹스인 클래스</a>가 포함되어 있어, API 클라이언트가 <code>?page_size=max</code> 를 지정해 허용된 최대 page size를 얻을 수 있게 해줍니다.</p>
 <h2 id="drf-proxy-pagination"><a class="toclink" href="#drf-proxy-pagination">drf-proxy-pagination</a></h2>
-<p>The <a href="https://github.com/tuffnatty/drf-proxy-pagination"><code>drf-proxy-pagination</code> package</a> includes a <code>ProxyPagination</code> class which allows to choose pagination class with a query parameter.</p>
+<p><a href="https://github.com/tuffnatty/drf-proxy-pagination"><code>drf-proxy-pagination</code> 패키지</a>에는 query parameter로 pagination 클래스를 선택할 수 있게 해주는 <code>ProxyPagination</code> 클래스가 포함되어 있습니다.</p>
 <h2 id="link-header-pagination"><a class="toclink" href="#link-header-pagination">link-header-pagination</a></h2>
-<p>The <a href="https://github.com/tbeadle/django-rest-framework-link-header-pagination"><code>django-rest-framework-link-header-pagination</code> package</a> includes a <code>LinkHeaderPagination</code> class which provides pagination via an HTTP <code>Link</code> header as described in <a href="https://docs.github.com/en/rest/guides/traversing-with-pagination">GitHub REST API documentation</a>.</p>
+<p><a href="https://github.com/tbeadle/django-rest-framework-link-header-pagination"><code>django-rest-framework-link-header-pagination</code> 패키지</a>에는, <a href="https://docs.github.com/en/rest/guides/traversing-with-pagination">GitHub REST API 문서</a>에 설명된 것처럼 HTTP <code>Link</code> 헤더를 통해 페이지네이션을 제공하는 <code>LinkHeaderPagination</code> 클래스가 포함되어 있습니다.</p>
             
 
           </div> <!--/span-->

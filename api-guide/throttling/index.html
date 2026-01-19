@@ -491,19 +491,25 @@
 <p>HTTP/1.1 420 Enhance Your Calm</p>
 <p><a href="https://developer.twitter.com/en/docs/basics/rate-limiting">Twitter API rate limiting response</a></p>
 </blockquote>
-<p>Throttling is similar to <a href="../permissions/">permissions</a>, in that it determines if a request should be authorized.  Throttles indicate a temporary state, and are used to control the rate of requests that clients can make to an API.</p>
-<p>As with permissions, multiple throttles may be used.  Your API might have a restrictive throttle for unauthenticated requests, and a less restrictive throttle for authenticated requests.</p>
-<p>Another scenario where you might want to use multiple throttles would be if you need to impose different constraints on different parts of the API, due to some services being particularly resource-intensive.</p>
-<p>Multiple throttles can also be used if you want to impose both burst throttling rates, and sustained throttling rates.  For example, you might want to limit a user to a maximum of 60 requests per minute, and 1000 requests per day.</p>
-<p>Throttles do not necessarily only refer to rate-limiting requests.  For example a storage service might also need to throttle against bandwidth, and a paid data service might want to throttle against a certain number of a records being accessed.</p>
-<p>**The application-level throttling that REST framework provides should not be considered a security measure or protection against brute forcing or denial-of-service attacks. Deliberately malicious actors will always be able to spoof IP origins. In addition to this, the built-in throttling implementations are implemented using Django's cache framework, and use non-atomic operations to determine the request rate, which may sometimes result in some fuzziness.</p>
-<p>The application-level throttling provided by REST framework is intended for implementing policies such as different business tiers and basic protections against service over-use.**</p>
+<p>Throttling은 <a href="../permissions/">permissions</a>와 유사하게, 요청이 허용되어야 하는지를 판단합니다.<br />
+Throttle은 <strong>일시적인 상태</strong>를 나타내며, 클라이언트가 API에 요청할 수 있는 <strong>요청 속도(rate)</strong>를 제어하는 데 사용됩니다.</p>
+<p>Permissions와 마찬가지로, <strong>여러 개의 throttle을 함께 사용할 수 있습니다</strong>.<br />
+예를 들어, 인증되지 않은 요청에는 더 엄격한 throttle을 적용하고, 인증된 요청에는 덜 제한적인 throttle을 적용할 수 있습니다.</p>
+<p>또 다른 시나리오로는, API의 특정 부분이 특히 리소스를 많이 사용하는 경우, 해당 부분에만 다른 제약을 두고 싶을 때 여러 throttle을 사용하는 경우가 있습니다.</p>
+<p>또한 <strong>burst(단기 폭주) 제한</strong>과 <strong>지속적인 제한</strong>을 동시에 적용하기 위해 여러 throttle을 사용할 수도 있습니다.<br />
+예를 들어, 사용자를 <em>분당 최대 60회</em>, <em>하루 최대 1000회</em> 요청으로 제한할 수 있습니다.</p>
+<p>Throttle은 반드시 요청 속도 제한만을 의미하지는 않습니다.<br />
+예를 들어, 스토리지 서비스는 대역폭 기준으로 throttle을 걸 수도 있고, 유료 데이터 서비스는 접근 가능한 레코드 수 기준으로 throttle을 적용할 수도 있습니다.</p>
+<p><strong>REST framework에서 제공하는 애플리케이션 레벨 throttling은 보안 수단이나 brute force, DoS 공격에 대한 방어책으로 간주되어서는 안 됩니다.<br />
+악의적인 공격자는 IP를 쉽게 위조할 수 있으며, 기본 throttling 구현은 Django의 cache 프레임워크를 사용하고 비원자적(non-atomic) 연산을 기반으로 하므로, 요청 수 계산에 약간의 오차가 발생할 수 있습니다.</strong></p>
+<p><strong>REST framework의 throttling은 비즈니스 티어 구분이나 서비스 과사용 방지와 같은 정책을 구현하기 위한 용도로 의도되었습니다.</strong></p>
 <h2 id="how-throttling-is-determined"><a class="toclink" href="#how-throttling-is-determined">How throttling is determined</a></h2>
-<p>As with permissions and authentication, throttling in REST framework is always defined as a list of classes.</p>
-<p>Before running the main body of the view each throttle in the list is checked.
-If any throttle check fails an <code>exceptions.Throttled</code> exception will be raised, and the main body of the view will not run.</p>
+<p>Permissions 및 authentication과 마찬가지로, REST framework에서 throttling은 <strong>클래스 목록(list of classes)</strong>으로 정의됩니다.</p>
+<p>뷰의 본문 로직이 실행되기 전에, 리스트에 포함된 각 throttle이 순차적으로 검사됩니다.<br />
+어느 하나라도 실패하면 <code>exceptions.Throttled</code> 예외가 발생하며, 뷰의 본문은 실행되지 않습니다.</p>
 <h2 id="setting-the-throttling-policy"><a class="toclink" href="#setting-the-throttling-policy">Setting the throttling policy</a></h2>
-<p>The default throttling policy may be set globally, using the <code>DEFAULT_THROTTLE_CLASSES</code> and <code>DEFAULT_THROTTLE_RATES</code> settings.  For example.</p>
+<p>기본 throttling 정책은 전역 설정으로 지정할 수 있으며,<br />
+<code>DEFAULT_THROTTLE_CLASSES</code> 와 <code>DEFAULT_THROTTLE_RATES</code> 를 사용합니다. 예시는 다음과 같습니다.</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
@@ -515,9 +521,11 @@ If any throttle check fails an <code>exceptions.Throttled</code> exception will 
     }
 }
 </code></pre>
-<p>The rates used in <code>DEFAULT_THROTTLE_RATES</code> can be specified over a period of second, minute, hour or day. The period must be specified after the <code>/</code> separator using <code>s</code>, <code>m</code>, <code>h</code> or <code>d</code>, respectively. For increased clarity, extended units such as <code>second</code>, <code>minute</code>, <code>hour</code>, <code>day</code> or even abbreviations like <code>sec</code>, <code>min</code>, <code>hr</code> are allowed, as only the first character is relevant to identify the rate.</p>
-<p>You can also set the throttling policy on a per-view or per-viewset basis,
-using the <code>APIView</code> class-based views.</p>
+<p><code>DEFAULT_THROTTLE_RATES</code> 에서 rate는 <code>초/분/시간/일</code> 단위로 지정할 수 있습니다.<br />
+<code>/</code> 뒤에 <code>s</code>, <code>m</code>, <code>h</code>, <code>d</code> 를 사용하며,<br />
+<code>second</code>, <code>minute</code>, <code>hour</code>, <code>day</code> 또는 <code>sec</code>, <code>min</code>, <code>hr</code> 와 같은 확장 표현도 사용할 수 있습니다.<br />
+실제로는 <strong>첫 글자만</strong> 판별에 사용됩니다.</p>
+<p>또한, <code>APIView</code> 기반의 클래스 뷰에서 <strong>뷰 또는 뷰셋 단위로 throttling 정책을 설정</strong>할 수 있습니다.</p>
 <pre><code>from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 from rest_framework.views import APIView
@@ -531,7 +539,7 @@ class ExampleView(APIView):
         }
         return Response(content)
 </code></pre>
-<p>If you're using the <code>@api_view</code> decorator with function based views you can use the following decorator.</p>
+<p>함수 기반 뷰에서 <code>@api_view</code> 데코레이터를 사용하는 경우, 다음과 같이 설정할 수 있습니다.</p>
 <pre><code>@api_view(['GET'])
 @throttle_classes([UserRateThrottle])
 def example_view(request, format=None):
@@ -540,8 +548,8 @@ def example_view(request, format=None):
     }
     return Response(content)
 </code></pre>
-<p>It's also possible to set throttle classes for routes that are created using the <code>@action</code> decorator.
-Throttle classes set in this way will override any viewset level class settings.</p>
+<p><code>@action</code> 데코레이터로 생성된 라우트에도 throttle 클래스를 지정할 수 있습니다.<br />
+이 경우, 해당 throttle 설정은 <strong>뷰셋 레벨 설정을 덮어씁니다</strong>.</p>
 <pre><code>@action(detail=True, methods=["post"], throttle_classes=[UserRateThrottle])
 def example_adhoc_method(request, pk=None):
     content = {
@@ -550,48 +558,72 @@ def example_adhoc_method(request, pk=None):
     return Response(content)
 </code></pre>
 <h2 id="how-clients-are-identified"><a class="toclink" href="#how-clients-are-identified">How clients are identified</a></h2>
-<p>The <code>X-Forwarded-For</code> HTTP header and <code>REMOTE_ADDR</code> WSGI variable are used to uniquely identify client IP addresses for throttling.  If the <code>X-Forwarded-For</code> header is present then it will be used, otherwise the value of the <code>REMOTE_ADDR</code> variable from the WSGI environment will be used.</p>
-<p>If you need to strictly identify unique client IP addresses, you'll need to first configure the number of application proxies that the API runs behind by setting the <code>NUM_PROXIES</code> setting.  This setting should be an integer of zero or more.  If set to non-zero then the client IP will be identified as being the last IP address in the <code>X-Forwarded-For</code> header, once any application proxy IP addresses have first been excluded.  If set to zero, then the <code>REMOTE_ADDR</code> value will always be used as the identifying IP address.</p>
-<p>It is important to understand that if you configure the <code>NUM_PROXIES</code> setting, then all clients behind a unique <a href="https://en.wikipedia.org/wiki/Network_address_translation">NAT'd</a> gateway will be treated as a single client.</p>
-<p>Further context on how the <code>X-Forwarded-For</code> header works, and identifying a remote client IP can be <a href="http://oxpedia.org/wiki/index.php?title=AppSuite:Grizzly#Multiple_Proxies_in_front_of_the_cluster">found here</a>.</p>
+<p>Throttle에서 클라이언트를 식별하기 위해 <code>X-Forwarded-For</code> HTTP 헤더와<br />
+WSGI 환경 변수 <code>REMOTE_ADDR</code> 가 사용됩니다.</p>
+<p><code>X-Forwarded-For</code> 헤더가 존재하면 이를 사용하고,<br />
+그렇지 않으면 <code>REMOTE_ADDR</code> 값을 사용합니다.</p>
+<p>클라이언트 IP를 엄격하게 식별해야 하는 경우,<br />
+API가 몇 개의 애플리케이션 프록시 뒤에서 동작하는지를<br />
+<code>NUM_PROXIES</code> 설정으로 지정해야 합니다.</p>
+<p><code>NUM_PROXIES</code> 는 0 이상의 정수 값입니다.</p>
+<ul>
+<li>0보다 큰 값이면, <code>X-Forwarded-For</code> 헤더에서 프록시 IP를 제외한 <strong>마지막 IP</strong>를 클라이언트 IP로 사용합니다.</li>
+<li>0이면, 항상 <code>REMOTE_ADDR</code> 값을 사용합니다.</li>
+</ul>
+<p><code>NUM_PROXIES</code> 를 설정할 경우,<br />
+하나의 <a href="https://en.wikipedia.org/wiki/Network_address_translation">NAT</a> 게이트웨이 뒤에 있는 모든 클라이언트는 <strong>동일한 클라이언트로 간주</strong>된다는 점에 유의해야 합니다.</p>
+<p><code>X-Forwarded-For</code> 헤더와 원격 클라이언트 IP 식별 방식에 대한 추가 설명은<br />
+<a href="http://oxpedia.org/wiki/index.php?title=AppSuite:Grizzly#Multiple_Proxies_in_front_of_the_cluster">여기</a>에서 확인할 수 있습니다.</p>
 <h2 id="setting-up-the-cache"><a class="toclink" href="#setting-up-the-cache">Setting up the cache</a></h2>
-<p>The throttle classes provided by REST framework use Django's cache backend.  You should make sure that you've set appropriate <a href="https://docs.djangoproject.com/en/stable/ref/settings/#caches">cache settings</a>.  The default value of <code>LocMemCache</code> backend should be okay for simple setups.  See Django's <a href="https://docs.djangoproject.com/en/stable/topics/cache/#setting-up-the-cache">cache documentation</a> for more details.</p>
-<p>If you need to use a cache other than <code>'default'</code>, you can do so by creating a custom throttle class and setting the <code>cache</code> attribute.  For example:</p>
+<p>REST framework에서 제공하는 throttle 클래스는 Django의 cache 백엔드를 사용합니다.<br />
+적절한 <a href="https://docs.djangoproject.com/en/stable/ref/settings/#caches">cache 설정</a>이 필요합니다.</p>
+<p>기본값인 <code>LocMemCache</code> 는 단순한 환경에서는 충분합니다.<br />
+자세한 내용은 Django의 <a href="https://docs.djangoproject.com/en/stable/topics/cache/#setting-up-the-cache">cache 문서</a>를 참고하세요.</p>
+<p><code>'default'</code> 가 아닌 캐시를 사용해야 하는 경우,<br />
+커스텀 throttle 클래스를 만들고 <code>cache</code> 속성을 지정할 수 있습니다.</p>
 <pre><code>from django.core.cache import caches
 
 class CustomAnonRateThrottle(AnonRateThrottle):
     cache = caches['alternate']
 </code></pre>
-<p>You'll need to remember to also set your custom throttle class in the <code>'DEFAULT_THROTTLE_CLASSES'</code> settings key, or using the <code>throttle_classes</code> view attribute.</p>
+<p>이 경우, 해당 커스텀 throttle 클래스를<br />
+<code>'DEFAULT_THROTTLE_CLASSES'</code> 또는 뷰의 <code>throttle_classes</code> 에 반드시 등록해야 합니다.</p>
 <h2 id="a-note-on-concurrency"><a class="toclink" href="#a-note-on-concurrency">A note on concurrency</a></h2>
-<p>The built-in throttle implementations are open to <a href="https://en.wikipedia.org/wiki/Race_condition#Data_race">race conditions</a>, so under high concurrency they may allow a few extra requests through.</p>
-<p>If your project relies on guaranteeing the number of requests during concurrent requests, you will need to implement your own throttle class. See <a href="https://github.com/encode/django-rest-framework/issues/5181">issue #5181</a> for more details.</p>
+<p>기본 throttle 구현은 <a href="https://en.wikipedia.org/wiki/Race_condition#Data_race">race condition</a>에 취약하므로,<br />
+높은 동시성 환경에서는 일부 요청이 초과 허용될 수 있습니다.</p>
+<p>동시 요청 상황에서도 요청 수를 <strong>엄격하게 보장해야 한다면</strong>,<br />
+직접 커스텀 throttle 클래스를 구현해야 합니다.<br />
+자세한 내용은 <a href="https://github.com/encode/django-rest-framework/issues/5181">issue #5181</a>을 참고하세요.</p>
 <hr />
 <h1 id="api-reference"><a class="toclink" href="#api-reference">API Reference</a></h1>
 <h2 id="anonratethrottle"><a class="toclink" href="#anonratethrottle">AnonRateThrottle</a></h2>
-<p>The <code>AnonRateThrottle</code> will only ever throttle unauthenticated users.  The IP address of the incoming request is used to generate a unique key to throttle against.</p>
-<p>The allowed request rate is determined from one of the following (in order of preference).</p>
+<p><code>AnonRateThrottle</code> 은 <strong>인증되지 않은 사용자만</strong> 대상으로 throttle을 적용합니다.<br />
+요청의 IP 주소를 기준으로 고유한 throttle 키를 생성합니다.</p>
+<p>허용 요청 수는 다음 우선순위로 결정됩니다.</p>
 <ul>
-<li>The <code>rate</code> property on the class, which may be provided by overriding <code>AnonRateThrottle</code> and setting the property.</li>
-<li>The <code>DEFAULT_THROTTLE_RATES['anon']</code> setting.</li>
+<li>클래스의 <code>rate</code> 속성 (상속 후 직접 지정한 경우)</li>
+<li><code>DEFAULT_THROTTLE_RATES['anon']</code> 설정</li>
 </ul>
-<p><code>AnonRateThrottle</code> is suitable if you want to restrict the rate of requests from unknown sources.</p>
+<p>알 수 없는 출처의 요청을 제한하고 싶을 때 적합합니다.</p>
 <h2 id="userratethrottle"><a class="toclink" href="#userratethrottle">UserRateThrottle</a></h2>
-<p>The <code>UserRateThrottle</code> will throttle users to a given rate of requests across the API.  The user id is used to generate a unique key to throttle against.  Unauthenticated requests will fall back to using the IP address of the incoming request to generate a unique key to throttle against.</p>
-<p>The allowed request rate is determined from one of the following (in order of preference).</p>
+<p><code>UserRateThrottle</code> 은 사용자 단위로 API 전체에 대해 요청 수를 제한합니다.<br />
+사용자 ID를 기준으로 throttle 키를 생성합니다.</p>
+<p>인증되지 않은 요청은 IP 주소를 기준으로 처리됩니다.</p>
+<p>허용 요청 수는 다음 우선순위로 결정됩니다.</p>
 <ul>
-<li>The <code>rate</code> property on the class, which may be provided by overriding <code>UserRateThrottle</code> and setting the property.</li>
-<li>The <code>DEFAULT_THROTTLE_RATES['user']</code> setting.</li>
+<li>클래스의 <code>rate</code> 속성</li>
+<li><code>DEFAULT_THROTTLE_RATES['user']</code> 설정</li>
 </ul>
-<p>An API may have multiple <code>UserRateThrottles</code> in place at the same time.  To do so, override <code>UserRateThrottle</code> and set a unique "scope" for each class.</p>
-<p>For example, multiple user throttle rates could be implemented by using the following classes...</p>
+<p>여러 개의 <code>UserRateThrottle</code> 을 동시에 적용할 수도 있습니다.<br />
+이 경우, 각 클래스마다 고유한 <code>scope</code> 값을 지정해야 합니다.</p>
+<p>예시는 다음과 같습니다.</p>
 <pre><code>class BurstRateThrottle(UserRateThrottle):
     scope = 'burst'
 
 class SustainedRateThrottle(UserRateThrottle):
     scope = 'sustained'
 </code></pre>
-<p>...and the following settings.</p>
+<p>설정은 다음과 같이 합니다.</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_CLASSES': [
         'example.throttles.BurstRateThrottle',
@@ -603,11 +635,13 @@ class SustainedRateThrottle(UserRateThrottle):
     }
 }
 </code></pre>
-<p><code>UserRateThrottle</code> is suitable if you want simple global rate restrictions per-user.</p>
+<p>간단한 사용자 단위 전역 요청 제한에 적합합니다.</p>
 <h2 id="scopedratethrottle"><a class="toclink" href="#scopedratethrottle">ScopedRateThrottle</a></h2>
-<p>The <code>ScopedRateThrottle</code> class can be used to restrict access to specific parts of the API.  This throttle will only be applied if the view that is being accessed includes a <code>.throttle_scope</code> property.  The unique throttle key will then be formed by concatenating the "scope" of the request with the unique user id or IP address.</p>
-<p>The allowed request rate is determined by the <code>DEFAULT_THROTTLE_RATES</code> setting using a key from the request "scope".</p>
-<p>For example, given the following views...</p>
+<p><code>ScopedRateThrottle</code> 은 API의 특정 부분에만 제한을 적용할 때 사용합니다.<br />
+뷰에 <code>.throttle_scope</code> 속성이 정의되어 있을 때만 적용됩니다.</p>
+<p>Throttle 키는 <strong>scope + 사용자 ID 또는 IP 주소</strong> 조합으로 생성됩니다.</p>
+<p>허용 요청 수는 <code>DEFAULT_THROTTLE_RATES</code> 에서 scope 이름을 키로 하여 결정됩니다.</p>
+<p>예시:</p>
 <pre><code>class ContactListView(APIView):
     throttle_scope = 'contacts'
     ...
@@ -620,7 +654,7 @@ class UploadView(APIView):
     throttle_scope = 'uploads'
     ...
 </code></pre>
-<p>...and the following settings.</p>
+<p>설정:</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.ScopedRateThrottle',
@@ -631,14 +665,21 @@ class UploadView(APIView):
     }
 }
 </code></pre>
-<p>User requests to either <code>ContactListView</code> or <code>ContactDetailView</code> would be restricted to a total of 1000 requests per-day.  User requests to <code>UploadView</code> would be restricted to 20 requests per day.</p>
+<p><code>ContactListView</code> 와 <code>ContactDetailView</code> 에 대한 요청은<br />
+하루 총 1000회로 제한되며,<br />
+<code>UploadView</code> 는 하루 20회로 제한됩니다.</p>
 <hr />
 <h1 id="custom-throttles"><a class="toclink" href="#custom-throttles">Custom throttles</a></h1>
-<p>To create a custom throttle, override <code>BaseThrottle</code> and implement <code>.allow_request(self, request, view)</code>.  The method should return <code>True</code> if the request should be allowed, and <code>False</code> otherwise.</p>
-<p>Optionally you may also override the <code>.wait()</code> method.  If implemented, <code>.wait()</code> should return a recommended number of seconds to wait before attempting the next request, or <code>None</code>.  The <code>.wait()</code> method will only be called if <code>.allow_request()</code> has previously returned <code>False</code>.</p>
-<p>If the <code>.wait()</code> method is implemented and the request is throttled, then a <code>Retry-After</code> header will be included in the response.</p>
+<p>커스텀 throttle을 만들려면 <code>BaseThrottle</code> 을 상속하고<br />
+<code>.allow_request(self, request, view)</code> 메서드를 구현해야 합니다.</p>
+<p>요청을 허용할 경우 <code>True</code>, 거부할 경우 <code>False</code> 를 반환합니다.</p>
+<p>선택적으로 <code>.wait()</code> 메서드를 오버라이드할 수 있습니다.<br />
+이 메서드는 다음 요청까지 <strong>기다려야 할 권장 시간(초)</strong>을 반환하거나 <code>None</code> 을 반환합니다.</p>
+<p><code>.wait()</code> 는 <code>.allow_request()</code> 가 <code>False</code> 를 반환한 경우에만 호출됩니다.</p>
+<p><code>.wait()</code> 가 구현되어 있고 요청이 제한되면,<br />
+응답에 <code>Retry-After</code> 헤더가 포함됩니다.</p>
 <h2 id="example"><a class="toclink" href="#example">Example</a></h2>
-<p>The following is an example of a rate throttle, that will randomly throttle 1 in every 10 requests.</p>
+<p>다음은 요청의 10분의 1을 무작위로 차단하는 throttle 예제입니다.</p>
 <pre><code>import random
 
 class RandomRateThrottle(throttling.BaseThrottle):

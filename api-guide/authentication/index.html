@@ -413,20 +413,20 @@
 
                 
                   <li class="main">
-                    <a href="#authentication">Authentication</a>
+                    <a href="#authentication">인증 (Authentication)</a>
                   </li>
 
                   
                     <li>
-                      <a href="#how-authentication-is-determined">How authentication is determined</a>
+                      <a href="#how-authentication-is-determined">인증이 결정되는 방식 (How authentication is determined)</a>
                     </li>
                   
                     <li>
-                      <a href="#setting-the-authentication-scheme">Setting the authentication scheme</a>
+                      <a href="#setting-the-authentication-scheme">인증 방식 설정하기 (Setting the authentication scheme)</a>
                     </li>
                   
                     <li>
-                      <a href="#unauthorized-and-forbidden-responses">Unauthorized and Forbidden responses</a>
+                      <a href="#unauthorized-forbidden-unauthorized-and-forbidden-responses">Unauthorized 및 Forbidden 응답 (Unauthorized and Forbidden responses)</a>
                     </li>
                   
                     <li>
@@ -434,12 +434,12 @@
                     </li>
                   
                     <li>
-                      <a href="#apache-mod_wsgi-specific-configuration">Apache mod_wsgi specific configuration</a>
+                      <a href="#apache-mod_wsgi-apache-mod_wsgi-specific-configuration">Apache mod_wsgi 전용 설정 (Apache mod_wsgi specific configuration)</a>
                     </li>
                   
                 
                   <li class="main">
-                    <a href="#api-reference">API Reference</a>
+                    <a href="#api-api-reference">API 레퍼런스 (API Reference)</a>
                   </li>
 
                   
@@ -461,17 +461,17 @@
                   
                 
                   <li class="main">
-                    <a href="#custom-authentication">Custom authentication</a>
+                    <a href="#custom-authentication">커스텀 인증 (Custom authentication)</a>
                   </li>
 
                   
                     <li>
-                      <a href="#example">Example</a>
+                      <a href="#example">예제 (Example)</a>
                     </li>
                   
                 
                   <li class="main">
-                    <a href="#third-party-packages">Third party packages</a>
+                    <a href="#third-party-packages">서드파티 패키지 (Third party packages)</a>
                   </li>
 
                   
@@ -552,26 +552,26 @@
                 
               
 
-              <h1 id="authentication"><a class="toclink" href="#authentication">Authentication</a></h1>
+              <h1 id="authentication"><a class="toclink" href="#authentication">인증 (Authentication)</a></h1>
 <blockquote>
-<p>Auth needs to be pluggable.</p>
+<p>인증(Auth)은 플러그인 방식으로 교체 가능해야 한다.</p>
 <p>&mdash; Jacob Kaplan-Moss, <a href="https://jacobian.org/writing/rest-worst-practices/">"REST worst practices"</a></p>
 </blockquote>
-<p>Authentication is the mechanism of associating an incoming request with a set of identifying credentials, such as the user the request came from, or the token that it was signed with.  The <a href="../permissions/">permission</a> and <a href="../throttling/">throttling</a> policies can then use those credentials to determine if the request should be permitted.</p>
-<p>REST framework provides several authentication schemes out of the box, and also allows you to implement custom schemes.</p>
-<p>Authentication always runs at the very start of the view, before the permission and throttling checks occur, and before any other code is allowed to proceed.</p>
-<p>The <code>request.user</code> property will typically be set to an instance of the <code>contrib.auth</code> package's <code>User</code> class.</p>
-<p>The <code>request.auth</code> property is used for any additional authentication information, for example, it may be used to represent an authentication token that the request was signed with.</p>
+<p>인증(Authentication)이란, 들어오는 요청을 요청의 발신 사용자나 서명에 사용된 토큰 같은 식별 자격 증명(credentials) 집합과 연결하는 메커니즘입니다. 이후 <a href="../permissions/">permission</a> 및 <a href="../throttling/">throttling</a> 정책은 이러한 자격 증명을 사용해 요청을 허용할지 여부를 판단할 수 있습니다.</p>
+<p>REST framework는 기본 제공되는 여러 인증 방식을 제공하며, 커스텀 방식도 구현할 수 있습니다.</p>
+<p>인증은 항상 뷰의 가장 시작 지점에서 실행되며, permission 및 throttling 체크가 수행되기 전이고, 다른 어떤 코드도 진행되기 전에 실행됩니다.</p>
+<p><code>request.user</code> 속성은 보통 <code>contrib.auth</code> 패키지의 <code>User</code> 클래스 인스턴스로 설정됩니다.</p>
+<p><code>request.auth</code> 속성은 추가적인 인증 정보를 위해 사용됩니다. 예를 들어, 요청이 서명되었을 때 사용된 인증 토큰을 나타내는 데 사용될 수 있습니다.</p>
 <hr />
-<p><strong>Note:</strong> Don't forget that <strong>authentication by itself won't allow or disallow an incoming request</strong>, it simply identifies the credentials that the request was made with.</p>
-<p>For information on how to set up the permission policies for your API please see the <a href="../permissions/">permissions documentation</a>.</p>
+<p><strong>참고:</strong> <strong>인증 자체만으로는 들어오는 요청을 허용하거나 거부하지 않습니다.</strong> 인증은 단지 요청이 어떤 자격 증명으로 이루어졌는지를 식별할 뿐입니다.</p>
+<p>API의 permission 정책을 설정하는 방법은 <a href="../permissions/">permissions 문서</a>를 참고하세요.</p>
 <hr />
-<h2 id="how-authentication-is-determined"><a class="toclink" href="#how-authentication-is-determined">How authentication is determined</a></h2>
-<p>The authentication schemes are always defined as a list of classes.  REST framework will attempt to authenticate with each class in the list, and will set <code>request.user</code> and <code>request.auth</code> using the return value of the first class that successfully authenticates.</p>
-<p>If no class authenticates, <code>request.user</code> will be set to an instance of <code>django.contrib.auth.models.AnonymousUser</code>, and <code>request.auth</code> will be set to <code>None</code>.</p>
-<p>The value of <code>request.user</code> and <code>request.auth</code> for unauthenticated requests can be modified using the <code>UNAUTHENTICATED_USER</code> and <code>UNAUTHENTICATED_TOKEN</code> settings.</p>
-<h2 id="setting-the-authentication-scheme"><a class="toclink" href="#setting-the-authentication-scheme">Setting the authentication scheme</a></h2>
-<p>The default authentication schemes may be set globally, using the <code>DEFAULT_AUTHENTICATION_CLASSES</code> setting.  For example.</p>
+<h2 id="how-authentication-is-determined"><a class="toclink" href="#how-authentication-is-determined">인증이 결정되는 방식 (How authentication is determined)</a></h2>
+<p>인증 방식은 항상 클래스들의 리스트로 정의됩니다. REST framework는 리스트에 있는 각 클래스에 대해 인증을 시도하며, 최초로 인증에 성공한 클래스의 반환값을 사용해 <code>request.user</code>와 <code>request.auth</code>를 설정합니다.</p>
+<p>어떤 클래스도 인증에 성공하지 못하면, <code>request.user</code>는 <code>django.contrib.auth.models.AnonymousUser</code> 인스턴스로 설정되고, <code>request.auth</code>는 <code>None</code>으로 설정됩니다.</p>
+<p>비인증 요청에 대한 <code>request.user</code>와 <code>request.auth</code> 값은 <code>UNAUTHENTICATED_USER</code> 및 <code>UNAUTHENTICATED_TOKEN</code> 설정을 통해 변경할 수 있습니다.</p>
+<h2 id="setting-the-authentication-scheme"><a class="toclink" href="#setting-the-authentication-scheme">인증 방식 설정하기 (Setting the authentication scheme)</a></h2>
+<p>기본 인증 방식은 <code>DEFAULT_AUTHENTICATION_CLASSES</code> 설정을 통해 전역으로 지정할 수 있습니다. 예를 들어:</p>
 <pre><code>REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
@@ -579,8 +579,7 @@
     ]
 }
 </code></pre>
-<p>You can also set the authentication scheme on a per-view or per-viewset basis,
-using the <code>APIView</code> class-based views.</p>
+<p>또는 <code>APIView</code> 기반의 클래스 기반 뷰를 사용해, 뷰(또는 뷰셋) 단위로 인증 방식을 설정할 수도 있습니다.</p>
 <pre><code>from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -592,94 +591,94 @@ class ExampleView(APIView):
 
     def get(self, request, format=None):
         content = {
-            'user': str(request.user),  # `django.contrib.auth.User` instance.
+            'user': str(request.user),  # `django.contrib.auth.User` 인스턴스.
             'auth': str(request.auth),  # None
         }
         return Response(content)
 </code></pre>
-<p>Or, if you're using the <code>@api_view</code> decorator with function based views.</p>
+<p>또는 함수 기반 뷰에서 <code>@api_view</code> 데코레이터를 사용하는 경우:</p>
 <pre><code>@api_view(['GET'])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def example_view(request, format=None):
     content = {
-        'user': str(request.user),  # `django.contrib.auth.User` instance.
+        'user': str(request.user),  # `django.contrib.auth.User` 인스턴스.
         'auth': str(request.auth),  # None
     }
     return Response(content)
 </code></pre>
-<h2 id="unauthorized-and-forbidden-responses"><a class="toclink" href="#unauthorized-and-forbidden-responses">Unauthorized and Forbidden responses</a></h2>
-<p>When an unauthenticated request is denied permission there are two different error codes that may be appropriate.</p>
+<h2 id="unauthorized-forbidden-unauthorized-and-forbidden-responses"><a class="toclink" href="#unauthorized-forbidden-unauthorized-and-forbidden-responses">Unauthorized 및 Forbidden 응답 (Unauthorized and Forbidden responses)</a></h2>
+<p>비인증 요청이 permission에 의해 거부될 때, 적절한 에러 코드는 두 가지가 있을 수 있습니다.</p>
 <ul>
 <li><a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.2">HTTP 401 Unauthorized</a></li>
 <li><a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">HTTP 403 Permission Denied</a></li>
 </ul>
-<p>HTTP 401 responses must always include a <code>WWW-Authenticate</code> header, that instructs the client how to authenticate.  HTTP 403 responses do not include the <code>WWW-Authenticate</code> header.</p>
-<p>The kind of response that will be used depends on the authentication scheme.  Although multiple authentication schemes may be in use, only one scheme may be used to determine the type of response.  <strong>The first authentication class set on the view is used when determining the type of response</strong>.</p>
-<p>Note that when a request may successfully authenticate, but still be denied permission to perform the request, in which case a <code>403 Permission Denied</code> response will always be used, regardless of the authentication scheme.</p>
+<p>HTTP 401 응답에는 항상 <code>WWW-Authenticate</code> 헤더가 포함되어야 하며, 이 헤더는 클라이언트에게 인증 방법을 안내합니다. HTTP 403 응답에는 <code>WWW-Authenticate</code> 헤더가 포함되지 않습니다.</p>
+<p>어떤 응답이 사용될지는 인증 방식에 따라 달라집니다. 여러 인증 방식이 함께 사용될 수 있지만, 응답 타입(401/403)을 결정하는 데는 오직 하나의 방식만 사용됩니다. <strong>응답 타입을 결정할 때는 뷰에 설정된 첫 번째 인증 클래스가 사용됩니다.</strong></p>
+<p>또한 요청이 인증에는 성공할 수 있지만, 그럼에도 요청 수행 권한이 거부되는 경우가 있을 수 있습니다. 이 경우에는 인증 방식과 무관하게 항상 <code>403 Permission Denied</code> 응답이 사용됩니다.</p>
 <h2 id="django-51-loginrequiredmiddleware"><a class="toclink" href="#django-51-loginrequiredmiddleware">Django 5.1+ <code>LoginRequiredMiddleware</code></a></h2>
-<p>If you're running Django 5.1+ and use the <a href="https://docs.djangoproject.com/en/stable/ref/middleware/#django.contrib.auth.middleware.LoginRequiredMiddleware"><code>LoginRequiredMiddleware</code></a>, please note that all views from DRF are opted-out of this middleware.  This is because the authentication in DRF is based authentication and permissions classes, which may be determined after the middleware has been applied.  Additionally, when the request is not authenticated, the middleware redirects the user to the login page, which is not suitable for API requests, where it's preferable to return a 401 status code.</p>
-<p>REST framework offers an equivalent mechanism for DRF views via the global settings, <code>DEFAULT_AUTHENTICATION_CLASSES</code> and <code>DEFAULT_PERMISSION_CLASSES</code>.  They should be changed accordingly if you need to enforce that API requests are logged in.</p>
-<h2 id="apache-mod_wsgi-specific-configuration"><a class="toclink" href="#apache-mod_wsgi-specific-configuration">Apache mod_wsgi specific configuration</a></h2>
-<p>Note that if deploying to <a href="https://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIPassAuthorization.html">Apache using mod_wsgi</a>, the authorization header is not passed through to a WSGI application by default, as it is assumed that authentication will be handled by Apache, rather than at an application level.</p>
-<p>If you are deploying to Apache, and using any non-session based authentication, you will need to explicitly configure mod_wsgi to pass the required headers through to the application.  This can be done by specifying the <code>WSGIPassAuthorization</code> directive in the appropriate context and setting it to <code>'On'</code>.</p>
-<pre><code># this can go in either server config, virtual host, directory or .htaccess
+<p>Django 5.1+을 사용하고 <a href="https://docs.djangoproject.com/en/stable/ref/middleware/#django.contrib.auth.middleware.LoginRequiredMiddleware"><code>LoginRequiredMiddleware</code></a>를 사용하는 경우, DRF의 모든 뷰는 이 미들웨어의 적용 대상에서 제외(opt-out)된다는 점에 유의하세요. 이는 DRF의 인증이 미들웨어 적용 이후에 결정될 수 있는 인증/권한 클래스 기반이기 때문입니다. 또한 요청이 인증되지 않았을 때, 해당 미들웨어는 사용자를 로그인 페이지로 리다이렉트하는데, 이는 API 요청에는 적절하지 않으며 보통 401 상태 코드를 반환하는 편이 더 낫습니다.</p>
+<p>REST framework는 전역 설정인 <code>DEFAULT_AUTHENTICATION_CLASSES</code> 및 <code>DEFAULT_PERMISSION_CLASSES</code>를 통해 DRF 뷰에 대해 동등한 메커니즘을 제공합니다. API 요청에 대해 “로그인되어 있어야 함”을 강제하려면 이에 맞게 설정을 변경해야 합니다.</p>
+<h2 id="apache-mod_wsgi-apache-mod_wsgi-specific-configuration"><a class="toclink" href="#apache-mod_wsgi-apache-mod_wsgi-specific-configuration">Apache mod_wsgi 전용 설정 (Apache mod_wsgi specific configuration)</a></h2>
+<p><a href="https://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIPassAuthorization.html">Apache에서 mod_wsgi로 배포</a>하는 경우, 기본 설정에서는 Authorization 헤더가 WSGI 애플리케이션으로 전달되지 않습니다. 이는 Apache가 애플리케이션 레벨이 아닌 서버 레벨에서 인증을 처리할 것이라고 가정하기 때문입니다.</p>
+<p>Apache에 배포하면서 세션 기반이 아닌 인증을 사용한다면, 필요한 헤더가 애플리케이션으로 전달되도록 mod_wsgi를 명시적으로 설정해야 합니다. 이는 적절한 컨텍스트에 <code>WSGIPassAuthorization</code> 지시어를 추가하고 값을 <code>'On'</code>으로 설정함으로써 가능합니다.</p>
+<pre><code># 이 설정은 서버 설정, virtual host, directory 또는 .htaccess 어디에든 둘 수 있습니다.
 WSGIPassAuthorization On
 </code></pre>
 <hr />
-<h1 id="api-reference"><a class="toclink" href="#api-reference">API Reference</a></h1>
+<h1 id="api-api-reference"><a class="toclink" href="#api-api-reference">API 레퍼런스 (API Reference)</a></h1>
 <h2 id="basicauthentication"><a class="toclink" href="#basicauthentication">BasicAuthentication</a></h2>
-<p>This authentication scheme uses <a href="https://tools.ietf.org/html/rfc2617">HTTP Basic Authentication</a>, signed against a user's username and password.  Basic authentication is generally only appropriate for testing.</p>
-<p>If successfully authenticated, <code>BasicAuthentication</code> provides the following credentials.</p>
+<p>이 인증 방식은 사용자의 username과 password로 서명된 <a href="https://tools.ietf.org/html/rfc2617">HTTP Basic Authentication</a>을 사용합니다. Basic 인증은 일반적으로 테스트에만 적합합니다.</p>
+<p>인증에 성공하면 <code>BasicAuthentication</code>은 다음 자격 증명을 제공합니다.</p>
 <ul>
-<li><code>request.user</code> will be a Django <code>User</code> instance.</li>
-<li><code>request.auth</code> will be <code>None</code>.</li>
+<li><code>request.user</code>는 Django <code>User</code> 인스턴스입니다.</li>
+<li><code>request.auth</code>는 <code>None</code>입니다.</li>
 </ul>
-<p>Unauthenticated responses that are denied permission will result in an <code>HTTP 401 Unauthorized</code> response with an appropriate WWW-Authenticate header.  For example:</p>
+<p>비인증 상태에서 permission에 의해 거부되는 응답은 적절한 WWW-Authenticate 헤더와 함께 <code>HTTP 401 Unauthorized</code>로 반환됩니다. 예:</p>
 <pre><code>WWW-Authenticate: Basic realm="api"
 </code></pre>
-<p><strong>Note:</strong> If you use <code>BasicAuthentication</code> in production you must ensure that your API is only available over <code>https</code>.  You should also ensure that your API clients will always re-request the username and password at login, and will never store those details to persistent storage.</p>
+<p><strong>참고:</strong> 프로덕션에서 <code>BasicAuthentication</code>을 사용한다면, API가 반드시 <code>https</code>로만 제공되도록 보장해야 합니다. 또한 API 클라이언트가 로그인 시마다 username/password를 다시 요청하도록 하고, 이 정보를 영구 저장소에 절대로 저장하지 않도록 해야 합니다.</p>
 <h2 id="tokenauthentication"><a class="toclink" href="#tokenauthentication">TokenAuthentication</a></h2>
 <hr />
-<p><strong>Note:</strong> The token authentication provided by Django REST framework is a fairly simple implementation.</p>
-<p>For an implementation which allows more than one token per user, has some tighter security implementation details, and supports token expiry, please see the <a href="https://github.com/James1345/django-rest-knox">Django REST Knox</a> third party package.</p>
+<p><strong>참고:</strong> Django REST framework가 제공하는 토큰 인증은 비교적 단순한 구현입니다.</p>
+<p>사용자당 여러 토큰을 허용하고, 더 강한 보안 구현 세부사항 및 토큰 만료를 지원하는 구현이 필요하다면, 서드파티 패키지인 <a href="https://github.com/James1345/django-rest-knox">Django REST Knox</a>를 참고하세요.</p>
 <hr />
-<p>This authentication scheme uses a simple token-based HTTP Authentication scheme.  Token authentication is appropriate for client-server setups, such as native desktop and mobile clients.</p>
-<p>To use the <code>TokenAuthentication</code> scheme you'll need to <a href="#setting-the-authentication-scheme">configure the authentication classes</a> to include <code>TokenAuthentication</code>, and additionally include <code>rest_framework.authtoken</code> in your <code>INSTALLED_APPS</code> setting:</p>
+<p>이 인증 방식은 간단한 토큰 기반 HTTP 인증을 사용합니다. 토큰 인증은 네이티브 데스크톱/모바일 클라이언트 같은 클라이언트-서버 구성에 적합합니다.</p>
+<p><code>TokenAuthentication</code>을 사용하려면, <a href="#setting-the-authentication-scheme">인증 클래스 설정</a>에 <code>TokenAuthentication</code>을 포함시키고, <code>INSTALLED_APPS</code>에 <code>rest_framework.authtoken</code>을 추가해야 합니다.</p>
 <pre><code>INSTALLED_APPS = [
     ...
     'rest_framework.authtoken'
 ]
 </code></pre>
-<p>Make sure to run <code>manage.py migrate</code> after changing your settings.</p>
-<p>The <code>rest_framework.authtoken</code> app provides Django database migrations.</p>
-<p>You'll also need to create tokens for your users.</p>
+<p>설정을 변경한 후 <code>manage.py migrate</code>를 실행해야 합니다.</p>
+<p><code>rest_framework.authtoken</code> 앱은 Django 데이터베이스 마이그레이션을 제공합니다.</p>
+<p>또한 사용자에 대한 토큰을 생성해야 합니다.</p>
 <pre><code>from rest_framework.authtoken.models import Token
 
 token = Token.objects.create(user=...)
 print(token.key)
 </code></pre>
-<p>For clients to authenticate, the token key should be included in the <code>Authorization</code> HTTP header.  The key should be prefixed by the string literal "Token", with whitespace separating the two strings.  For example:</p>
+<p>클라이언트가 인증하려면 토큰 키를 <code>Authorization</code> HTTP 헤더에 포함해야 합니다. 키 앞에는 문자열 리터럴 <code>"Token"</code>을 붙이고, 두 문자열 사이에는 공백으로 구분합니다. 예:</p>
 <pre><code>Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 </code></pre>
-<p><em>If you want to use a different keyword in the header, such as <code>Bearer</code>, simply subclass <code>TokenAuthentication</code> and set the <code>keyword</code> class variable.</em></p>
-<p>If successfully authenticated, <code>TokenAuthentication</code> provides the following credentials.</p>
+<p><em><code>Bearer</code>처럼 다른 키워드를 헤더에서 사용하고 싶다면, <code>TokenAuthentication</code>을 서브클래싱하고 <code>keyword</code> 클래스 변수를 설정하면 됩니다.</em></p>
+<p>인증에 성공하면 <code>TokenAuthentication</code>은 다음 자격 증명을 제공합니다.</p>
 <ul>
-<li><code>request.user</code> will be a Django <code>User</code> instance.</li>
-<li><code>request.auth</code> will be a <code>rest_framework.authtoken.models.Token</code> instance.</li>
+<li><code>request.user</code>는 Django <code>User</code> 인스턴스입니다.</li>
+<li><code>request.auth</code>는 <code>rest_framework.authtoken.models.Token</code> 인스턴스입니다.</li>
 </ul>
-<p>Unauthenticated responses that are denied permission will result in an <code>HTTP 401 Unauthorized</code> response with an appropriate WWW-Authenticate header.  For example:</p>
+<p>비인증 상태에서 permission에 의해 거부되는 응답은 적절한 WWW-Authenticate 헤더와 함께 <code>HTTP 401 Unauthorized</code>로 반환됩니다. 예:</p>
 <pre><code>WWW-Authenticate: Token
 </code></pre>
-<p>The <code>curl</code> command line tool may be useful for testing token authenticated APIs.  For example:</p>
+<p><code>curl</code> 커맨드라인 도구는 토큰 인증 API를 테스트하는 데 유용할 수 있습니다. 예:</p>
 <pre><code>curl -X GET http://127.0.0.1:8000/api/example/ -H 'Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b'
 </code></pre>
 <hr />
-<p><strong>Note:</strong> If you use <code>TokenAuthentication</code> in production you must ensure that your API is only available over <code>https</code>.</p>
+<p><strong>참고:</strong> 프로덕션에서 <code>TokenAuthentication</code>을 사용한다면, API가 반드시 <code>https</code>로만 제공되도록 보장해야 합니다.</p>
 <hr />
-<h3 id="generating-tokens"><a class="toclink" href="#generating-tokens">Generating Tokens</a></h3>
-<h4 id="by-using-signals"><a class="toclink" href="#by-using-signals">By using signals</a></h4>
-<p>If you want every user to have an automatically generated Token, you can simply catch the User's <code>post_save</code> signal.</p>
+<h3 id="generating-tokens"><a class="toclink" href="#generating-tokens">토큰 생성하기 (Generating Tokens)</a></h3>
+<h4 id="by-using-signals"><a class="toclink" href="#by-using-signals">시그널 사용 (By using signals)</a></h4>
+<p>모든 사용자에게 토큰이 자동 생성되게 하고 싶다면, User의 <code>post_save</code> 시그널을 처리하면 됩니다.</p>
 <pre><code>from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -690,30 +689,29 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
 </code></pre>
-<p>Note that you'll want to ensure you place this code snippet in an installed <code>models.py</code> module, or some other location that will be imported by Django on startup.</p>
-<p>If you've already created some users, you can generate tokens for all existing users like this:</p>
+<p>이 코드는 설치된 <code>models.py</code> 모듈이나, Django 시작 시 import되는 다른 위치에 두어야 합니다.</p>
+<p>이미 생성된 사용자들이 있다면, 다음과 같이 기존 사용자 전체에 대해 토큰을 생성할 수 있습니다.</p>
 <pre><code>from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 
 for user in User.objects.all():
     Token.objects.get_or_create(user=user)
 </code></pre>
-<h4 id="by-exposing-an-api-endpoint"><a class="toclink" href="#by-exposing-an-api-endpoint">By exposing an api endpoint</a></h4>
-<p>When using <code>TokenAuthentication</code>, you may want to provide a mechanism for clients to obtain a token given the username and password.  REST framework provides a built-in view to provide this behavior.  To use it, add the <code>obtain_auth_token</code> view to your URLconf:</p>
+<h4 id="api-by-exposing-an-api-endpoint"><a class="toclink" href="#api-by-exposing-an-api-endpoint">API 엔드포인트 노출 (By exposing an api endpoint)</a></h4>
+<p><code>TokenAuthentication</code>을 사용할 때, username/password로 토큰을 발급받을 수 있는 메커니즘을 제공하고 싶을 수 있습니다. REST framework는 이를 위한 내장 뷰를 제공합니다. 사용하려면 URLconf에 <code>obtain_auth_token</code> 뷰를 추가하세요.</p>
 <pre><code>from rest_framework.authtoken import views
 urlpatterns += [
     path('api-token-auth/', views.obtain_auth_token)
 ]
 </code></pre>
-<p>Note that the URL part of the pattern can be whatever you want to use.</p>
-<p>The <code>obtain_auth_token</code> view will return a JSON response when valid <code>username</code> and <code>password</code> fields are POSTed to the view using form data or JSON:</p>
+<p>URL 패턴의 경로는 원하는 대로 정할 수 있습니다.</p>
+<p><code>obtain_auth_token</code> 뷰는 <code>username</code>과 <code>password</code> 필드를 폼 데이터 또는 JSON으로 POST했을 때, 유효하면 JSON 응답을 반환합니다.</p>
 <pre><code>{ 'token' : '9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b' }
 </code></pre>
-<p>Note that the default <code>obtain_auth_token</code> view explicitly uses JSON requests and responses, rather than using default renderer and parser classes in your settings.</p>
-<p>By default, there are no permissions or throttling applied to the <code>obtain_auth_token</code> view. If you do wish to apply throttling you'll need to override the view class,
-and include them using the <code>throttle_classes</code> attribute.</p>
-<p>If you need a customized version of the <code>obtain_auth_token</code> view, you can do so by subclassing the <code>ObtainAuthToken</code> view class, and using that in your url conf instead.</p>
-<p>For example, you may return additional user information beyond the <code>token</code> value:</p>
+<p>기본 <code>obtain_auth_token</code> 뷰는 설정의 기본 renderer/parser를 사용하는 대신, JSON 요청/응답을 명시적으로 사용합니다.</p>
+<p>기본적으로 <code>obtain_auth_token</code> 뷰에는 permission이나 throttling이 적용되어 있지 않습니다. throttling을 적용하려면 뷰 클래스를 오버라이드하고 <code>throttle_classes</code> 속성을 포함해야 합니다.</p>
+<p><code>obtain_auth_token</code>의 커스텀 버전이 필요하다면 <code>ObtainAuthToken</code> 뷰 클래스를 서브클래싱하고, URLconf에서 그 클래스를 사용하면 됩니다.</p>
+<p>예를 들어 <code>token</code> 외에 추가 사용자 정보를 반환할 수도 있습니다.</p>
 <pre><code>from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -732,74 +730,70 @@ class CustomAuthToken(ObtainAuthToken):
             'email': user.email
         })
 </code></pre>
-<p>And in your <code>urls.py</code>:</p>
+<p>그리고 <code>urls.py</code>에서:</p>
 <pre><code>urlpatterns += [
     path('api-token-auth/', CustomAuthToken.as_view())
 ]
 </code></pre>
-<h4 id="with-django-admin"><a class="toclink" href="#with-django-admin">With Django admin</a></h4>
-<p>It is also possible to create Tokens manually through the admin interface. In case you are using a large user base, we recommend that you monkey patch the <code>TokenAdmin</code> class to customize it to your needs, more specifically by declaring the <code>user</code> field as <code>raw_field</code>.</p>
+<h4 id="django-admin-with-django-admin"><a class="toclink" href="#django-admin-with-django-admin">Django admin 사용 (With Django admin)</a></h4>
+<p>admin 인터페이스를 통해 수동으로 토큰을 만들 수도 있습니다. 사용자 수가 매우 큰 경우, 필요에 맞게 <code>TokenAdmin</code> 클래스를 몽키패치하는 것을 권장합니다. 특히 <code>user</code> 필드를 <code>raw_field</code>로 선언하여 커스터마이징할 수 있습니다.</p>
 <p><code>your_app/admin.py</code>:</p>
 <pre><code>from rest_framework.authtoken.admin import TokenAdmin
 
 TokenAdmin.raw_id_fields = ['user']
 </code></pre>
-<h4 id="using-django-managepy-command"><a class="toclink" href="#using-django-managepy-command">Using Django manage.py command</a></h4>
-<p>Since version 3.6.4 it's possible to generate a user token using the following command:</p>
+<h4 id="django-managepy-using-django-managepy-command"><a class="toclink" href="#django-managepy-using-django-managepy-command">Django manage.py 커맨드 사용 (Using Django manage.py command)</a></h4>
+<p>3.6.4 버전부터는 다음 커맨드로 사용자 토큰을 생성할 수 있습니다.</p>
 <pre><code>./manage.py drf_create_token &lt;username&gt;
 </code></pre>
-<p>this command will return the API token for the given user, creating it if it doesn't exist:</p>
+<p>이 커맨드는 주어진 사용자의 API 토큰을 반환하며, 토큰이 없으면 생성합니다.</p>
 <pre><code>Generated token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b for user user1
 </code></pre>
-<p>In case you want to regenerate the token (for example if it has been compromised or leaked) you can pass an additional parameter:</p>
+<p>토큰을 재발급(예: 유출/탈취된 경우)하고 싶다면 추가 파라미터를 전달하면 됩니다.</p>
 <pre><code>./manage.py drf_create_token -r &lt;username&gt;
 </code></pre>
 <h2 id="sessionauthentication"><a class="toclink" href="#sessionauthentication">SessionAuthentication</a></h2>
-<p>This authentication scheme uses Django's default session backend for authentication.  Session authentication is appropriate for AJAX clients that are running in the same session context as your website.</p>
-<p>If successfully authenticated, <code>SessionAuthentication</code> provides the following credentials.</p>
+<p>이 인증 방식은 Django 기본 세션 백엔드를 사용합니다. Session 인증은 웹사이트와 동일한 세션 컨텍스트에서 동작하는 AJAX 클라이언트에 적합합니다.</p>
+<p>인증에 성공하면 <code>SessionAuthentication</code>은 다음 자격 증명을 제공합니다.</p>
 <ul>
-<li><code>request.user</code> will be a Django <code>User</code> instance.</li>
-<li><code>request.auth</code> will be <code>None</code>.</li>
+<li><code>request.user</code>는 Django <code>User</code> 인스턴스입니다.</li>
+<li><code>request.auth</code>는 <code>None</code>입니다.</li>
 </ul>
-<p>Unauthenticated responses that are denied permission will result in an <code>HTTP 403 Forbidden</code> response.</p>
-<p>If you're using an AJAX-style API with SessionAuthentication, you'll need to make sure you include a valid CSRF token for any "unsafe" HTTP method calls, such as <code>PUT</code>, <code>PATCH</code>, <code>POST</code> or <code>DELETE</code> requests.  See the <a href="https://docs.djangoproject.com/en/stable/howto/csrf/#using-csrf-protection-with-ajax">Django CSRF documentation</a> for more details.</p>
+<p>비인증 상태에서 permission에 의해 거부되는 응답은 <code>HTTP 403 Forbidden</code>으로 반환됩니다.</p>
+<p>AJAX 스타일 API에서 SessionAuthentication을 사용한다면, <code>PUT</code>, <code>PATCH</code>, <code>POST</code>, <code>DELETE</code> 같은 “unsafe” HTTP 메서드 호출에는 유효한 CSRF 토큰을 포함해야 합니다. 자세한 내용은 <a href="https://docs.djangoproject.com/en/stable/howto/csrf/#using-csrf-protection-with-ajax">Django CSRF 문서</a>를 참고하세요.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>Always use Django's standard login view when creating login pages. This will ensure your login views are properly protected.</p>
+<p>로그인 페이지를 만들 때는 항상 Django의 표준 로그인 뷰를 사용하세요. 그래야 로그인 뷰가 올바르게 보호됩니다.</p>
 </div>
-<p>CSRF validation in REST framework works slightly differently from standard Django due to the need to support both session and non-session based authentication to the same views. This means that only authenticated requests require CSRF tokens, and anonymous requests may be sent without CSRF tokens. This behavior is not suitable for login views, which should always have CSRF validation applied.</p>
+<p>REST framework의 CSRF 검증은 동일한 뷰에서 세션 기반/비세션 기반 인증을 모두 지원해야 하기 때문에, 표준 Django와는 약간 다르게 동작합니다. 즉, 인증된 요청만 CSRF 토큰이 필요하고, 익명 요청은 CSRF 토큰 없이도 전송될 수 있습니다. 이 동작은 로그인 뷰에는 적절하지 않으며, 로그인 뷰에는 항상 CSRF 검증이 적용되어야 합니다.</p>
 <h2 id="remoteuserauthentication"><a class="toclink" href="#remoteuserauthentication">RemoteUserAuthentication</a></h2>
-<p>This authentication scheme allows you to delegate authentication to your web server, which sets the <code>REMOTE_USER</code>
-environment variable.</p>
-<p>To use it, you must have <code>django.contrib.auth.backends.RemoteUserBackend</code> (or a subclass) in your
-<code>AUTHENTICATION_BACKENDS</code> setting. By default, <code>RemoteUserBackend</code> creates <code>User</code> objects for usernames that don't
-already exist. To change this and other behavior, consult the
-<a href="https://docs.djangoproject.com/en/stable/howto/auth-remote-user/">Django documentation</a>.</p>
-<p>If successfully authenticated, <code>RemoteUserAuthentication</code> provides the following credentials:</p>
+<p>이 인증 방식은 웹 서버가 <code>REMOTE_USER</code> 환경 변수를 설정하도록 하여, 인증을 웹 서버에 위임할 수 있게 합니다.</p>
+<p>이를 사용하려면 <code>AUTHENTICATION_BACKENDS</code> 설정에 <code>django.contrib.auth.backends.RemoteUserBackend</code>(또는 서브클래스)를 포함해야 합니다. 기본적으로 <code>RemoteUserBackend</code>는 존재하지 않는 username에 대해 <code>User</code> 객체를 생성합니다. 이를 포함한 다른 동작을 변경하려면 <a href="https://docs.djangoproject.com/en/stable/howto/auth-remote-user/">Django 문서</a>를 참고하세요.</p>
+<p>인증에 성공하면 <code>RemoteUserAuthentication</code>은 다음 자격 증명을 제공합니다.</p>
 <ul>
-<li><code>request.user</code> will be a Django <code>User</code> instance.</li>
-<li><code>request.auth</code> will be <code>None</code>.</li>
+<li><code>request.user</code>는 Django <code>User</code> 인스턴스입니다.</li>
+<li><code>request.auth</code>는 <code>None</code>입니다.</li>
 </ul>
-<p>Consult your web server's documentation for information about configuring an authentication method, for example:</p>
+<p>인증 방식 구성에 대한 정보는 웹 서버 문서를 참고하세요. 예:</p>
 <ul>
 <li><a href="https://httpd.apache.org/docs/2.4/howto/auth.html">Apache Authentication How-To</a></li>
 <li><a href="https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-http-basic-authentication/">NGINX (Restricting Access)</a></li>
 </ul>
-<h1 id="custom-authentication"><a class="toclink" href="#custom-authentication">Custom authentication</a></h1>
-<p>To implement a custom authentication scheme, subclass <code>BaseAuthentication</code> and override the <code>.authenticate(self, request)</code> method.  The method should return a two-tuple of <code>(user, auth)</code> if authentication succeeds, or <code>None</code> otherwise.</p>
-<p>In some circumstances instead of returning <code>None</code>, you may want to raise an <code>AuthenticationFailed</code> exception from the <code>.authenticate()</code> method.</p>
-<p>Typically the approach you should take is:</p>
+<h1 id="custom-authentication"><a class="toclink" href="#custom-authentication">커스텀 인증 (Custom authentication)</a></h1>
+<p>커스텀 인증 방식을 구현하려면 <code>BaseAuthentication</code>을 상속받고 <code>.authenticate(self, request)</code> 메서드를 오버라이드하세요. 인증에 성공하면 <code>(user, auth)</code> 형태의 2-튜플을 반환하고, 그렇지 않으면 <code>None</code>을 반환해야 합니다.</p>
+<p>일부 상황에서는 <code>None</code> 대신 <code>.authenticate()</code>에서 <code>AuthenticationFailed</code> 예외를 발생시키는 것이 더 적절할 수 있습니다.</p>
+<p>일반적으로 권장되는 접근은 다음과 같습니다.</p>
 <ul>
-<li>If authentication is not attempted, return <code>None</code>.  Any other authentication schemes also in use will still be checked.</li>
-<li>If authentication is attempted but fails, raise an <code>AuthenticationFailed</code> exception.  An error response will be returned immediately, regardless of any permissions checks, and without checking any other authentication schemes.</li>
+<li>인증을 시도하지 않는 경우 <code>None</code>을 반환합니다. 그러면 다른 인증 방식들도 계속 검사됩니다.</li>
+<li>인증을 시도했지만 실패한 경우 <code>AuthenticationFailed</code> 예외를 발생시킵니다. 그러면 permission 체크 여부와 무관하게 즉시 에러 응답이 반환되며, 다른 인증 방식은 더 이상 검사하지 않습니다.</li>
 </ul>
-<p>You <em>may</em> also override the <code>.authenticate_header(self, request)</code> method.  If implemented, it should return a string that will be used as the value of the <code>WWW-Authenticate</code> header in a <code>HTTP 401 Unauthorized</code> response.</p>
-<p>If the <code>.authenticate_header()</code> method is not overridden, the authentication scheme will return <code>HTTP 403 Forbidden</code> responses when an unauthenticated request is denied access.</p>
+<p>또한 <code>.authenticate_header(self, request)</code> 메서드를 오버라이드할 수도 있습니다. 구현한다면, <code>HTTP 401 Unauthorized</code> 응답에서 <code>WWW-Authenticate</code> 헤더 값으로 사용할 문자열을 반환해야 합니다.</p>
+<p><code>.authenticate_header()</code>를 오버라이드하지 않으면, 비인증 요청이 거부될 때 인증 방식은 <code>HTTP 403 Forbidden</code> 응답을 반환합니다.</p>
 <hr />
-<p><strong>Note:</strong> When your custom authenticator is invoked by the request object's <code>.user</code> or <code>.auth</code> properties, you may see an <code>AttributeError</code> re-raised as a <code>WrappedAttributeError</code>. This is necessary to prevent the original exception from being suppressed by the outer property access. Python will not recognize that the <code>AttributeError</code> originates from your custom authenticator and will instead assume that the request object does not have a <code>.user</code> or <code>.auth</code> property. These errors should be fixed or otherwise handled by your authenticator.</p>
+<p><strong>참고:</strong> 커스텀 인증기가 request 객체의 <code>.user</code> 또는 <code>.auth</code> 속성에 의해 호출될 때, <code>AttributeError</code>가 <code>WrappedAttributeError</code>로 다시 raise되는 것을 볼 수 있습니다. 이는 바깥쪽 속성 접근이 원래 예외를 억제하는 것을 방지하기 위해 필요합니다. Python은 해당 <code>AttributeError</code>가 커스텀 인증기에서 발생한 것인지 인지하지 못하고, request 객체에 <code>.user</code> 또는 <code>.auth</code> 속성이 없는 것으로 가정할 수 있습니다. 이런 오류는 인증기 구현에서 수정하거나 적절히 처리해야 합니다.</p>
 <hr />
-<h2 id="example"><a class="toclink" href="#example">Example</a></h2>
-<p>The following example will authenticate any incoming request as the user given by the username in a custom request header named 'X-USERNAME'.</p>
+<h2 id="example"><a class="toclink" href="#example">예제 (Example)</a></h2>
+<p>다음 예제는 <code>X-USERNAME</code>이라는 커스텀 요청 헤더에 들어 있는 username을 사용해 들어오는 모든 요청을 인증합니다.</p>
 <pre><code>from django.contrib.auth.models import User
 from rest_framework import authentication
 from rest_framework import exceptions
@@ -818,17 +812,17 @@ class ExampleAuthentication(authentication.BaseAuthentication):
         return (user, None)
 </code></pre>
 <hr />
-<h1 id="third-party-packages"><a class="toclink" href="#third-party-packages">Third party packages</a></h1>
-<p>The following third-party packages are also available.</p>
+<h1 id="third-party-packages"><a class="toclink" href="#third-party-packages">서드파티 패키지 (Third party packages)</a></h1>
+<p>다음과 같은 서드파티 패키지도 사용할 수 있습니다.</p>
 <h2 id="django-rest-knox"><a class="toclink" href="#django-rest-knox">django-rest-knox</a></h2>
-<p><a href="https://github.com/James1345/django-rest-knox">Django-rest-knox</a> library provides models and views to handle token-based authentication in a more secure and extensible way than the built-in TokenAuthentication scheme - with Single Page Applications and Mobile clients in mind. It provides per-client tokens, and views to generate them when provided some other authentication (usually basic authentication), to delete the token (providing a server enforced logout) and to delete all tokens (logs out all clients that a user is logged into).</p>
+<p><a href="https://github.com/James1345/django-rest-knox">Django-rest-knox</a> 라이브러리는 내장 TokenAuthentication 방식보다 더 안전하고 확장 가능한 방식으로 토큰 기반 인증을 다루기 위한 모델과 뷰를 제공합니다(싱글 페이지 앱 및 모바일 클라이언트 중심). 클라이언트별 토큰을 제공하며, 다른 인증(보통 basic 인증)이 제공된 경우 토큰을 생성하는 뷰, 토큰을 삭제하는 뷰(서버 강제 로그아웃), 모든 토큰을 삭제하는 뷰(사용자가 로그인한 모든 클라이언트 로그아웃)를 제공합니다.</p>
 <h2 id="django-oauth-toolkit"><a class="toclink" href="#django-oauth-toolkit">Django OAuth Toolkit</a></h2>
-<p>The <a href="https://github.com/evonove/django-oauth-toolkit">Django OAuth Toolkit</a> package provides OAuth 2.0 support and works with Python 3.4+. The package is maintained by <a href="https://github.com/jazzband/">jazzband</a> and uses the excellent <a href="https://github.com/idan/oauthlib">OAuthLib</a>.  The package is well documented, and well supported and is currently our <strong>recommended package for OAuth 2.0 support</strong>.</p>
-<h3 id="installation-configuration"><a class="toclink" href="#installation-configuration">Installation &amp; configuration</a></h3>
-<p>Install using <code>pip</code>.</p>
+<p><a href="https://github.com/evonove/django-oauth-toolkit">Django OAuth Toolkit</a> 패키지는 OAuth 2.0 지원을 제공하며 Python 3.4+에서 동작합니다. 이 패키지는 <a href="https://github.com/jazzband/">jazzband</a>에서 유지보수하며 훌륭한 <a href="https://github.com/idan/oauthlib">OAuthLib</a>를 사용합니다. 문서화가 잘 되어 있고 지원도 활발하며, 현재 <strong>OAuth 2.0 지원을 위한 권장 패키지</strong>입니다.</p>
+<h3 id="installation-configuration"><a class="toclink" href="#installation-configuration">설치 및 설정 (Installation &amp; configuration)</a></h3>
+<p><code>pip</code>로 설치합니다.</p>
 <pre><code>pip install django-oauth-toolkit
 </code></pre>
-<p>Add the package to your <code>INSTALLED_APPS</code> and modify your REST framework settings.</p>
+<p>패키지를 <code>INSTALLED_APPS</code>에 추가하고 REST framework 설정을 수정합니다.</p>
 <pre><code>INSTALLED_APPS = [
     ...
     'oauth2_provider',
@@ -840,44 +834,44 @@ REST_FRAMEWORK = {
     ]
 }
 </code></pre>
-<p>For more details see the <a href="https://django-oauth-toolkit.readthedocs.io/en/latest/rest-framework/getting_started.html">Django REST framework - Getting started</a> documentation.</p>
+<p>자세한 내용은 <a href="https://django-oauth-toolkit.readthedocs.io/en/latest/rest-framework/getting_started.html">Django REST framework - Getting started</a> 문서를 참고하세요.</p>
 <h2 id="django-rest-framework-oauth"><a class="toclink" href="#django-rest-framework-oauth">Django REST framework OAuth</a></h2>
-<p>The <a href="https://jpadilla.github.io/django-rest-framework-oauth/">Django REST framework OAuth</a> package provides both OAuth1 and OAuth2 support for REST framework.</p>
-<p>This package was previously included directly in the REST framework but is now supported and maintained as a third-party package.</p>
-<h3 id="installation-configuration_1"><a class="toclink" href="#installation-configuration_1">Installation &amp; configuration</a></h3>
-<p>Install the package using <code>pip</code>.</p>
+<p><a href="https://jpadilla.github.io/django-rest-framework-oauth/">Django REST framework OAuth</a> 패키지는 REST framework에서 OAuth1 및 OAuth2 지원을 제공합니다.</p>
+<p>이 패키지는 과거에는 REST framework에 직접 포함되어 있었지만, 현재는 서드파티 패키지로 지원 및 유지보수됩니다.</p>
+<h3 id="installation-configuration_1"><a class="toclink" href="#installation-configuration_1">설치 및 설정 (Installation &amp; configuration)</a></h3>
+<p><code>pip</code>로 설치합니다.</p>
 <pre><code>pip install djangorestframework-oauth
 </code></pre>
-<p>For details on configuration and usage see the Django REST framework OAuth documentation for <a href="https://jpadilla.github.io/django-rest-framework-oauth/authentication/">authentication</a> and <a href="https://jpadilla.github.io/django-rest-framework-oauth/permissions/">permissions</a>.</p>
+<p>설정 및 사용법은 Django REST framework OAuth 문서의 <a href="https://jpadilla.github.io/django-rest-framework-oauth/authentication/">authentication</a> 및 <a href="https://jpadilla.github.io/django-rest-framework-oauth/permissions/">permissions</a>를 참고하세요.</p>
 <h2 id="json-web-token-authentication"><a class="toclink" href="#json-web-token-authentication">JSON Web Token Authentication</a></h2>
-<p>JSON Web Token is a fairly new standard which can be used for token-based authentication. Unlike the built-in TokenAuthentication scheme, JWT Authentication doesn't need to use a database to validate a token. A package for JWT authentication is <a href="https://github.com/davesque/django-rest-framework-simplejwt">djangorestframework-simplejwt</a> which provides some features as well as a pluggable token blacklist app.</p>
+<p>JSON Web Token(JWT)은 토큰 기반 인증에 사용할 수 있는 비교적 새로운 표준입니다. 내장 TokenAuthentication과 달리, JWT 인증은 토큰 검증을 위해 데이터베이스를 사용할 필요가 없습니다. JWT 인증 패키지로는 <a href="https://github.com/davesque/django-rest-framework-simplejwt">djangorestframework-simplejwt</a>가 있으며, 여러 기능과 함께 플러그인 형태의 토큰 블랙리스트 앱을 제공합니다.</p>
 <h2 id="hawk-http-authentication"><a class="toclink" href="#hawk-http-authentication">Hawk HTTP Authentication</a></h2>
-<p>The <a href="https://hawkrest.readthedocs.io/en/latest/">HawkREST</a> library builds on the <a href="https://mohawk.readthedocs.io/en/latest/">Mohawk</a> library to let you work with <a href="https://github.com/hueniverse/hawk">Hawk</a> signed requests and responses in your API. <a href="https://github.com/hueniverse/hawk">Hawk</a> lets two parties securely communicate with each other using messages signed by a shared key. It is based on <a href="https://tools.ietf.org/html/draft-hammer-oauth-v2-mac-token-05">HTTP MAC access authentication</a> (which was based on parts of <a href="https://oauth.net/core/1.0a/">OAuth 1.0</a>).</p>
+<p><a href="https://hawkrest.readthedocs.io/en/latest/">HawkREST</a> 라이브러리는 <a href="https://mohawk.readthedocs.io/en/latest/">Mohawk</a> 라이브러리를 기반으로, API에서 <a href="https://github.com/hueniverse/hawk">Hawk</a> 서명 요청/응답을 다룰 수 있게 해줍니다. <a href="https://github.com/hueniverse/hawk">Hawk</a>는 공유 키로 서명된 메시지를 사용해 두 당사자가 안전하게 통신하도록 합니다. 이는 <a href="https://tools.ietf.org/html/draft-hammer-oauth-v2-mac-token-05">HTTP MAC access authentication</a>(OAuth 1.0 일부를 기반으로 했던 방식)을 기반으로 합니다.</p>
 <h2 id="http-signature-authentication"><a class="toclink" href="#http-signature-authentication">HTTP Signature Authentication</a></h2>
-<p>HTTP Signature (currently a <a href="https://datatracker.ietf.org/doc/draft-cavage-http-signatures/">IETF draft</a>) provides a way to achieve origin authentication and message integrity for HTTP messages. Similar to <a href="https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html">Amazon's HTTP Signature scheme</a>, used by many of its services, it permits stateless, per-request authentication. <a href="https://github.com/etoccalino/">Elvio Toccalino</a> maintains the <a href="https://github.com/etoccalino/django-rest-framework-httpsignature">djangorestframework-httpsignature</a> (outdated) package which provides an easy-to-use HTTP Signature Authentication mechanism. You can use the updated fork version of <a href="https://github.com/etoccalino/django-rest-framework-httpsignature">djangorestframework-httpsignature</a>, which is <a href="https://github.com/ahknight/drf-httpsig">drf-httpsig</a>.</p>
+<p>HTTP Signature(현재 <a href="https://datatracker.ietf.org/doc/draft-cavage-http-signatures/">IETF 드래프트</a>)는 HTTP 메시지에 대해 원본 인증(origin authentication)과 메시지 무결성을 달성하는 방법을 제공합니다. Amazon의 여러 서비스에서 사용하는 <a href="https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html">Amazon HTTP Signature 방식</a>과 유사하게, 요청 단위의 무상태(stateless) 인증을 허용합니다. <a href="https://github.com/etoccalino/">Elvio Toccalino</a>가 유지보수하는 (구버전) <a href="https://github.com/etoccalino/django-rest-framework-httpsignature">djangorestframework-httpsignature</a> 패키지는 쉽게 사용할 수 있는 HTTP Signature 인증 메커니즘을 제공합니다. 또한 업데이트된 포크 버전인 <a href="https://github.com/etoccalino/django-rest-framework-httpsignature">djangorestframework-httpsignature</a>의 <a href="https://github.com/ahknight/drf-httpsig">drf-httpsig</a>를 사용할 수도 있습니다.</p>
 <h2 id="djoser"><a class="toclink" href="#djoser">Djoser</a></h2>
-<p><a href="https://github.com/sunscrapers/djoser">Djoser</a> library provides a set of views to handle basic actions such as registration, login, logout, password reset and account activation. The package works with a custom user model and uses token-based authentication. This is a ready to use REST implementation of the Django authentication system.</p>
+<p><a href="https://github.com/sunscrapers/djoser">Djoser</a> 라이브러리는 회원가입, 로그인, 로그아웃, 비밀번호 재설정, 계정 활성화 등 기본 동작을 처리하는 뷰 세트를 제공합니다. 커스텀 유저 모델과 함께 동작하며 토큰 기반 인증을 사용합니다. Django 인증 시스템의 “바로 사용할 수 있는” REST 구현입니다.</p>
 <h2 id="drf-auth-kit"><a class="toclink" href="#drf-auth-kit">DRF Auth Kit</a></h2>
-<p><a href="https://github.com/huynguyengl99/drf-auth-kit">DRF Auth Kit</a> library provides a modern REST authentication solution with JWT cookies, social login, multi-factor authentication, and comprehensive user management. The package offers full type safety, automatic OpenAPI schema generation with DRF Spectacular. It supports multiple authentication types (JWT, DRF Token, or Custom) and includes built-in internationalization for 50+ languages.</p>
+<p><a href="https://github.com/huynguyengl99/drf-auth-kit">DRF Auth Kit</a> 라이브러리는 JWT 쿠키, 소셜 로그인, 다중 인증(MFA), 포괄적인 사용자 관리를 포함한 현대적인 REST 인증 솔루션을 제공합니다. DRF Spectacular로 자동 OpenAPI 스키마 생성을 지원하고, 완전한 타입 안정성을 제공하는 것이 특징입니다. 여러 인증 유형(JWT, DRF Token, 또는 Custom)을 지원하며 50개 이상의 언어에 대한 국제화도 포함합니다.</p>
 <h2 id="django-rest-auth-dj-rest-auth"><a class="toclink" href="#django-rest-auth-dj-rest-auth">django-rest-auth / dj-rest-auth</a></h2>
-<p>This library provides a set of REST API endpoints for registration, authentication (including social media authentication), password reset, retrieve and update user details, etc. By having these API endpoints, your client apps such as AngularJS, iOS, Android, and others can communicate to your Django backend site independently via REST APIs for user management.</p>
-<p>There are currently two forks of this project.</p>
+<p>이 라이브러리는 회원가입, 인증(소셜 미디어 인증 포함), 비밀번호 재설정, 사용자 상세 조회 및 업데이트 등을 위한 REST API 엔드포인트 세트를 제공합니다. AngularJS, iOS, Android 등 클라이언트 앱이 Django 백엔드와 독립적으로 통신하여 사용자 관리를 REST API로 수행할 수 있습니다.</p>
+<p>현재 이 프로젝트에는 두 개의 포크가 있습니다.</p>
 <ul>
-<li><a href="https://github.com/Tivix/django-rest-auth">Django-rest-auth</a> is the original project, <a href="https://github.com/Tivix/django-rest-auth/issues/568">but is not currently receiving updates</a>.</li>
-<li><a href="https://github.com/jazzband/dj-rest-auth">Dj-rest-auth</a> is a newer fork of the project.</li>
+<li><a href="https://github.com/Tivix/django-rest-auth">Django-rest-auth</a>는 원래 프로젝트이지만, <a href="https://github.com/Tivix/django-rest-auth/issues/568">현재 업데이트가 거의 이루어지지 않습니다</a>.</li>
+<li><a href="https://github.com/jazzband/dj-rest-auth">Dj-rest-auth</a>는 더 최신의 포크입니다.</li>
 </ul>
 <h2 id="drf-social-oauth2"><a class="toclink" href="#drf-social-oauth2">drf-social-oauth2</a></h2>
-<p><a href="https://github.com/wagnerdelima/drf-social-oauth2">Drf-social-oauth2</a> is a framework that helps you authenticate with major social oauth2 vendors, such as Facebook, Google, Twitter, Orcid, etc. It generates tokens in a JWTed way with an easy setup.</p>
+<p><a href="https://github.com/wagnerdelima/drf-social-oauth2">Drf-social-oauth2</a>는 Facebook, Google, Twitter, Orcid 등 주요 소셜 oauth2 벤더로 인증할 수 있도록 도와주는 프레임워크입니다. 손쉬운 설정으로 JWT 형태로 토큰을 생성합니다.</p>
 <h2 id="drfpasswordless"><a class="toclink" href="#drfpasswordless">drfpasswordless</a></h2>
-<p><a href="https://github.com/aaronn/django-rest-framework-passwordless">drfpasswordless</a> adds (Medium, Square Cash inspired) passwordless support to Django REST Framework's TokenAuthentication scheme. Users log in and sign up with a token sent to a contact point like an email address or a mobile number.</p>
+<p><a href="https://github.com/aaronn/django-rest-framework-passwordless">drfpasswordless</a>는 Django REST Framework의 TokenAuthentication 방식에 비밀번호 없는(passwordless) 지원을 추가합니다(예: Medium, Square Cash에서 영감을 받은 방식). 사용자는 이메일 주소나 휴대폰 번호 같은 연락처로 전송된 토큰을 이용해 로그인/가입합니다.</p>
 <h2 id="django-rest-authemail"><a class="toclink" href="#django-rest-authemail">django-rest-authemail</a></h2>
-<p><a href="https://github.com/celiao/django-rest-authemail">django-rest-authemail</a> provides a RESTful API interface for user signup and authentication. Email addresses are used for authentication, rather than usernames.  API endpoints are available for signup, signup email verification, login, logout, password reset, password reset verification, email change, email change verification, password change, and user detail.  A fully functional example project and detailed instructions are included.</p>
+<p><a href="https://github.com/celiao/django-rest-authemail">django-rest-authemail</a>는 username 대신 이메일 주소를 인증에 사용하는 사용자 가입 및 인증을 위한 RESTful API를 제공합니다. 회원가입, 가입 이메일 인증, 로그인, 로그아웃, 비밀번호 재설정, 비밀번호 재설정 검증, 이메일 변경, 이메일 변경 검증, 비밀번호 변경, 사용자 상세 등의 엔드포인트가 제공됩니다. 동작하는 예제 프로젝트와 자세한 안내도 포함되어 있습니다.</p>
 <h2 id="django-rest-durin"><a class="toclink" href="#django-rest-durin">Django-Rest-Durin</a></h2>
-<p><a href="https://github.com/eshaan7/django-rest-durin">Django-Rest-Durin</a> is built with the idea to have one library that does token auth for multiple Web/CLI/Mobile API clients via one interface but allows different token configuration for each API Client that consumes the API. It provides support for multiple tokens per user via custom models, views, permissions that work with Django-Rest-Framework. The token expiration time can be different per API client and is customizable via the Django Admin Interface.</p>
-<p>More information can be found in the <a href="https://django-rest-durin.readthedocs.io/en/latest/index.html">Documentation</a>.</p>
+<p><a href="https://github.com/eshaan7/django-rest-durin">Django-Rest-Durin</a>은 Web/CLI/Mobile 등 여러 API 클라이언트에 대해 하나의 인터페이스로 토큰 인증을 제공하는 것을 목표로 합니다. API 클라이언트마다 토큰 설정을 다르게 할 수 있으며, 커스텀 모델/뷰/permission을 통해 사용자당 여러 토큰을 지원합니다. 토큰 만료 시간은 API 클라이언트별로 다를 수 있고, Django Admin에서 커스터마이징할 수 있습니다.</p>
+<p>자세한 내용은 <a href="https://django-rest-durin.readthedocs.io/en/latest/index.html">문서</a>에서 확인할 수 있습니다.</p>
 <h2 id="django-pyoidc"><a class="toclink" href="#django-pyoidc">django-pyoidc</a></h2>
-<p>[dango-pyoidc][django_pyoidc] adds support for OpenID Connect (OIDC) authentication. This allows you to delegate user management to an Identity Provider, which can be used to implement Single-Sign-On (SSO). It provides support for most uses-cases, such as customizing how token info are mapped to user models, using OIDC audiences for access control, etc.</p>
-<p>More information can be found in the <a href="https://django-pyoidc.readthedocs.io/latest/index.html">Documentation</a>.</p>
+<p>[dango-pyoidc][django_pyoidc]는 OpenID Connect(OIDC) 인증을 지원합니다. 이를 통해 사용자 관리를 Identity Provider에 위임할 수 있으며, Single-Sign-On(SSO) 구현에 사용할 수 있습니다. 토큰 정보를 사용자 모델에 매핑하는 방법을 커스터마이징하거나, OIDC audience를 사용해 접근 제어를 하는 등 대부분의 사용 케이스를 지원합니다.</p>
+<p>자세한 내용은 <a href="https://django-pyoidc.readthedocs.io/latest/index.html">문서</a>에서 확인할 수 있습니다.</p>
             
 
           </div> <!--/span-->
